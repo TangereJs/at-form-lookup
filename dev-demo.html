@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>&lt;at-form-lookup&gt;</title>
+    <script src="../webcomponentsjs/webcomponents.js"></script>
+    <link rel="import" href="at-form-lookup.html">
+</head>
+<body>
+    Example with lots of items:
+    <at-form-lookup id="demoLookup" available="neat,awesome"></at-form-lookup>
+
+    <script>
+        window.addEventListener('polymer-ready', function() {
+          console.log('Polymer ready event');
+          demoLookup = document.getElementById("demoLookup");
+          demoLookup.available = JSON.parse('[{"caption": "Pera", "value": "v1"},{"caption": "Mika", "value": "v2"},{ "caption": "Zika", "value": "v3"}]');
+          demoLookup.selected = "v1";
+        });
+    </script>
+</body>
+</html>
