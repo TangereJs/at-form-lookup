@@ -44,12 +44,13 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" tabindex="-1" attributes="available selected">
+<polymer-element name="at-form-lookup" tabindex="-1" attributes="useDropdown allowEmpty maxItems">
   <template>
     <link rel="stylesheet" href="css/selectize.css" />
     <link rel="stylesheet" href="css/selectize.default.css" />
     <link rel="stylesheet" href="css/selectize.bootstrap3.css" />
-    <input id="inputTags" type="text" value="{{ available }}" />
+    <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
+    <select id="selectTags" style="display:none" />
     <content></content>
   </template>
   <script>
@@ -57,10 +58,79 @@ It should handle
       var libraryRoot = {};
 
       Polymer('at-form-lookup', {
+        publish: {
+          available: {
+            value: '',
+            reflect: true
+          },
+          selected: {
+            value: '',
+            reflect: true
+          }
+        },
         ready: function () {
-          var value = libraryRoot.selectize(this.$.inputTags, {});
+          this.initialize();
+        },
+
+        availableChanged: function (oldValue, newValue) {
+          this.initialize();
+        },
+
+        initialize: function () {
+          if (this.available === '') { return; }
+          if (this.useDropdown !== undefined) {
+            if (isArray(this.available)) {
+              for (var j = 0; j < this.available.length; j++) {
+                var item = this.available[j];
+
+                var optionEl = document.createElement('option');
+                optionEl.value = item.value;
+                optionEl.innerText = item.caption;
+                this.$.selectTags.appendChild(optionEl);
+              }
+
+              var value = libraryRoot.selectize(this.$.selectTags, {
+                //create: true,
+                allowEmpty: this.allowEmpty,
+                maxItems: this.maxItems
+              });
+
+            } else if (isString(this.available)) {
+              var availableTags = this.available.split(',');
+              for (var i = 0; i < availableTags.length; i++) {
+                availableTags[i] = availableTags[i].trim();
+                var tag = availableTags[i];
+
+                var optionEl = document.createElement('option');
+                optionEl.value = tag;
+                optionEl.innerText = tag;
+                this.$.selectTags.appendChild(optionEl);
+              }
+
+              var value = libraryRoot.selectize(this.$.selectTags, {
+                //create: true,
+                allowEmpty: this.allowEmpty,
+                maxItems: this.maxItems
+              });
+            } else {
+              console.log("Available items should be an array of (id, value) pairs or comma separated string");
+            }
+          } else {
+            var value = libraryRoot.selectize(this.$.inputTags, {
+              //create: true,
+              maxItems: this.maxItems
+            });
+          }
         }
       });
+
+      function isArray(obj) {
+        return toString.call(obj) === "[object Array]";
+      }
+
+      function isString(obj) {
+        return toString.call(obj) === "[object String]";
+      }
 
       (function (ns) {
         var hashTable = {};
@@ -711,9 +781,7 @@ It should handle
             return skip;
           };
 
-          return $element.each(function () {
-            highlight(this);
-          });
+          return highlight($element);
         };
 
         var MicroEvent = function () { };
@@ -1012,15 +1080,12 @@ It should handle
          * @param {array} properties
          */
         var transferStyles = function ($from, $to, properties) {
-          var i, n, styles = {};
+          var i, n;
           if (properties) {
             for (i = 0, n = properties.length; i < n; i++) {
-              styles[properties[i]] = $from.css(properties[i]);
+              $to[properties[i]] = $from.style[properties[i]];
             }
-          } else {
-            styles = $from.css();
           }
-          $to.css(styles);
         };
 
         /**
@@ -1036,16 +1101,20 @@ It should handle
             return 0;
           }
 
-          var $test = $('<test>').css({
-            position: 'absolute',
-            top: -99999,
-            left: -99999,
-            width: 'auto',
-            padding: 0,
-            whiteSpace: 'pre'
-          }).text(str).appendTo('body');
+          var body = document.getElementsByTagName('body');
+          body = body[0];
+          var test = document.createElement('test');
+          body.appendChild(test);
+          test.innerText = str;
 
-          transferStyles($parent, $test, [
+          test.style.position = 'absolute';
+          test.style.top = -99999;
+          test.style.left = -99999;
+          test.style.width = 'auto';
+          test.style.padding = 0;
+          test.style.whiteSpace = 'pre';
+
+          transferStyles($parent, test, [
             'letterSpacing',
             'fontSize',
             'fontFamily',
@@ -1053,8 +1122,8 @@ It should handle
             'textTransform'
           ]);
 
-          var width = $test.width();
-          $test.remove();
+          var width = test.width;
+          test.remove();
 
           return width;
         };
@@ -1091,7 +1160,7 @@ It should handle
               );
 
               if (keyCode === KEY_DELETE || keyCode === KEY_BACKSPACE) {
-                selection = getSelection($input[0]);
+                selection = getSelection($input);
                 if (selection.length) {
                   value = value.substring(0, selection.start) + value.substring(selection.start + selection.length);
                 } else if (keyCode === KEY_BACKSPACE && selection.start) {
@@ -1278,6 +1347,8 @@ It should handle
             $dropdown.appendChild($dropdown_content);
 
             $dropdown_content.addEventListener('click', function (e) {
+              //debugger;
+              self.setActiveOption(e.target, true, true);
               self.onOptionSelect({ currentTarget: self.$activeOption });
             });
 
@@ -1591,7 +1662,7 @@ It should handle
            */
           namespace.onKeyDown = function (e) {
             //debugger;
-            var isInput = e.target === this.$control_input[0];
+            var isInput = e.target === this.$control_input;
             var self = this;
 
             if (self.isLocked) {
@@ -1619,7 +1690,7 @@ It should handle
                 } else if (self.$activeOption) {
                   self.ignoreHover = true;
                   var $next = self.getAdjacentOption(self.$activeOption, 1);
-                  if ($next.length) self.setActiveOption($next, true, true);
+                  if ($next.length) self.setActiveOption($next[0], true, true);
                 }
                 e.preventDefault();
                 return;
@@ -1629,7 +1700,7 @@ It should handle
                 if (self.$activeOption) {
                   self.ignoreHover = true;
                   var $prev = self.getAdjacentOption(self.$activeOption, -1);
-                  if ($prev.length) self.setActiveOption($prev, true, true);
+                  if ($prev.length) self.setActiveOption($prev[0], true, true);
                 }
                 e.preventDefault();
                 return;
@@ -1858,7 +1929,11 @@ It should handle
             var $input = this.$control_input;
             var changed = $input.value !== value;
             if (changed) {
-              $input.val(value).triggerHandler('update');
+              $input.value = value;
+              var updateEvent = document.createEvent('Event');
+              updateEvent.initEvent('update', false, true);
+              $input.dispatchEvent(updateEvent);
+              //$input.triggerHandler('update');
               this.lastValue = value;
             }
           }
@@ -2024,7 +2099,10 @@ It should handle
             var self = this;
 
             self.setTextboxValue('');
-            self.$control_input.css({ opacity: 0, position: 'absolute', left: self.rtl ? 10000 : -10000 });
+            self.$control_input.style.opacity = 0;
+            self.$control_input.style.position = 'absolute';
+            self.$control_input.style.left = self.rtl ? 10000 : -10000;
+            //self.$control_input.css({ opacity: 0, position: 'absolute', left: self.rtl ? 10000 : -10000 });
             self.isInputHidden = true;
           }
 
@@ -2235,7 +2313,7 @@ It should handle
             // add "selected" class to selected options
             if (!self.settings.hideSelected) {
               for (i = 0, n = self.items.length; i < n; i++) {
-                self.getOption(self.items[i]).addClass('selected');
+                self.getOption(self.items[i]).classList.add('selected');
               }
             }
 
@@ -2260,7 +2338,8 @@ It should handle
                   if ($create && !self.settings.addPrecedence) {
                     $active = self.getAdjacentOption($create, 1);
                   } else {
-                    $active = $dropdown_content.querySelectorAll('[data-selectable]')[0]; //$dropdown_content.find('[data-selectable]:first');
+                    //debugger;
+                    $active = $dropdown_content.querySelector('.selected'); //$dropdown_content.find('[data-selectable]:first');
                   }
                 }
               } else {
@@ -2437,7 +2516,7 @@ It should handle
             var $options = this.$dropdown.querySelectorAll('[data-selectable]');
             var index = $options.array().indexOf($option) + direction;
 
-            return index >= 0 && index < $options.length ? $options[index] : [];
+            return index >= 0 && index < $options.length ? [$options[index]] : [];
           }
 
           /**
@@ -2525,7 +2604,7 @@ It should handle
                 if (!self.isPending) {
                   $option = self.getOption(value);
                   var adjacentOption = self.getAdjacentOption($option, 1);
-                  value_next = adjacentOption.length > 0? adjacentOption[0].getAttribute('data-value') : undefined;
+                  value_next = adjacentOption.length > 0 ? adjacentOption[0].getAttribute('data-value') : undefined;
                   self.refreshOptions(self.isFocused && inputMode !== 'single');
                   if (value_next) {
                     self.setActiveOption(self.getOption(value_next));
@@ -2729,10 +2808,10 @@ It should handle
               for (i = 0, n = self.items.length; i < n; i++) {
                 options.push('<option value="' + escape_html(self.items[i]) + '" selected="selected"></option>');
               }
-              if (!options.length && !this.$input.attr('multiple')) {
+              if (!options.length && !this.$input.getAttribute('multiple')) {
                 options.push('<option value="" selected="selected"></option>');
               }
-              self.$input.html(options.join(''));
+              self.$input.innerHTML = options.join('');
             } else {
               self.$input.value = self.getValue();
               var valueAttr = document.createAttribute('value');
@@ -2830,7 +2909,7 @@ It should handle
             var self = this;
 
             if (!self.items.length) return;
-            self.$control.children(':not(input)').remove();
+            self.$control.querySelector(':not(input)').remove();
             self.items = [];
             self.lastQuery = null;
             self.setCaret(0);
@@ -2876,7 +2955,10 @@ It should handle
             selection = getSelection(self.$control_input);
 
             if (self.$activeOption && !self.settings.hideSelected) {
-              option_select = self.getAdjacentOption(self.$activeOption, -1).attr('data-value');
+              var adjacentOptions = self.getAdjacentOption(self.$activeOption, -1);
+              if (adjacentOptions.length > 0) {
+                option_select = adjacentOptions[0].getAttribute('data-value');
+              }
             }
 
             // determine items that will be removed
@@ -2948,10 +3030,10 @@ It should handle
             if (self.rtl) direction *= -1;
 
             tail = direction > 0 ? 'last' : 'first';
-            selection = getSelection(self.$control_input[0]);
+            selection = getSelection(self.$control_input);
 
             if (self.isFocused && !self.isInputHidden) {
-              valueLength = self.$control_input.val().length;
+              valueLength = self.$control_input.value.length;
               cursorAtEdge = direction < 0
                 ? selection.start === 0 && selection.length === 0
                 : selection.start === valueLength;
@@ -3303,7 +3385,7 @@ It should handle
             var options = settings_element.options;
 
             var readData = function ($el) {
-              var data = attr_data && $el.attr(attr_data);
+              var data = attr_data && $el.getAttribute(attr_data);
               if (typeof data === 'string' && data.length) {
                 return JSON.parse(data);
               }
@@ -3313,9 +3395,9 @@ It should handle
             var addOption = function ($option, group) {
               var value, option;
 
-              $option = $($option);
+              //$option = $($option);
 
-              value = $option.attr('value') || '';
+              value = $option.getAttribute('value') || '';
               if (!value.length && !settings.allowEmptyOption) return;
 
               // if the option already exists, it's probably been
@@ -3326,7 +3408,7 @@ It should handle
                 if (group) {
                   if (!options[value].optgroup) {
                     options[value].optgroup = group;
-                  } else if (!$.isArray(options[value].optgroup)) {
+                  } else if (!isArray(options[value].optgroup)) {
                     options[value].optgroup = [options[value].optgroup, group];
                   } else {
                     options[value].optgroup.push(group);
@@ -3336,14 +3418,14 @@ It should handle
               }
 
               option = readData($option) || {};
-              option[field_label] = option[field_label] || $option.text();
+              option[field_label] = option[field_label] || $option.innerText;
               option[field_value] = option[field_value] || value;
               option[field_optgroup] = option[field_optgroup] || group;
 
               option.$order = ++order;
               options[value] = option;
 
-              if ($option.is(':selected')) {
+              if ($option.getAttribute('selected') === "selected") {
                 settings_element.items.push(value);
               }
             };
@@ -3367,9 +3449,9 @@ It should handle
               }
             };
 
-            settings_element.maxItems = $input.attr('multiple') ? null : 1;
+            settings_element.maxItems = $input.getAttribute('multiple') ? null : 1;
 
-            $children = $input.children();
+            $children = $input.children;
             for (i = 0, n = $children.length; i < n; i++) {
               tagName = $children[i].tagName.toLowerCase();
               if (tagName === 'optgroup') {
