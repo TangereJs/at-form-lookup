@@ -5,6 +5,7 @@
   <title>&lt;at-form-lookup&gt;</title>
   <script src="../webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="at-form-lookup.html">
+  <link rel="import" href="../core-ajax/core-ajax.html">
 </head>
 <body>
   <div>
@@ -19,6 +20,16 @@
     Dropdown demo (programatical initialization):
     <at-form-lookup id="ddLookupProg" useDropdown></at-form-lookup>
   </div>
+  <div>
+    Tags demo (remote source):
+    <at-form-lookup id="flTagsRemote"></at-form-lookup>
+    <core-ajax id="coreAjax123" auto url="http://gdata.youtube.com/feeds/api/videos/" handleAs="json" params='{"alt":"json", "q":"chrome"}'></core-ajax>
+  </div>
+  <div>
+    Dropdown demo (remote source):
+    <at-form-lookup id="flDropdownRemote" usedropdown></at-form-lookup>
+    <core-ajax id="coreAjax456" auto url="http://gdata.youtube.com/feeds/api/videos/" handleAs="json" params='{"alt":"json", "q":"chrome"}'></core-ajax>
+  </div>
 
   <script>
     window.addEventListener('polymer-ready', function () {
@@ -28,6 +39,31 @@
       var ddLookupProg = document.getElementById("ddLookupProg");
       ddLookupProg.available = JSON.parse('[{"caption": "Pera", "value": "v1"},{"caption": "Mika", "value": "v2"},{ "caption": "Zika", "value": "v3"}]');
       ddLookupProg.selected = "v1";
+
+      var coreAjax123 = document.getElementById("coreAjax123");
+      coreAjax123.addEventListener('core-response', function (event) {
+        var feed = event.detail.response.feed;
+        var available = [];
+        for (var i = 0; i < feed.entry.length; i++) {
+          available.push(feed.entry[i].title.$t);
+        }
+        var flTagsRemote = document.getElementById("flTagsRemote");
+        flTagsRemote.available = available.join(',');
+      });
+
+      var coreAjax456 = document.getElementById("coreAjax123");
+      coreAjax456.addEventListener('core-response', function (event) {
+        var feed = event.detail.response.feed;
+        var available = [];
+        for (var i = 0; i < feed.entry.length; i++) {
+          available.push({
+            caption: feed.entry[i].title.$t,
+            value: feed.entry[i].id.$t
+          });
+        }
+        var flTagsDropdownRemote = document.getElementById("flDropdownRemote");
+        flDropdownRemote.available = available;
+      });
     });
   </script>
 </body>

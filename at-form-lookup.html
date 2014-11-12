@@ -27,6 +27,7 @@ It should handle
 - I have no idea what this means (Chrome should have webcomponents.js baked into it)
  -->
 <link rel="import" href="../polymer/polymer.html">
+
 <script type="text/javascript">
   var SelectBoxUtils = {
     breakBinding: function (func, marker) {
@@ -44,7 +45,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" tabindex="-1" attributes="useDropdown allowEmpty maxItems">
+<polymer-element name="at-form-lookup" tabindex="-1" attributes="useDropdown allowEmpty maxItems url params">
   <template>
     <link rel="stylesheet" href="css/selectize.css" />
     <link rel="stylesheet" href="css/selectize.default.css" />
@@ -88,7 +89,6 @@ It should handle
                 optionEl.innerText = item.caption;
                 this.$.selectTags.appendChild(optionEl);
               }
-
               var value = libraryRoot.selectize(this.$.selectTags, {
                 //create: true,
                 allowEmpty: this.allowEmpty,
@@ -116,6 +116,7 @@ It should handle
               console.log("Available items should be an array of (id, value) pairs or comma separated string");
             }
           } else {
+            this.$.inputTags.value = this.available;
             var value = libraryRoot.selectize(this.$.inputTags, {
               //create: true,
               maxItems: this.maxItems
@@ -1307,7 +1308,7 @@ It should handle
             var classes_plugins;
 
             inputMode = self.settings.mode;
-            tab_index = $input.attributes.getNamedItem('tabindex') || '';
+            tab_index = $input.attributes.getNamedItem('tabindex') || -1;
             classes = $input.attributes.getNamedItem('class') || '';
 
             $wrapper = document.createElement('div');
@@ -1347,7 +1348,7 @@ It should handle
             $dropdown.appendChild($dropdown_content);
 
             $dropdown_content.addEventListener('click', function (e) {
-              //debugger;
+              debugger;
               self.setActiveOption(e.target, true, true);
               self.onOptionSelect({ currentTarget: self.$activeOption });
             });
@@ -1402,9 +1403,6 @@ It should handle
             $control.addEventListener('keydown', function () { return self.onKeyDown.apply(self, arguments); });
             $control.addEventListener('keyup', function () { return self.onKeyUp.apply(self, arguments); });
             $control.addEventListener('keypress', function () { return self.onKeyPress.apply(self, arguments); });
-            //$control_input.addEventListener('keydown', function () { return self.onKeyDown.apply(self, arguments); });
-            //$control_input.addEventListener('keyup', function () { return self.onKeyUp.apply(self, arguments); });
-            //$control_input.addEventListener('keypress', function () { return self.onKeyPress.apply(self, arguments); });
             $control_input.addEventListener('resize', function () { self.positionDropdown.apply(self, []); });
             $control_input.addEventListener('blur', function () { return self.onBlur.apply(self, arguments); });
             $control_input.addEventListener('focus', function () { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); });
@@ -2067,12 +2065,13 @@ It should handle
               scroll_top = y;
               scroll_bottom = y - height_menu + height_item;
 
+              /*
               if (y + height_item > height_menu + scroll) {
                 self.$dropdown_content.stop().animate({ scrollTop: scroll_bottom }, animate ? self.settings.scrollDuration : 0);
               } else if (y < scroll) {
                 self.$dropdown_content.stop().animate({ scrollTop: scroll_top }, animate ? self.settings.scrollDuration : 0);
               }
-
+              */
             }
           }
 
@@ -3094,7 +3093,8 @@ It should handle
               // siblings, due to the fact that focus cannot be restored once lost
               // on mobile webkit devices
               var j, n, fn, $children, $child;
-              $children = self.$control.querySelectorAll(':not(input)');
+              //$children = self.$control.querySelectorAll(':not(input)');
+              $children = self.$control.querySelectorAll('div');
               for (j = 0, n = $children.length; j < n; j++) {
                 $child = self.$control.removeChild($children[j]);
                 if (j < i) {
@@ -3710,7 +3710,8 @@ It should handle
               original.apply(this, arguments);
 
               // add event listener
-              this.$control.on('click', '.' + options.className, function (e) {
+              var item = this.$control.querySelector('.' + options.className)
+              item.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (self.isLocked) return;
 
