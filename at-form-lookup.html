@@ -27,6 +27,7 @@ It should handle
 - I have no idea what this means (Chrome should have webcomponents.js baked into it)
  -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-ajax/core-ajax.html">
 
 <script type="text/javascript">
   var SelectBoxUtils = {
@@ -52,7 +53,10 @@ It should handle
     <link rel="stylesheet" href="css/selectize.bootstrap3.css" />
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none" />
-    <content></content>
+    
+    <content>
+      <core-ajax id="coreAjax" auto handleas="json" url="{{url}}" params="{{params}}"></core-ajax>
+    </content>
   </template>
   <script>
     (function () {
@@ -78,7 +82,18 @@ It should handle
         },
 
         initialize: function () {
-          if (this.available === '') { return; }
+          var polySelf = this;
+          function loadfunction(query, callback) {
+            debugger;
+            polySelf.$.coreAjax.go();
+          }
+
+          var selectedByDefault = this.selected.split(',');
+          for (var i = 0; i < selectedByDefault; i++) {
+            selectedByDefault[i] = selectedByDefault[i].trim();
+          }
+
+          //if (this.available === '') { return; }
           if (this.useDropdown !== undefined) {
             if (isArray(this.available)) {
               for (var j = 0; j < this.available.length; j++) {
@@ -87,12 +102,14 @@ It should handle
                 var optionEl = document.createElement('option');
                 optionEl.value = item.value;
                 optionEl.innerText = item.caption;
+                optionEl.selected = selectedByDefault.indexOf(item.value) > -1;
                 this.$.selectTags.appendChild(optionEl);
               }
               var value = libraryRoot.selectize(this.$.selectTags, {
                 //create: true,
                 allowEmpty: this.allowEmpty,
-                maxItems: this.maxItems
+                maxItems: this.maxItems,
+                load: loadfunction
               });
 
             } else if (isString(this.available)) {
@@ -104,13 +121,15 @@ It should handle
                 var optionEl = document.createElement('option');
                 optionEl.value = tag;
                 optionEl.innerText = tag;
+                optionEl.selected = selectedByDefault.indexOf(tag) > -1;
                 this.$.selectTags.appendChild(optionEl);
               }
 
               var value = libraryRoot.selectize(this.$.selectTags, {
                 //create: true,
                 allowEmpty: this.allowEmpty,
-                maxItems: this.maxItems
+                maxItems: this.maxItems,
+                load: loadfunction
               });
             } else {
               console.log("Available items should be an array of (id, value) pairs or comma separated string");
@@ -1764,6 +1783,7 @@ It should handle
            * @param {string} value
            */
           namespace.onSearchChange = function (value) {
+            //debugger;
             var self = this;
             var fn = self.settings.load;
             if (!fn) return;
@@ -1902,7 +1922,7 @@ It should handle
            */
           namespace.load = function (fn) {
             var self = this;
-            var $wrapper = self.$wrapper.addClass('loading');
+            var $wrapper = self.$wrapper.classList.add('loading');
 
             self.loading++;
             fn.apply(self, [function (results) {
