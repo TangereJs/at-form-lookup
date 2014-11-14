@@ -46,17 +46,15 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" tabindex="-1" attributes="useDropdown allowEmpty maxItems url params">
+<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty maxItems url params">
   <template>
     <link rel="stylesheet" href="css/selectize.css" />
     <link rel="stylesheet" href="css/selectize.default.css" />
     <link rel="stylesheet" href="css/selectize.bootstrap3.css" />
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none" />
-    
-    <content>
-      <core-ajax id="coreAjax" auto handleas="json" url="{{url}}" params="{{params}}"></core-ajax>
-    </content>
+    <core-ajax id="coreAjax" auto handleas="json" url="{{ url }}" params="{{ params }}"></core-ajax>
+    <content></content>
   </template>
   <script>
     (function () {
@@ -1367,7 +1365,7 @@ It should handle
             $dropdown.appendChild($dropdown_content);
 
             $dropdown_content.addEventListener('click', function (e) {
-              debugger;
+              //debugger;
               self.setActiveOption(e.target, true, true);
               self.onOptionSelect({ currentTarget: self.$activeOption });
             });
@@ -1419,9 +1417,9 @@ It should handle
             $control.addEventListener('mousedown', function () { return self.onMouseDown.apply(self, arguments); });
             $control.addEventListener('click', function () { return self.onClick.apply(self, arguments); });
             $control_input.addEventListener('mousedown', function (e) { e.stopPropagation(); });
-            $control.addEventListener('keydown', function () { return self.onKeyDown.apply(self, arguments); });
-            $control.addEventListener('keyup', function () { return self.onKeyUp.apply(self, arguments); });
-            $control.addEventListener('keypress', function () { return self.onKeyPress.apply(self, arguments); });
+            $control_input.addEventListener('keydown', function () { return self.onKeyDown.apply(self, arguments); });
+            $control_input.addEventListener('keyup', function () { return self.onKeyUp.apply(self, arguments); });
+            $control_input.addEventListener('keypress', function () { return self.onKeyPress.apply(self, arguments); });
             $control_input.addEventListener('resize', function () { self.positionDropdown.apply(self, []); });
             $control_input.addEventListener('blur', function () { return self.onBlur.apply(self, arguments); });
             $control_input.addEventListener('focus', function () { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); });
@@ -1442,11 +1440,11 @@ It should handle
             $document.addEventListener('mousedown' + eventNS, function (e) {
               if (self.isFocused) {
                 // prevent events on the dropdown scrollbar from causing the control to blur
-                if (e.target === self.$dropdown[0] || e.target.parentNode === self.$dropdown[0]) {
+                if (e.target === self.$dropdown || e.target.parentNode === self.$dropdown) {
                   return false;
                 }
                 // blur on click outside
-                if (!self.$control.has(e.target).length && e.target !== self.$control[0]) {
+                if (!self.$control.has(e.target).length && e.target !== self.$control) {
                   self.blur();
                 }
               }
@@ -2910,7 +2908,7 @@ It should handle
             //offset.top += $control.outerHeight(true);
             offset.top += $control.clientHeight;
 
-            this.$dropdown.style.width = $control.clientHeight;
+            this.$dropdown.style.width = $control.clientWidth + 'px';
             this.$dropdown.style.top = offset.top;
             this.$dropdown.style.left = offset.left;
             //this.$dropdown.css({
