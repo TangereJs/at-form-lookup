@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 It should handle
 
 1. Allow to select one entries
@@ -48,11 +48,12 @@ It should handle
 </script>
 <polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty maxItems url params">
   <template>
+    
     <link rel="stylesheet" href="css/selectize.css" />
     <link rel="stylesheet" href="css/selectize.default.css" />
     <link rel="stylesheet" href="css/selectize.bootstrap3.css" />
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
-    <select id="selectTags" style="display:none" />
+    <select id="selectTags" style="display:none" ></select>
     <core-ajax id="coreAjax" auto handleas="json" url="{{ url }}" params="{{ params }}"></core-ajax>
     <content></content>
   </template>
@@ -71,7 +72,7 @@ It should handle
             reflect: true
           }
         },
-        ready: function () {
+        domReady: function () {
           this.initialize();
         },
 
@@ -81,10 +82,11 @@ It should handle
 
         initialize: function () {
           var polySelf = this;
+          debugger;
           function loadfunction(query, callback) {
             debugger;
             polySelf.$.coreAjax.go();
-          }
+          };
 
           var selectedByDefault = this.selected.split(',');
           for (var i = 0; i < selectedByDefault; i++) {
