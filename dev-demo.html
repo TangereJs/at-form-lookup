@@ -38,30 +38,22 @@
       ddLookupProg.available = JSON.parse('[{"caption": "Pera", "value": "v1"},{"caption": "Mika", "value": "v2"},{ "caption": "Zika", "value": "v3"}]');
       ddLookupProg.selected = "v1";
 
-      //var coreAjax123 = document.getElementById("coreAjax123");
-      //coreAjax123.addEventListener('core-response', function (event) {
-      //  var feed = event.detail.response.feed;
-      //  var available = [];
-      //  for (var i = 0; i < feed.entry.length; i++) {
-      //    available.push(feed.entry[i].title.$t);
-      //  }
-      //  var flTagsRemote = document.getElementById("flTagsRemote");
-      //  flTagsRemote.available = available.join(',');
-      //});
+      var flDropdownRemote = document.getElementById('flDropdownRemote');
+      flDropdownRemote.addEventListener('at-form-lookup-beforeAjax', function (event) {
+        var data = event.detail;
+        data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
+      });
 
-      //var coreAjax456 = document.getElementById("coreAjax123");
-      //coreAjax456.addEventListener('core-response', function (event) {
-      //  var feed = event.detail.response.feed;
-      //  var available = [];
-      //  for (var i = 0; i < feed.entry.length; i++) {
-      //    available.push({
-      //      caption: feed.entry[i].title.$t,
-      //      value: feed.entry[i].id.$t
-      //    });
-      //  }
-      //  var flTagsDropdownRemote = document.getElementById("flDropdownRemote");
-      //  flDropdownRemote.available = available;
-      //});
+      flDropdownRemote.addEventListener('at-form-lookup-afterAjax', function (event) {
+        var data = event.detail.response.feed.entry;
+        var dataArray = [];
+        for (var i = 0; i < data.length; i++) {
+          var entry = data[i];
+          dataArray.push({ value: entry.id.$t, text: entry.title.$t });
+        }
+        event.detail.returnData = dataArray;
+      });
+
     });
   </script>
 </body>

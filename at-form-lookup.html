@@ -48,18 +48,20 @@ It should handle
 </script>
 <polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty maxItems url params">
   <template>
-    
+
     <link rel="stylesheet" href="css/selectize.css" />
     <link rel="stylesheet" href="css/selectize.default.css" />
     <link rel="stylesheet" href="css/selectize.bootstrap3.css" />
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
-    <select id="selectTags" style="display:none" ></select>
-    <core-ajax id="coreAjax" auto handleas="json" url="{{ url }}" params="{{ params }}"></core-ajax>
+    <select id="selectTags" style="display:none"></select>
+    <core-ajax id="coreAjax" auto handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
     <content></content>
   </template>
   <script>
     (function () {
       var libraryRoot = {};
+      var _self;
+      var _selectizeLoadCallback;
 
       Polymer('at-form-lookup', {
         publish: {
@@ -72,7 +74,8 @@ It should handle
             reflect: true
           }
         },
-        domReady: function () {
+        ready: function () {
+          _self = this;
           this.initialize();
         },
 
@@ -80,14 +83,28 @@ It should handle
           this.initialize();
         },
 
-        initialize: function () {
-          var polySelf = this;
-          debugger;
-          function loadfunction(query, callback) {
-            debugger;
-            polySelf.$.coreAjax.go();
-          };
+        coreAjaxOnComplete: function (event) {
+          //debugger;
+        },
 
+        coreAjaxOnResponse: function (event) {
+          // extract the data from the event
+          var eventObject = { response: event.detail.response, returnData: [] };
+          _self.fire('at-form-lookup-afterAjax', eventObject);
+
+          if (_selectizeLoadCallback) {
+            //debugger;
+            _selectizeLoadCallback(eventObject.returnData);
+          };
+        },
+
+        selectizeOnLoad: function (query, callback) {
+          _selectizeLoadCallback = callback;
+          _self.fire('at-form-lookup-beforeAjax', { coreAjax: _self.$.coreAjax, query: query });
+          _self.$.coreAjax.go();
+        },
+
+        initialize: function () {
           var selectedByDefault = this.selected.split(',');
           for (var i = 0; i < selectedByDefault; i++) {
             selectedByDefault[i] = selectedByDefault[i].trim();
@@ -109,7 +126,7 @@ It should handle
                 //create: true,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
-                load: loadfunction
+                load: this.selectizeOnLoad
               });
 
             } else if (isString(this.available)) {
@@ -129,7 +146,7 @@ It should handle
                 //create: true,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
-                load: loadfunction
+                load: this.selectizeOnLoad
               });
             } else {
               console.log("Available items should be an array of (id, value) pairs or comma separated string");
@@ -1932,7 +1949,7 @@ It should handle
                 self.refreshOptions(self.isFocused && !self.isInputHidden);
               }
               if (!self.loading) {
-                $wrapper.removeClass('loading');
+                self.$wrapper.classList.remove('loading');
               }
               self.trigger('load', results);
             }]);
@@ -2387,7 +2404,7 @@ It should handle
           namespace.addOption = function (data) {
             var i, n, optgroup, value, self = this;
 
-            if ($.isArray(data)) {
+            if (isArray(data)) {
               for (i = 0, n = data.length; i < n; i++) {
                 self.addOption(data[i]);
               }
