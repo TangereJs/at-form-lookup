@@ -39,11 +39,25 @@
       ddLookupProg.selected = "v1";
 
       var flDropdownRemote = document.getElementById('flDropdownRemote');
+      /* 
+       * at-form-lookup-beforeAjax event
+       * Use this event to modify request params
+       * core-ajax element of the at-form-lookup element is available as event.detail.coreAjax
+       * query for the request is available as event.detail.query
+       */
       flDropdownRemote.addEventListener('at-form-lookup-beforeAjax', function (event) {
         var data = event.detail;
         data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
       });
 
+      /* 
+       * at-form-lookup-afterAjax event
+       * Use this event to transform the response into structure selectize understands
+       * response received through coreAjax is available in event.detail.response
+       * transformed data should be returned as event.detail.returnData
+       * transformed data shold be an array of (id, value) pairs; 
+       * by default pair is (value, text); value is the value of the entry, text is used for display
+       */
       flDropdownRemote.addEventListener('at-form-lookup-afterAjax', function (event) {
         var data = event.detail.response.feed.entry;
         var dataArray = [];
