@@ -49,8 +49,8 @@ It should handle
 <polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty maxItems url params">
   <template>
 
-    <link rel="stylesheet" href="css/selectize.css" />
-    <link rel="stylesheet" href="css/selectize.default.css" />
+    <!--<link rel="stylesheet" href="css/selectize.css" />-->
+    <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
     <link rel="stylesheet" href="css/selectize.bootstrap3.css" />
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
@@ -80,6 +80,9 @@ It should handle
         },
 
         availableChanged: function (oldValue, newValue) {
+          if (this.$.selectTags.selectize) {
+            this.$.selectTags.selectize.destroy();
+          }
           this.initialize();
         },
 
@@ -94,12 +97,18 @@ It should handle
 
           if (_selectizeLoadCallback) {
             //debugger;
-            _selectizeLoadCallback(eventObject.returnData);
+            if (eventObject.returnData.length > 0) {
+              _selectizeLoadCallback(eventObject.returnData);
+            }
+            else {
+              // use default
+            }
           };
         },
 
         selectizeOnLoad: function (query, callback) {
           _selectizeLoadCallback = callback;
+          _self.$.coreAjax.params = '{ "query": "' + query + '"}';
           _self.fire('at-form-lookup-beforeAjax', { coreAjax: _self.$.coreAjax, query: query });
           _self.$.coreAjax.go();
         },
@@ -109,17 +118,19 @@ It should handle
           for (var i = 0; i < selectedByDefault; i++) {
             selectedByDefault[i] = selectedByDefault[i].trim();
           }
-
+          
           //if (this.available === '') { return; }
           if (this.useDropdown !== undefined) {
             if (isArray(this.available)) {
               for (var j = 0; j < this.available.length; j++) {
                 var item = this.available[j];
-
+                //debugger;
                 var optionEl = document.createElement('option');
                 optionEl.value = item.value;
                 optionEl.innerText = item.caption;
-                optionEl.selected = selectedByDefault.indexOf(item.value) > -1;
+                if (selectedByDefault.indexOf(item.value) > -1) {
+                  optionEl.setAttribute('selected', 'selected');
+                }
                 this.$.selectTags.appendChild(optionEl);
               }
               var value = libraryRoot.selectize(this.$.selectTags, {
@@ -138,7 +149,9 @@ It should handle
                 var optionEl = document.createElement('option');
                 optionEl.value = tag;
                 optionEl.innerText = tag;
-                optionEl.selected = selectedByDefault.indexOf(tag) > -1;
+                if (selectedByDefault.indexOf(tag) > -1) {
+                  optionEl.setAttribute('selected', 'selected');
+                }
                 this.$.selectTags.appendChild(optionEl);
               }
 
@@ -189,6 +202,11 @@ It should handle
             hashTable[object] = pair;
             return value;
           }
+        }
+
+        ns.removeData = function (object, key) {
+          var pair = hashTable[object];
+          delete pair[key];
         }
       })(libraryRoot);
 
@@ -1436,9 +1454,9 @@ It should handle
             $control.addEventListener('mousedown', function () { return self.onMouseDown.apply(self, arguments); });
             $control.addEventListener('click', function () { return self.onClick.apply(self, arguments); });
             $control_input.addEventListener('mousedown', function (e) { e.stopPropagation(); });
-            $control_input.addEventListener('keydown', function () { return self.onKeyDown.apply(self, arguments); });
-            $control_input.addEventListener('keyup', function () { return self.onKeyUp.apply(self, arguments); });
-            $control_input.addEventListener('keypress', function () { return self.onKeyPress.apply(self, arguments); });
+            $control.addEventListener('keydown', function () { return self.onKeyDown.apply(self, arguments); });
+            $control.addEventListener('keyup', function () { return self.onKeyUp.apply(self, arguments); });
+            $control.addEventListener('keypress', function () { return self.onKeyPress.apply(self, arguments); });
             $control_input.addEventListener('resize', function () { self.positionDropdown.apply(self, []); });
             $control_input.addEventListener('blur', function () { return self.onBlur.apply(self, arguments); });
             $control_input.addEventListener('focus', function () { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); });
@@ -1481,7 +1499,7 @@ It should handle
             // store original children and tab index so that they can be
             // restored when the destroy() method is called.
             var childElements = [];
-            for (var i = 0; i < $input.children; i++) {
+            for (var i = 0; i < $input.children.length; i++) {
               var child = $input.children[i];
               $input.removeChild(child);
               childElements.push(child);
@@ -2711,6 +2729,7 @@ It should handle
            * @return {boolean}
            */
           namespace.createItem = function (triggerDropdown) {
+            debugger;
             var self = this;
             var input = $.trim(self.$control_input.val() || '');
             var caret = self.caretPos;
@@ -3200,22 +3219,34 @@ It should handle
             self.$wrapper.remove();
             self.$dropdown.remove();
 
-            self.$input
-              .html('')
-              .append(revertSettings.$children)
-              .removeAttr('tabindex')
-              .removeClass('selectized')
-              .attr({ tabindex: revertSettings.tabindex })
-              .show();
+            self.$input.innerHTML = '';
+            for (var i = 0; i < revertSettings.length; i++) {
+              self.$input.appendChild(revertSettings.$children[i]);
+            }
+            self.$input.removeAttribute('tabindex');
+            self.$input.classList.remove('selectized');
+            self.$input.setAttribute('tabindex', revertSettings.tabindex);
+            self.$input.style.display = 'block';
+            //self.$input
+            //  .html('')
+            //  .append(revertSettings.$children)
+            //  .removeAttr('tabindex')
+            //  .removeClass('selectized')
+            //  .attr({ tabindex: revertSettings.tabindex })
+            //  .show();
 
             self.$control_input.attributes.removeNamedItem('data-grow');
-            self.$input.removeData('selectize');
+            libraryRoot.removeData(self.$input, 'selectize');
+            //self.$input.removeData('selectize');
 
-            $(window).off(eventNS);
-            $(document).off(eventNS);
-            $(document.body).off(eventNS);
+            window.removeEventListener(eventNS);
+            document.removeEventListener(eventNS);
+            document.body.removeEventListener(eventNS);
+            //$(window).off(eventNS);
+            //$(document).off(eventNS);
+            //$(document.body).off(eventNS);
 
-            delete self.$input[0].selectize;
+            delete self.$input.selectize;
           }
 
           /**

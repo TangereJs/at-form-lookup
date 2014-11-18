@@ -16,8 +16,8 @@
     <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" usedropdown></at-form-lookup>
   </div>
   <div>
-    Dropdown demo (programatical initialization):
-    <at-form-lookup id="ddLookupProg" usedropdown></at-form-lookup>
+    Dropdown demo (programatic initialization):
+    <at-form-lookup id="ddLookupProg" useDropdown multiple></at-form-lookup>
   </div>
   <div>
     Tags demo (remote source):
@@ -32,42 +32,43 @@
   <script>
     window.addEventListener('polymer-ready', function () {
       console.log('Polymer ready event');
-      var demoLookup = document.getElementById("demoLookup");
+      //var demoLookup = document.getElementById("demoLookup");
 
       var ddLookupProg = document.getElementById("ddLookupProg");
-      ddLookupProg.available = JSON.parse('[{"caption": "Pera", "value": "v1"},{"caption": "Mika", "value": "v2"},{ "caption": "Zika", "value": "v3"}]');
       ddLookupProg.selected = "v1";
+      ddLookupProg.available = JSON.parse('[{"caption": "Pera", "value": "v1"},{"caption": "Mika", "value": "v2"},{ "caption": "Zika", "value": "v3"}]');
 
       var flDropdownRemote = document.getElementById('flDropdownRemote');
-      /* 
-       * at-form-lookup-beforeAjax event
-       * Use this event to modify request params
-       * core-ajax element of the at-form-lookup element is available as event.detail.coreAjax
-       * query for the request is available as event.detail.query
-       */
-      flDropdownRemote.addEventListener('at-form-lookup-beforeAjax', function (event) {
-        var data = event.detail;
-        data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
-      });
+      if (flDropdownRemote) {
+        /*
+         * at-form-lookup-beforeAjax event
+         * Use this event to modify request params
+         * core-ajax element of the at-form-lookup element is available as event.detail.coreAjax
+         * query for the request is available as event.detail.query
+         */
+        flDropdownRemote.addEventListener('at-form-lookup-beforeAjax', function (event) {
+          var data = event.detail;
+          data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
+        });
 
-      /* 
-       * at-form-lookup-afterAjax event
-       * Use this event to transform the response into structure selectize understands
-       * response received through coreAjax is available in event.detail.response
-       * transformed data should be returned as event.detail.returnData
-       * transformed data shold be an array of (id, value) pairs; 
-       * by default pair is (value, text); value is the value of the entry, text is used for display
-       */
-      flDropdownRemote.addEventListener('at-form-lookup-afterAjax', function (event) {
-        var data = event.detail.response.feed.entry;
-        var dataArray = [];
-        for (var i = 0; i < data.length; i++) {
-          var entry = data[i];
-          dataArray.push({ value: entry.id.$t, text: entry.title.$t });
-        }
-        event.detail.returnData = dataArray;
-      });
-
+        /*
+         * at-form-lookup-afterAjax event
+         * Use this event to transform the response into structure selectize understands
+         * response received through coreAjax is available in event.detail.response
+         * transformed data should be returned as event.detail.returnData
+         * transformed data shold be an array of (id, value) pairs;
+         * by default pair is (value, text); value is the value of the entry, text is used for display
+         */
+        flDropdownRemote.addEventListener('at-form-lookup-afterAjax', function (event) {
+          var data = event.detail.response.feed.entry;
+          var dataArray = [];
+          for (var i = 0; i < data.length; i++) {
+            var entry = data[i];
+            dataArray.push({ value: entry.id.$t, text: entry.title.$t });
+          }
+          event.detail.returnData = dataArray;
+        });
+      }
     });
   </script>
 </body>
