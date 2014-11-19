@@ -87,7 +87,6 @@ It should handle
         },
 
         coreAjaxOnComplete: function (event) {
-          //debugger;
         },
 
         coreAjaxOnResponse: function (event) {
@@ -96,7 +95,6 @@ It should handle
           _self.fire('at-form-lookup-afterAjax', eventObject);
 
           if (_selectizeLoadCallback) {
-            //debugger;
             if (eventObject.returnData.length > 0) {
               _selectizeLoadCallback(eventObject.returnData);
             }
@@ -124,7 +122,6 @@ It should handle
             if (isArray(this.available)) {
               for (var j = 0; j < this.available.length; j++) {
                 var item = this.available[j];
-                //debugger;
                 var optionEl = document.createElement('option');
                 optionEl.value = item.value;
                 optionEl.innerText = item.caption;
@@ -1362,8 +1359,8 @@ It should handle
             var classes_plugins;
 
             inputMode = self.settings.mode;
-            tab_index = $input.attributes.getNamedItem('tabindex') || -1;
-            classes = $input.attributes.getNamedItem('class') || '';
+            tab_index = $input.getAttribute('tabindex') !== null ? $input.getAttribute('tabindex') : -1;
+            classes = $input.getAttribute('class') !== null ? $input.getAttribute('class') : '';
 
             $wrapper = document.createElement('div');
             $wrapper.classList.add(settings.wrapperClass);
@@ -1402,7 +1399,6 @@ It should handle
             $dropdown.appendChild($dropdown_content);
 
             $dropdown_content.addEventListener('click', function (e) {
-              //debugger;
               self.setActiveOption(e.target, true, true);
               self.onOptionSelect({ currentTarget: self.$activeOption });
             });
@@ -1696,7 +1692,6 @@ It should handle
            * @returns {boolean}
            */
           namespace.onKeyPress = function (e) {
-            //debugger;
             if (this.isLocked) return e && e.preventDefault();
             var character = String.fromCharCode(e.keyCode || e.which);
             if (this.settings.create && character === this.settings.delimiter) {
@@ -1713,7 +1708,6 @@ It should handle
            * @returns {boolean}
            */
           namespace.onKeyDown = function (e) {
-            //debugger;
             var isInput = e.target === this.$control_input;
             var self = this;
 
@@ -1796,7 +1790,6 @@ It should handle
            * @returns {boolean}
            */
           namespace.onKeyUp = function (e) {
-            //debugger;
             var self = this;
 
             if (self.isLocked) return e && e.preventDefault();
@@ -1818,7 +1811,6 @@ It should handle
            * @param {string} value
            */
           namespace.onSearchChange = function (value) {
-            //debugger;
             var self = this;
             var fn = self.settings.load;
             if (!fn) return;
@@ -2392,7 +2384,6 @@ It should handle
                   if ($create && !self.settings.addPrecedence) {
                     $active = self.getAdjacentOption($create, 1);
                   } else {
-                    //debugger;
                     $active = $dropdown_content.querySelector('.selected'); //$dropdown_content.find('[data-selectable]:first');
                   }
                 }
@@ -2729,7 +2720,6 @@ It should handle
            * @return {boolean}
            */
           namespace.createItem = function (triggerDropdown) {
-            debugger;
             var self = this;
             var input = $.trim(self.$control_input.val() || '');
             var caret = self.caretPos;
