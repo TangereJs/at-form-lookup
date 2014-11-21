@@ -131,7 +131,7 @@ It should handle
                 this.$.selectTags.appendChild(optionEl);
               }
               var value = libraryRoot.selectize(this.$.selectTags, {
-                create: true,
+                preload: true,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
                 load: this.selectizeOnLoad
@@ -153,7 +153,7 @@ It should handle
               }
 
               var value = libraryRoot.selectize(this.$.selectTags, {
-                create: true,
+                preload: true,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
                 load: this.selectizeOnLoad
@@ -1449,10 +1449,11 @@ It should handle
 
             $control.addEventListener('mousedown', function () { return self.onMouseDown.apply(self, arguments); });
             $control.addEventListener('click', function () { return self.onClick.apply(self, arguments); });
+
             $control_input.addEventListener('mousedown', function (e) { e.stopPropagation(); });
-            $control.addEventListener('keydown', function () { return self.onKeyDown.apply(self, arguments); });
-            $control.addEventListener('keyup', function () { return self.onKeyUp.apply(self, arguments); });
-            $control.addEventListener('keypress', function () { return self.onKeyPress.apply(self, arguments); });
+            $control_input.addEventListener('keydown', function () { return self.onKeyDown.apply(self, arguments); });
+            $control_input.addEventListener('keyup', function () { return self.onKeyUp.apply(self, arguments); });
+            $control_input.addEventListener('keypress', function () { return self.onKeyPress.apply(self, arguments); });
             $control_input.addEventListener('resize', function () { self.positionDropdown.apply(self, []); });
             $control_input.addEventListener('blur', function () { return self.onBlur.apply(self, arguments); });
             $control_input.addEventListener('focus', function () { self.ignoreBlur = false; return self.onFocus.apply(self, arguments); });
@@ -1471,7 +1472,6 @@ It should handle
             });
 
             $document.addEventListener('mousedown' + eventNS, function (e) {
-              debugger;
               if (self.isFocused) {
                 // prevent events on the dropdown scrollbar from causing the control to blur
                 if (e.target === self.$dropdown || e.target.parentNode === self.$dropdown) {
@@ -1771,6 +1771,11 @@ It should handle
                 if (self.settings.create && self.createItem()) {
                   e.preventDefault();
                 }
+                if (self.isOpen) {
+                  var blurEvent = document.createEvent('Event');
+                  blurEvent.initEvent('blur', true, true);
+                  self.$control_input.dispatchEvent(blurEvent);
+                }
                 return;
               case KEY_BACKSPACE:
               case KEY_DELETE:
@@ -1848,6 +1853,7 @@ It should handle
             }
 
             self.refreshState();
+            self.$control_input.focus();
           }
 
           /**
@@ -2191,7 +2197,9 @@ It should handle
            * Forces the control out of focus.
            */
           namespace.blur = function () {
-            this.$control_input.trigger('blur');
+            var blurEvent = document.createEvent('Event');
+            blurEvent.initEvent('blur', true, true);
+            this.$control_input.dispatchEvent(blurEvent);
           }
 
           /**
@@ -2728,7 +2736,7 @@ It should handle
            */
           namespace.createItem = function (triggerDropdown) {
             var self = this;
-            var input = $.trim(self.$control_input.val() || '');
+            var input = self.$control_input.value !== undefined ? self.$control_input.value.trim() : '';
             var caret = self.caretPos;
             if (!self.canCreate(input)) return false;
             self.lock();
@@ -2790,7 +2798,7 @@ It should handle
             var invalid, self = this;
             if (self.isRequired) {
               if (self.items.length) self.isInvalid = false;
-              self.$control_input.prop('required', invalid);
+              self.$control_input.setAttribute('required', invalid);
             }
             self.refreshClasses();
           }
@@ -2937,8 +2945,7 @@ It should handle
            */
           namespace.positionDropdown = function () {
             var $control = this.$control;
-            var offset = this.settings.dropdownParent === 'body' ?
-              { top: $control.offsetTop, left: $control.offsetLeft } : { top: $control.clientTop, left: $control.clientLeft }; // $control.position();
+            var offset = this.settings.dropdownParent === 'body' ? $control.getBoundingClientRect() : { top: $control.offsetTop, left: $control.offsetLeft };
             //var offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
             //offset.top += $control.outerHeight(true);
             offset.top += $control.clientHeight;
@@ -2980,13 +2987,14 @@ It should handle
            * @param {object} $el
            */
           namespace.insertAtCaret = function ($el) {
+            var dummyDiv = document.createElement('div');
+            dummyDiv.innerHTML = $el;
+            var $elAsChild = dummyDiv.childNodes[0];
+
             var caret = Math.min(this.caretPos, this.items.length);
             if (caret === 0) {
-              this.$control.innerHTML = $el + this.$control.innerHTML;
+              this.$control.insertBefore($elAsChild, this.$control_input);
             } else {
-              var dummyDiv = document.createElement('div');
-              dummyDiv.innerHTML = $el;
-              var $elAsChild = dummyDiv.childNodes[0];
               var refElement = this.$control.childNodes[caret];
               this.$control.insertBefore($elAsChild, refElement);
             }
