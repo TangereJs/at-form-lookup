@@ -116,7 +116,7 @@ It should handle
           for (var i = 0; i < selectedByDefault; i++) {
             selectedByDefault[i] = selectedByDefault[i].trim();
           }
-          
+
           //if (this.available === '') { return; }
           if (this.useDropdown !== undefined) {
             if (isArray(this.available)) {
@@ -131,7 +131,7 @@ It should handle
                 this.$.selectTags.appendChild(optionEl);
               }
               var value = libraryRoot.selectize(this.$.selectTags, {
-                //create: true,
+                create: true,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
                 load: this.selectizeOnLoad
@@ -153,7 +153,7 @@ It should handle
               }
 
               var value = libraryRoot.selectize(this.$.selectTags, {
-                //create: true,
+                create: true,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
                 load: this.selectizeOnLoad
@@ -164,7 +164,7 @@ It should handle
           } else {
             this.$.inputTags.value = this.available;
             var value = libraryRoot.selectize(this.$.inputTags, {
-              //create: true,
+              create: true,
               maxItems: this.maxItems
             });
           }
@@ -1471,6 +1471,7 @@ It should handle
             });
 
             $document.addEventListener('mousedown' + eventNS, function (e) {
+              debugger;
               if (self.isFocused) {
                 // prevent events on the dropdown scrollbar from causing the control to blur
                 if (e.target === self.$dropdown || e.target.parentNode === self.$dropdown) {
@@ -2100,25 +2101,28 @@ It should handle
             //$option = $($option);
             if (!$option) return;
 
+            if (isArray($option)) {
+              $option = $option[0];
+            }
             $option.classList.add('active');
+
             self.$activeOption = $option;
 
             if (scroll || !isset(scroll)) {
-
-              height_menu = self.$dropdown_content.clientHeight;//height();
-              height_item = self.$activeOption.clientHeight;//outerHeight(true);
+              height_menu = height(self.$dropdown_content);
+              height_item = completeOuterHeight(self.$activeOption);
               scroll = self.$dropdown_content.scrollTop || 0;
-              y = self.$activeOption.offsetTop - self.$dropdown_content.offsetTop + scroll;
+              var activeOptionTop = self.$activeOption.getBoundingClientRect().top;
+              var dropDownContentTop = self.$dropdown_content.getBoundingClientRect().top;
+              y = activeOptionTop - dropDownContentTop + scroll;
               scroll_top = y;
               scroll_bottom = y - height_menu + height_item;
 
-              /*
               if (y + height_item > height_menu + scroll) {
-                self.$dropdown_content.stop().animate({ scrollTop: scroll_bottom }, animate ? self.settings.scrollDuration : 0);
+                self.$dropdown_content.scrollTop = scroll_bottom;
               } else if (y < scroll) {
-                self.$dropdown_content.stop().animate({ scrollTop: scroll_top }, animate ? self.settings.scrollDuration : 0);
+                self.$dropdown_content.scrollTop = scroll_top;
               }
-              */
             }
           }
 
@@ -2366,8 +2370,11 @@ It should handle
             // add create option
             has_create_option = self.canCreate(query);
             if (has_create_option) {
-              $dropdown_content.prepend(self.render('option_create', { input: query }));
-              $create = $($dropdown_content[0].childNodes[0]);
+              var tmp = document.createElement('div');
+              var newNode = self.render('option_create', { input: query });
+              tmp.innerHTML = newNode;
+              $dropdown_content.insertBefore(tmp.childNodes[0], $dropdown_content.childNodes[0]);
+              $create = $dropdown_content.childNodes[0];
             }
 
             // activate
@@ -3890,6 +3897,30 @@ It should handle
 
         return Selectize;
       }));
+
+      // returs the height of the html elem as clientHeight - padding top and bottom
+      function height(htmlElem) {
+        var clientHeight = htmlElem.clientHeight;
+        var computedStyle = getComputedStyle(htmlElem);
+        var paddingTop = computedStyle.getPropertyValue('padding-top');
+        var paddingBottom = computedStyle.getPropertyValue('padding-bottom');
+        paddingTop = !parseInt(paddingTop) ? 0 : parseInt(paddingTop);
+        paddingBottom = !parseInt(paddingBottom) ? 0 : parseInt(paddingBottom);
+
+        return clientHeight - paddingTop - paddingBottom;
+      }
+
+      // returs the height of the html elem as clientHeight + margin top and bottom
+      function completeOuterHeight(htmlElem) {
+        var clientHeight = htmlElem.clientHeight;
+        var computedStyle = getComputedStyle(htmlElem);
+        var marginTop = computedStyle.getPropertyValue('margin-top');
+        var marginBottom = computedStyle.getPropertyValue('margin-bottom');
+        marginTop = !parseInt(marginTop) ? 0 : parseInt(marginTop);
+        marginBottom = !parseInt(marginBottom) ? 0 : parseInt(marginBottom);
+
+        return clientHeight + marginTop + marginBottom;
+      }
     })();
   </script>
 </polymer-element>
