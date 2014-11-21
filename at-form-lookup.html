@@ -1398,7 +1398,7 @@ It should handle
             $dropdown_content.classList.add(settings.dropdownContentClass);
             $dropdown.appendChild($dropdown_content);
 
-            $dropdown_content.addEventListener('click', function (e) {
+            $dropdown_content.addEventListener('mousedown', function (e) {
               self.setActiveOption(e.target, true, true);
               self.onOptionSelect({ currentTarget: self.$activeOption });
             });
