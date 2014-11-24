@@ -46,7 +46,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty maxItems url params">
+<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload maxItems url params">
   <template>
 
     <!--<link rel="stylesheet" href="css/selectize.css" />-->
@@ -130,8 +130,9 @@ It should handle
                 }
                 this.$.selectTags.appendChild(optionEl);
               }
+              var shouldPreload = this.preload !== undefined ? true : false;
               var value = libraryRoot.selectize(this.$.selectTags, {
-                preload: true,
+                preload: shouldPreload,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
                 load: this.selectizeOnLoad
@@ -152,8 +153,9 @@ It should handle
                 this.$.selectTags.appendChild(optionEl);
               }
 
+              var shouldPreload = this.preload !== undefined ? true : false;
               var value = libraryRoot.selectize(this.$.selectTags, {
-                preload: true,
+                preload: shouldPreload,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
                 load: this.selectizeOnLoad
@@ -164,7 +166,6 @@ It should handle
           } else {
             this.$.inputTags.value = this.available;
             var value = libraryRoot.selectize(this.$.inputTags, {
-              create: true,
               maxItems: this.maxItems
             });
           }
@@ -1738,6 +1739,11 @@ It should handle
                   self.ignoreHover = true;
                   var $next = self.getAdjacentOption(self.$activeOption, 1);
                   if ($next.length) self.setActiveOption($next[0], true, true);
+                } else {
+                  var $first = self.getFirstItem();
+                  if ($first != undefined) {
+                    self.setActiveOption($first, true, true);
+                  }
                 }
                 e.preventDefault();
                 return;
@@ -2577,6 +2583,15 @@ It should handle
             var index = $options.array().indexOf($option) + direction;
 
             return index >= 0 && index < $options.length ? [$options[index]] : [];
+          }
+
+          /**
+           * Added by ij
+           * Returns the first item from the available items in the dropdown
+           */
+          namespace.getFirstItem = function () {
+            var $options = this.$dropdown.querySelectorAll('[data-selectable]');
+            return $options.length > 0 ? $options[0] : undefined;
           }
 
           /**
