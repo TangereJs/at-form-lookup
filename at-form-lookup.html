@@ -46,7 +46,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload maxItems url params">
+<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload disabled maxItems url params">
   <template>
 
     <!--<link rel="stylesheet" href="css/selectize.css" />-->
@@ -60,10 +60,10 @@ It should handle
   <script>
     (function () {
       var libraryRoot = {};
-      var _self;
-      var _selectizeLoadCallback;
 
       Polymer('at-form-lookup', {
+        _self: {},
+        _selectizeLoadCallback: function () { },
         publish: {
           available: {
             value: '',
@@ -94,9 +94,9 @@ It should handle
           var eventObject = { response: event.detail.response, returnData: [] };
           _self.fire('at-form-lookup-afterAjax', eventObject);
 
-          if (_selectizeLoadCallback) {
+          if (_self._selectizeLoadCallback) {
             if (eventObject.returnData.length > 0) {
-              _selectizeLoadCallback(eventObject.returnData);
+              _self._selectizeLoadCallback(eventObject.returnData);
             }
             else {
               // use default
@@ -105,7 +105,7 @@ It should handle
         },
 
         selectizeOnLoad: function (query, callback) {
-          _selectizeLoadCallback = callback;
+          _self._selectizeLoadCallback = callback;
           _self.$.coreAjax.params = '{ "query": "' + query + '"}';
           _self.fire('at-form-lookup-beforeAjax', { coreAjax: _self.$.coreAjax, query: query });
           _self.$.coreAjax.go();
@@ -115,6 +115,11 @@ It should handle
           var selectedByDefault = this.selected.split(',');
           for (var i = 0; i < selectedByDefault; i++) {
             selectedByDefault[i] = selectedByDefault[i].trim();
+          }
+
+          if (this.disabled !== undefined) {
+            var disabledAttr = document.createAttribute('disabled');
+            this.$.selectTags.attributes.setNamedItem(disabledAttr);
           }
 
           //if (this.available === '') { return; }
@@ -130,9 +135,9 @@ It should handle
                 }
                 this.$.selectTags.appendChild(optionEl);
               }
-              var shouldPreload = this.preload !== undefined ? true : false;
+
               var value = libraryRoot.selectize(this.$.selectTags, {
-                preload: shouldPreload,
+                preload: this.preload,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
                 load: this.selectizeOnLoad
@@ -155,7 +160,7 @@ It should handle
 
               var shouldPreload = this.preload !== undefined ? true : false;
               var value = libraryRoot.selectize(this.$.selectTags, {
-                preload: shouldPreload,
+                preload: this.preload,
                 allowEmpty: this.allowEmpty,
                 maxItems: this.maxItems,
                 load: this.selectizeOnLoad
@@ -1535,7 +1540,7 @@ It should handle
             self.updatePlaceholder();
             self.isSetup = true;
 
-            if ($input.querySelectorAll(':disabled').length > 0) {
+            if ($input.getAttribute('disabled') !== undefined && $input.getAttribute('disabled') !== null) {
               self.disable();
             }
 
@@ -3208,7 +3213,7 @@ It should handle
            */
           namespace.disable = function () {
             var self = this;
-            self.$input.prop('disabled', true);
+            self.$input.setAttribute('disabled', true);
             self.isDisabled = true;
             self.lock();
           }
