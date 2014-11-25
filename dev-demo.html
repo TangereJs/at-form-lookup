@@ -7,28 +7,30 @@
   <link rel="import" href="at-form-lookup.html">
 </head>
 <body>
-  <div>
-    Tags demo:
-    <at-form-lookup id="tagsLookup" available="neat,awesome"></at-form-lookup>
-  </div>
-  <div>
-    Dropdown demo:
-    <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" useDropdown></at-form-lookup>
-  </div>
-  <div>
-    Dropdown demo (programatic initialization):
-    <at-form-lookup id="ddLookupProg" useDropdown multiple disabled></at-form-lookup>
-  </div>
-  <div>
-    Tags demo (remote source):
-    <at-form-lookup id="flTagsRemote" url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":""}'></at-form-lookup>
+    <div>
+      Tags demo:
+      <at-form-lookup id="tagsLookup" available="neat,awesome"></at-form-lookup>
+    </div>
+    <div>
+      Dropdown demo:
+      <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" usedropdown></at-form-lookup>
+    </div>
+    <div>
+      Dropdown demo (programatic initialization):
+      <at-form-lookup id="ddLookupProg" usedropdown disabled></at-form-lookup>
+    </div>
+    <div>
+      Tags demo (remote source):
+      <at-form-lookup id="flTagsRemote" url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":""}'></at-form-lookup>
 
-  </div>
-  <div>
-    Dropdown demo (remote source):
-    <at-form-lookup id="flDropdownRemote" usedropdown preload url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":"chrome"}'></at-form-lookup>
-  </div>
-
+    </div>
+  <form>
+    <div>
+      Dropdown demo (remote source):
+      <at-form-lookup id="flDropdownRemote" usedropdown preload required url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":"chrome"}'></at-form-lookup>
+    </div>
+    <input type="submit" value="submit" />
+  </form>
   <script>
     window.addEventListener('polymer-ready', function () {
       console.log('Polymer ready event');
@@ -36,7 +38,7 @@
 
       var ddLookupProg = document.getElementById("ddLookupProg");
       ddLookupProg.selected = "v1";
-      ddLookupProg.available = JSON.parse('[{"caption": "Pera", "value": "v1"},{"caption": "Mika", "value": "v2"},{ "caption": "Zika", "value": "v3"}]');
+      ddLookupProg.available = JSON.parse('[{"title": "Pera", "value": "v1"},{"title": "Mika", "value": "v2"},{ "title": "Zika", "value": "v3"}]');
 
       var flDropdownRemote = document.getElementById('flDropdownRemote');
       if (flDropdownRemote) {
@@ -62,9 +64,11 @@
         flDropdownRemote.addEventListener('at-form-lookup-afterAjax', function (event) {
           var data = event.detail.response.feed.entry;
           var dataArray = [];
-          for (var i = 0; i < data.length; i++) {
-            var entry = data[i];
-            dataArray.push({ value: entry.id.$t, text: entry.title.$t });
+          if (data !== undefined && data.length !== undefined) {
+            for (var i = 0; i < data.length; i++) {
+              var entry = data[i];
+              dataArray.push({ value: entry.id.$t, title: entry.title.$t });
+            }
           }
           event.detail.returnData = dataArray;
         });

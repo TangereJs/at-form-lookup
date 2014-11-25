@@ -46,7 +46,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload disabled maxItems url params">
+<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload disabled required maxItems url params">
   <template>
 
     <!--<link rel="stylesheet" href="css/selectize.css" />-->
@@ -122,6 +122,11 @@ It should handle
             this.$.selectTags.attributes.setNamedItem(disabledAttr);
           }
 
+          if (this.required !== undefined) {
+            var requiredAttr = document.createAttribute('required');
+            this.$.selectTags.attributes.setNamedItem(requiredAttr);
+          }
+
           //if (this.available === '') { return; }
           if (this.useDropdown !== undefined) {
             if (isArray(this.available)) {
@@ -129,7 +134,7 @@ It should handle
                 var item = this.available[j];
                 var optionEl = document.createElement('option');
                 optionEl.value = item.value;
-                optionEl.innerText = item.caption;
+                optionEl.innerText = item.title;
                 if (selectedByDefault.indexOf(item.value) > -1) {
                   optionEl.setAttribute('selected', 'selected');
                 }
@@ -3386,13 +3391,13 @@ It should handle
           dataAttr: 'data-data',
           optgroupField: 'optgroup',
           valueField: 'value',
-          labelField: 'text',
+          labelField: 'title',
           optgroupLabelField: 'label',
           optgroupValueField: 'value',
           optgroupOrder: null,
 
           sortField: '$order',
-          searchField: ['text'],
+          searchField: ['title'],
           searchConjunction: 'and',
 
           mode: null,
