@@ -24,10 +24,10 @@
       <at-form-lookup id="flTagsRemote" url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":""}'></at-form-lookup>
 
     </div>
-  <form>
+  <form action="#">
     <div>
       Dropdown demo (remote source):
-      <at-form-lookup id="flDropdownRemote" usedropdown preload required url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":"chrome"}'></at-form-lookup>
+      <at-form-lookup id="flDropdownRemote" maxItems="5" usedropdown preload required url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":"chrome"}'></at-form-lookup>
     </div>
     <input type="submit" value="submit" />
   </form>

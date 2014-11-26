@@ -28,6 +28,7 @@ It should handle
  -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-ajax/core-ajax.html">
+<link rel="import" href="../core-icon/core-icon.html">
 
 <script type="text/javascript">
   var SelectBoxUtils = {
@@ -48,13 +49,19 @@ It should handle
 </script>
 <polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload disabled required maxItems url params">
   <template>
-
-    <!--<link rel="stylesheet" href="css/selectize.css" />-->
+    <link rel="stylesheet" href="css/selectize.css" />
+    <link rel="stylesheet" href="css/selectize.theme-default.css" />
     <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
-    <link rel="stylesheet" href="css/selectize.bootstrap3.css" />
+    <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
     <core-ajax id="coreAjax" auto handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
+    <div class="error" layout horizontal center hidden?="{{!isInvalid}}">
+      <div class="error-text" flex auto role="alert" aria-hidden="{{!isInvalid}}">{{error}}</div>
+      <core-icon class="error-icon" icon="warning"></core-icon>
+    </div>
+
+    <div class="error" style="height: 26px" layout horizontal center hidden?="{{isInvalid}}"></div>
     <content></content>
   </template>
   <script>
@@ -65,6 +72,8 @@ It should handle
         _self: {},
         _selectizeLoadCallback: function () { },
         publish: {
+          isInvalid: false,
+          error: 'This field is required',
           available: {
             value: '',
             reflect: true
@@ -111,6 +120,14 @@ It should handle
           _self.$.coreAjax.go();
         },
 
+        setValid: function () {
+          this.isInvalid = true;
+        },
+
+        setInvalid: function () {
+          this.isInvalid = false;
+        },
+
         initialize: function () {
           var selectedByDefault = this.selected.split(',');
           for (var i = 0; i < selectedByDefault; i++) {
@@ -129,50 +146,39 @@ It should handle
 
           //if (this.available === '') { return; }
           if (this.useDropdown !== undefined) {
+            var availableItems = [];
             if (isArray(this.available)) {
-              for (var j = 0; j < this.available.length; j++) {
-                var item = this.available[j];
-                var optionEl = document.createElement('option');
-                optionEl.value = item.value;
-                optionEl.innerText = item.title;
-                if (selectedByDefault.indexOf(item.value) > -1) {
-                  optionEl.setAttribute('selected', 'selected');
-                }
-                this.$.selectTags.appendChild(optionEl);
-              }
-
-              var value = libraryRoot.selectize(this.$.selectTags, {
-                preload: this.preload,
-                allowEmpty: this.allowEmpty,
-                maxItems: this.maxItems,
-                load: this.selectizeOnLoad
-              });
-
+              availableItems = this.available;
             } else if (isString(this.available)) {
               var availableTags = this.available.split(',');
               for (var i = 0; i < availableTags.length; i++) {
                 availableTags[i] = availableTags[i].trim();
                 var tag = availableTags[i];
-
-                var optionEl = document.createElement('option');
-                optionEl.value = tag;
-                optionEl.innerText = tag;
-                if (selectedByDefault.indexOf(tag) > -1) {
-                  optionEl.setAttribute('selected', 'selected');
-                }
-                this.$.selectTags.appendChild(optionEl);
+                availableItems.push({ title: tag, value: tag });
               }
-
-              var shouldPreload = this.preload !== undefined ? true : false;
-              var value = libraryRoot.selectize(this.$.selectTags, {
-                preload: this.preload,
-                allowEmpty: this.allowEmpty,
-                maxItems: this.maxItems,
-                load: this.selectizeOnLoad
-              });
             } else {
               console.log("Available items should be an array of (id, value) pairs or comma separated string");
             }
+
+            for (var j = 0; j < availableItems.length; j++) {
+              var item = availableItems[j];
+              var optionEl = document.createElement('option');
+              optionEl.value = item.value;
+              optionEl.innerText = item.title;
+              if (selectedByDefault.indexOf(item.value) > -1) {
+                optionEl.setAttribute('selected', 'selected');
+              }
+              this.$.selectTags.appendChild(optionEl);
+            }
+
+            var value = libraryRoot.selectize(this.$.selectTags, {
+              selectOnTab: true,
+              preload: this.preload,
+              allowEmpty: this.allowEmpty,
+              maxItems: this.maxItems,
+              load: this.selectizeOnLoad,
+              polymerElement: this
+            });
           } else {
             this.$.inputTags.value = this.available;
             var value = libraryRoot.selectize(this.$.inputTags, {
@@ -1772,6 +1778,7 @@ It should handle
                   self.onOptionSelect({ currentTarget: self.$activeOption });
                 }
                 e.preventDefault();
+                self.updateValidState();
                 return;
               case KEY_LEFT:
                 self.advanceSelection(-1, e);
@@ -1792,16 +1799,31 @@ It should handle
                   blurEvent.initEvent('blur', true, true);
                   self.$control_input.dispatchEvent(blurEvent);
                 }
+                self.updateValidState();
                 return;
               case KEY_BACKSPACE:
               case KEY_DELETE:
                 self.deleteSelection(e);
+                self.updateValidState();
                 return;
             }
 
             if ((self.isFull() || self.isInputHidden) && !(IS_MAC ? e.metaKey : e.ctrlKey)) {
               e.preventDefault();
               return;
+            }
+          }
+
+          namespace.updateValidState = function () {
+            if (this.$input.required && (self.$activeOption == null || self.$activeOption === undefined)) {
+              // reference to polymer component needed here
+              if (this.settings.polymerElement && this.settings.polymerElement.isInvalid !== undefined) {
+                this.settings.polymerElement.isInvalid = true;
+              }
+            } else {
+              if (this.settings.polymerElement && this.settings.polymerElement.isInvalid !== undefined) {
+                this.settings.polymerElement.isInvalid = false;
+              }
             }
           }
 
