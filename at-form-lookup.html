@@ -56,12 +56,12 @@ It should handle
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
     <core-ajax id="coreAjax" auto handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
-    <div class="error" layout horizontal center hidden?="{{!isInvalid}}">
+    <div id="errorMessage" class="error" layout horizontal center hidden?="{{!isInvalid}}">
       <div class="error-text" flex auto role="alert" aria-hidden="{{!isInvalid}}">{{error}}</div>
       <core-icon class="error-icon" icon="warning"></core-icon>
     </div>
 
-    <div class="error" style="height: 26px" layout horizontal center hidden?="{{isInvalid}}"></div>
+    <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden?="{{isInvalid}}"></div>
     <content></content>
   </template>
   <script>
@@ -86,6 +86,17 @@ It should handle
         ready: function () {
           _self = this;
           this.initialize();
+        },
+
+        isInvalidChanged: function (oldValue, newValue) {
+          if (newValue === false) {
+            // component is valid
+            this.$.errorMessage.style.display = "none";
+            this.$.emptyError.style.display = "block";
+          } else {
+            this.$.errorMessage.style.display = "block";
+            this.$.emptyError.style.display = "none";
+          }
         },
 
         availableChanged: function (oldValue, newValue) {
@@ -1267,18 +1278,17 @@ It should handle
           $input.addEventListener('blur', update);
           update();
         };
-        
-        function getTextDirectionFromParents(startElement){
+
+        function getTextDirectionFromParents(startElement) {
           var parentElement = startElement.parentElement || startElement.parentNode;
           var textDirectionValue = parentElement.getAttribute !== undefined ? parentElement.getAttribute('dir') : 'rtl';
-          if (textDirectionValue !== undefined && textDirectionValue !== null && textDirectionValue !== ''){
+          if (textDirectionValue !== undefined && textDirectionValue !== null && textDirectionValue !== '') {
             return textDirectionValue;
-          } else 
-          {
+          } else {
             return getTextDirectionFromParents(parentElement);
           }
         }
-        
+
         var Selectize = function ($input, settings) {
           var key, i, n, dir, input, self = this;
           input = $input;
@@ -1827,7 +1837,9 @@ It should handle
           }
 
           namespace.updateValidState = function () {
-            if (this.$input.required && (self.$activeOption == null || self.$activeOption === undefined)) {
+            var selectedItems = this.$control.getElementsByClassName("item");
+
+            if (this.$input.required && selectedItems && selectedItems.length === 0) {
               // reference to polymer component needed here
               if (this.settings.polymerElement && this.settings.polymerElement.isInvalid !== undefined) {
                 this.settings.polymerElement.isInvalid = true;
@@ -2109,7 +2121,7 @@ It should handle
                 end = swap;
               }
               for (i = begin; i <= end; i++) {
-                item = self.$control[0].childNodes[i];
+                item = self.$control.childNodes[i];
                 if (self.$activeItems.indexOf(item) === -1) {
                   $(item).addClass('active');
                   self.$activeItems.push(item);
@@ -2860,6 +2872,8 @@ It should handle
               self.$control_input.setAttribute('required', invalid);
             }
             self.refreshClasses();
+
+            self.updateValidState();
           }
 
           /**
@@ -3161,9 +3175,12 @@ It should handle
                 self.advanceCaret(direction, e);
               }
             } else {
-              $tail = self.$control.children('.active:' + tail);
-              if ($tail.length) {
-                idx = self.$control.children(':not(input)').index($tail);
+              var $tailItems = self.$control.querySelectorAll('.active');
+              var $tailIndex = direction > 0 ? $tailItems.length - 1 : 0;
+              $tail = $tailItems[$tailIndex];
+              if ($tail !== undefined && $tail !== null ) {
+                var $control_children = self.$control.querySelectorAll(':not(input)');
+                idx = $control_children.indexOf($tail);
                 self.setActiveItem(null);
                 self.setCaret(direction > 0 ? idx + 1 : idx);
               }
@@ -3215,10 +3232,11 @@ It should handle
               var j, n, fn, $children, $child;
               //$children = self.$control.querySelectorAll(':not(input)');
               $children = self.$control.querySelectorAll('div');
+              var $inputElement = self.$control.querySelector('input');
               for (j = 0, n = $children.length; j < n; j++) {
                 $child = self.$control.removeChild($children[j]);
                 if (j < i) {
-                  self.$control.insertBefore($child, self.$control.children[self.$control.children.length - 1]);
+                  self.$control.insertBefore($child, $inputElement);
                 } else {
                   self.$control.appendChild($child);
                 }
