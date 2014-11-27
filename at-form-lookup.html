@@ -47,7 +47,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload disabled required maxItems url params">
+<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload maxItems url params">
   <template>
     <link rel="stylesheet" href="css/selectize.css" />
     <link rel="stylesheet" href="css/selectize.theme-default.css" />
@@ -74,6 +74,14 @@ It should handle
         publish: {
           isInvalid: false,
           error: 'This field is required',
+          disabled: {
+            value: false,
+            reflect: true
+          },
+          required: {
+            value: false,
+            reflect: true
+          },
           available: {
             value: '',
             reflect: true
