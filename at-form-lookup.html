@@ -1267,7 +1267,18 @@ It should handle
           $input.addEventListener('blur', update);
           update();
         };
-
+        
+        function getTextDirectionFromParents(startElement){
+          var parentElement = startElement.parentElement || startElement.parentNode;
+          var textDirectionValue = parentElement.getAttribute !== undefined ? parentElement.getAttribute('dir') : 'rtl';
+          if (textDirectionValue !== undefined && textDirectionValue !== null && textDirectionValue !== ''){
+            return textDirectionValue;
+          } else 
+          {
+            return getTextDirectionFromParents(parentElement);
+          }
+        }
+        
         var Selectize = function ($input, settings) {
           var key, i, n, dir, input, self = this;
           input = $input;
@@ -1276,7 +1287,8 @@ It should handle
           // detect rtl environment
           var computedStyle = window.getComputedStyle && window.getComputedStyle(input, null);
           dir = computedStyle ? computedStyle.getPropertyValue('direction') : input.currentStyle && input.currentStyle.direction;
-          dir = dir || $input.parents('[dir]:first').attr('dir') || '';
+          //dir = dir || $input.parents('[dir]:first').attr('dir') || '';
+          dir = dir || getTextDirectionFromParents($input) || '';
 
           // setup default state
           extend(self, {
