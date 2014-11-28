@@ -50,18 +50,18 @@ It should handle
 <polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload maxItems url params">
   <template>
     <link rel="stylesheet" href="css/selectize.css" />
-    <link rel="stylesheet" href="css/selectize.theme-default.css" />
+    <link rel="stylesheet" href="css/selectize.theme-default.css" /> 
     <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
     <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
     <core-ajax id="coreAjax" auto handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
-    <div id="errorMessage" class="error" layout horizontal center hidden?="{{!isInvalid}}">
-      <div class="error-text" flex auto role="alert" aria-hidden="{{!isInvalid}}">{{error}}</div>
+    <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
+      <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
       <core-icon class="error-icon" icon="warning"></core-icon>
     </div>
 
-    <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden?="{{isInvalid}}"></div>
+    <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden?="{{ isInvalid }}"></div>
     <content></content>
   </template>
   <script>
@@ -152,13 +152,13 @@ It should handle
           for (var i = 0; i < selectedByDefault; i++) {
             selectedByDefault[i] = selectedByDefault[i].trim();
           }
-
-          if (this.disabled !== undefined) {
+          
+          if (this.disabled) {
             var disabledAttr = document.createAttribute('disabled');
             this.$.selectTags.attributes.setNamedItem(disabledAttr);
           }
-
-          if (this.required !== undefined) {
+          
+          if (this.required) {
             var requiredAttr = document.createAttribute('required');
             this.$.selectTags.attributes.setNamedItem(requiredAttr);
           }
@@ -1210,7 +1210,7 @@ It should handle
             'textTransform'
           ]);
 
-          var width = test.width;
+          var width = test.clientWidth;
           test.remove();
 
           return width;
@@ -1273,7 +1273,7 @@ It should handle
             width = measureString(value, $input) + 4;
             if (width !== currentWidth) {
               currentWidth = width;
-              $input.width = width;
+              $input.style.width= width + 'px';
               var resizeEvent = document.createEvent('Event');
               resizeEvent.initEvent('resize', true, true);
               $input.dispatchEvent(resizeEvent);
@@ -3120,7 +3120,7 @@ It should handle
             } else if ((self.isFocused || self.settings.mode === 'single') && self.items.length) {
               if (direction < 0 && selection.start === 0 && selection.length === 0) {
                 values.push(self.items[self.caretPos - 1]);
-              } else if (direction > 0 && selection.start === self.$control_input.val().length) {
+              } else if (direction > 0 && selection.start === self.$control_input.value.length) {
                 values.push(self.items[self.caretPos]);
               }
             }
