@@ -21,7 +21,22 @@
   <script>
     window.addEventListener('polymer-ready', function () {
       console.log('Polymer ready event');
-      //var demoLookup = document.getElementById("demoLookup");
+      var flDropdownSingleSelection = document.getElementById("flDropdownSingleSelection");
+      if (flDropdownSingleSelection) {
+        flDropdownSingleSelection.addEventListener('at-form-lookup-beforeAjax', function (event) {
+          var data = event.detail;
+          data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
+        });
+        flDropdownSingleSelection.addEventListener('at-form-lookup-afterAjax', function (event) {
+          var data = event.detail.response.feed.entry;
+          var dataArray = [];
+          for (var i = 0; i < data.length; i++) {
+            var entry = data[i];
+            dataArray.push({ value: entry.id.$t, title: entry.title.$t });
+          }
+          event.detail.returnData = dataArray;
+        });
+      }
 
       var flDropdownMultipleSelection = document.getElementById('flDropdownMultipleSelection');
       if (flDropdownMultipleSelection) {

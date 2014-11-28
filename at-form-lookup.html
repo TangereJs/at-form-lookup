@@ -69,7 +69,6 @@ It should handle
       var libraryRoot = {};
 
       Polymer('at-form-lookup', {
-        _self: {},
         _selectizeLoadCallback: function () { },
         publish: {
           isInvalid: false,
@@ -92,7 +91,6 @@ It should handle
           }
         },
         ready: function () {
-          _self = this;
           this.initialize();
         },
 
@@ -120,11 +118,11 @@ It should handle
         coreAjaxOnResponse: function (event) {
           // extract the data from the event
           var eventObject = { response: event.detail.response, returnData: [] };
-          _self.fire('at-form-lookup-afterAjax', eventObject);
+          this.fire('at-form-lookup-afterAjax', eventObject);
 
-          if (_self._selectizeLoadCallback) {
+          if (this._selectizeLoadCallback) {
             if (eventObject.returnData.length > 0) {
-              _self._selectizeLoadCallback(eventObject.returnData);
+              this._selectizeLoadCallback(eventObject.returnData);
             }
             else {
               // use default
@@ -133,10 +131,13 @@ It should handle
         },
 
         selectizeOnLoad: function (query, callback) {
-          _self._selectizeLoadCallback = callback;
-          _self.$.coreAjax.params = '{ "query": "' + query + '"}';
-          _self.fire('at-form-lookup-beforeAjax', { coreAjax: _self.$.coreAjax, query: query });
-          _self.$.coreAjax.go();
+          // this here is selectize object
+          // polymer element upon which selectize is constructed is passed into selectize settings and can be accessed here
+          var polyElem = this.settings.polymerElement;
+          polyElem._selectizeLoadCallback = callback;
+          polyElem.$.coreAjax.params = '{ "query": "' + query + '"}';
+          polyElem.fire('at-form-lookup-beforeAjax', { coreAjax: polyElem.$.coreAjax, query: query });
+          polyElem.$.coreAjax.go();
         },
 
         setValid: function () {
