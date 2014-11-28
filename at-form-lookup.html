@@ -50,7 +50,7 @@ It should handle
 <polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload maxItems url params">
   <template>
     <link rel="stylesheet" href="css/selectize.css" />
-    <link rel="stylesheet" href="css/selectize.theme-default.css" /> 
+    <link rel="stylesheet" href="css/selectize.theme-default.css" />
     <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
     <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
@@ -105,6 +105,13 @@ It should handle
           }
         },
 
+        selectedChanged: function (oldValue, newValue) {
+          if (this.$.selectTags.selectize) {
+            this.$.selectTags.selectize.destroy();
+          }
+          this.initialize();
+        },
+
         availableChanged: function (oldValue, newValue) {
           if (this.$.selectTags.selectize) {
             this.$.selectTags.selectize.destroy();
@@ -149,16 +156,35 @@ It should handle
         },
 
         initialize: function () {
-          var selectedByDefault = this.selected.split(',');
-          for (var i = 0; i < selectedByDefault; i++) {
-            selectedByDefault[i] = selectedByDefault[i].trim();
+          debugger;
+          var availableItems = [];
+          if (isArray(this.available)) {
+            availableItems = this.available;
+          } else if (isString(this.available) && this.available !== "") {
+            var availableTags = this.available.split(',');
+            for (var i = 0; i < availableTags.length; i++) {
+              availableTags[i] = availableTags[i].trim();
+              var tag = availableTags[i];
+              availableItems.push({ title: tag, value: tag });
+            }
+          } else {
+            console.log("Available items should be an array of (id, value) pairs or comma separated string");
           }
-          
+
+          var availableItemsInitialLen = availableItems.length;
+          var selectedByDefault = this.selected.split(',');
+          for (var i = 0; i < selectedByDefault.length; i++) {
+            selectedByDefault[i] = selectedByDefault[i].trim();
+            if (availableItemsInitialLen === 0) {
+              availableItems.push({ title: selectedByDefault[i], value: selectedByDefault[i] });
+            }
+          }
+
           if (this.disabled) {
             var disabledAttr = document.createAttribute('disabled');
             this.$.selectTags.attributes.setNamedItem(disabledAttr);
           }
-          
+
           if (this.required) {
             var requiredAttr = document.createAttribute('required');
             this.$.selectTags.attributes.setNamedItem(requiredAttr);
@@ -166,20 +192,6 @@ It should handle
 
           //if (this.available === '') { return; }
           if (this.useDropdown !== undefined) {
-            var availableItems = [];
-            if (isArray(this.available)) {
-              availableItems = this.available;
-            } else if (isString(this.available)) {
-              var availableTags = this.available.split(',');
-              for (var i = 0; i < availableTags.length; i++) {
-                availableTags[i] = availableTags[i].trim();
-                var tag = availableTags[i];
-                availableItems.push({ title: tag, value: tag });
-              }
-            } else {
-              console.log("Available items should be an array of (id, value) pairs or comma separated string");
-            }
-
             for (var j = 0; j < availableItems.length; j++) {
               var item = availableItems[j];
               var optionEl = document.createElement('option');
@@ -1274,7 +1286,7 @@ It should handle
             width = measureString(value, $input) + 4;
             if (width !== currentWidth) {
               currentWidth = width;
-              $input.style.width= width + 'px';
+              $input.style.width = width + 'px';
               var resizeEvent = document.createEvent('Event');
               resizeEvent.initEvent('resize', true, true);
               $input.dispatchEvent(resizeEvent);
@@ -3187,7 +3199,7 @@ It should handle
               var $tailItems = self.$control.querySelectorAll('.active');
               var $tailIndex = direction > 0 ? $tailItems.length - 1 : 0;
               $tail = $tailItems[$tailIndex];
-              if ($tail !== undefined && $tail !== null ) {
+              if ($tail !== undefined && $tail !== null) {
                 var $control_children = self.$control.querySelectorAll(':not(input)');
                 idx = $control_children.indexOf($tail);
                 self.setActiveItem(null);

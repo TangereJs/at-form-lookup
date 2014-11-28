@@ -10,7 +10,7 @@
   
   <div>
     Single selection (remote source):
-    <at-form-lookup id="flDropdownSingleSelection" usedropdown url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":""}'></at-form-lookup>
+    <at-form-lookup id="flDropdownSingleSelection" usedropdown url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":"mika"}'></at-form-lookup>
   </div>
 
   <div>
@@ -23,6 +23,9 @@
       console.log('Polymer ready event');
       var flDropdownSingleSelection = document.getElementById("flDropdownSingleSelection");
       if (flDropdownSingleSelection) {
+
+        flDropdownSingleSelection.selected = "http://gdata.youtube.com/feeds/api/videos/5WK-vRhz9xs";
+
         flDropdownSingleSelection.addEventListener('at-form-lookup-beforeAjax', function (event) {
           var data = event.detail;
           data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
