@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>&lt;at-form-lookup&gt;</title>
+  <script src="../webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="at-form-lookup.html">
+</head>
+<body>
+  
+  <div>
+    Single selection (remote source):
+    <at-form-lookup id="flDropdownSingleSelection" usedropdown url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":""}'></at-form-lookup>
+  </div>
+
+  <div>
+    Multiple selection (remote source):
+    <at-form-lookup id="flDropdownMultipleSelection" usedropdown maxItems="4" url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":""}'></at-form-lookup>
+  </div>
+
+  <script>
+    window.addEventListener('polymer-ready', function () {
+      console.log('Polymer ready event');
+      //var demoLookup = document.getElementById("demoLookup");
+
+      var flDropdownMultipleSelection = document.getElementById('flDropdownMultipleSelection');
+      if (flDropdownMultipleSelection) {
+        /*
+         * at-form-lookup-beforeAjax event
+         * Use this event to modify request params
+         * core-ajax element of the at-form-lookup element is available as event.detail.coreAjax
+         * query for the request is available as event.detail.query
+         */
+        flDropdownMultipleSelection.addEventListener('at-form-lookup-beforeAjax', function (event) {
+          var data = event.detail;
+          data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
+        });
+
+        /*
+         * at-form-lookup-afterAjax event
+         * Use this event to transform the response into structure selectize understands
+         * response received through coreAjax is available in event.detail.response
+         * transformed data should be returned as event.detail.returnData
+         * transformed data shold be an array of (id, value) pairs;
+         * by default pair is (value, text); value is the value of the entry, text is used for display
+         */
+        flDropdownMultipleSelection.addEventListener('at-form-lookup-afterAjax', function (event) {
+          var data = event.detail.response.feed.entry;
+          var dataArray = [];
+          for (var i = 0; i < data.length; i++) {
+            var entry = data[i];
+            dataArray.push({ value: entry.id.$t, title: entry.title.$t });
+          }
+          event.detail.returnData = dataArray;
+        });
+      }
+    });
+  </script>
+</body>
+</html>
