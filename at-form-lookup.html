@@ -28,6 +28,7 @@ It should handle
  -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-ajax/core-ajax.html">
+<link rel="import" href="../core-icons/core-icons.html">
 <link rel="import" href="../core-icon/core-icon.html">
 
 <script type="text/javascript">
@@ -70,6 +71,7 @@ It should handle
 
       Polymer('at-form-lookup', {
         _selectizeLoadCallback: function () { },
+        _selectizeInstance: {},
         publish: {
           isInvalid: false,
           error: 'This field is required',
@@ -85,8 +87,8 @@ It should handle
             value: '',
             reflect: true
           },
-          selected: {
-            value: '',
+          value: {
+            value: this._selectizeInstance !== undefined ? this._selectizeInstance.getValue() : '',
             reflect: true
           }
         },
@@ -98,10 +100,27 @@ It should handle
           if (newValue === false) {
             // component is valid
             this.$.errorMessage.style.display = "none";
-            this.$.emptyError.style.display = "block";
+            this.$.emptyError.style.display = "";
           } else {
-            this.$.errorMessage.style.display = "block";
+            this.$.errorMessage.style.display = "";
             this.$.emptyError.style.display = "none";
+          }
+        },
+
+        requiredChanged: function(oldValue, newValue){
+          if (this._selectizeInstance !== undefined) {
+            this._selectizeInstance.$input.setAttribute('required', newValue);
+            this._selectizeInstance.updateValidState();
+          }
+        },
+
+        disabledChanged: function(oldValue, newValue){
+          if (this._selectizeInstance !== undefined) {
+            if (newValue === true) {
+              this._selectizeInstance.disable();
+            } else {
+              this._selectizeInstance.enable();
+            }
           }
         },
 
@@ -156,7 +175,6 @@ It should handle
         },
 
         initialize: function () {
-          debugger;
           var availableItems = [];
           if (isArray(this.available)) {
             availableItems = this.available;
@@ -172,7 +190,7 @@ It should handle
           }
 
           var availableItemsInitialLen = availableItems.length;
-          var selectedByDefault = this.selected.split(',');
+          var selectedByDefault = this.value.split(',');
           for (var i = 0; i < selectedByDefault.length; i++) {
             selectedByDefault[i] = selectedByDefault[i].trim();
             if (availableItemsInitialLen === 0) {
@@ -203,7 +221,7 @@ It should handle
               this.$.selectTags.appendChild(optionEl);
             }
 
-            var value = libraryRoot.selectize(this.$.selectTags, {
+            var instance = libraryRoot.selectize(this.$.selectTags, {
               selectOnTab: true,
               preload: this.preload,
               allowEmpty: this.allowEmpty,
@@ -211,11 +229,14 @@ It should handle
               load: this.selectizeOnLoad,
               polymerElement: this
             });
+            this._selectizeInstance = instance;
           } else {
             this.$.inputTags.value = this.available;
-            var value = libraryRoot.selectize(this.$.inputTags, {
-              maxItems: this.maxItems
+            var instance = libraryRoot.selectize(this.$.inputTags, {
+              maxItems: this.maxItems,
+              polymerElement: this
             });
+            this._selectizeInstance = instance;
           }
         }
       });
@@ -1860,7 +1881,7 @@ It should handle
           namespace.updateValidState = function () {
             var selectedItems = this.$control.getElementsByClassName("item");
 
-            if (this.$input.required && selectedItems && selectedItems.length === 0) {
+            if (this.$input.getAttribute('required') === "true" && selectedItems && selectedItems.length === 0) {
               // reference to polymer component needed here
               if (this.settings.polymerElement && this.settings.polymerElement.isInvalid !== undefined) {
                 this.settings.polymerElement.isInvalid = true;
@@ -3302,7 +3323,7 @@ It should handle
            */
           namespace.enable = function () {
             var self = this;
-            self.$input.prop('disabled', false);
+            self.$input.setAttribute('disabled', false);
             self.isDisabled = false;
             self.unlock();
           }
@@ -3658,7 +3679,7 @@ It should handle
           }
 
           instance = new Selectize($input, extend({}, defaults, settings_element, settings_user));
-
+          return instance;
         };
 
         root.selectize.defaults = Selectize.defaults;

@@ -321,3 +321,13 @@
   padding-left: 9px;
   padding-right: 9px;
 }
+
+.error-text {
+  font-size: 0.75em;
+  padding: 0.5em 0;
+}
+
+.error-icon {
+height: 20px;
+width: 20px;
+}
