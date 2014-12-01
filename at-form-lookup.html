@@ -48,7 +48,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="useDropdown allowEmpty preload maxItems url params">
+<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params">
   <template>
     <link rel="stylesheet" href="css/selectize.css" />
     <link rel="stylesheet" href="css/selectize.theme-default.css" />
@@ -83,6 +83,10 @@ It should handle
             value: false,
             reflect: true
           },
+          usedropdown: {
+            value: false,
+            reflect: true
+          },
           available: {
             value: '',
             reflect: true
@@ -107,14 +111,14 @@ It should handle
           }
         },
 
-        requiredChanged: function(oldValue, newValue){
+        requiredChanged: function (oldValue, newValue) {
           if (this._selectizeInstance !== undefined) {
             this._selectizeInstance.$input.setAttribute('required', newValue);
             this._selectizeInstance.updateValidState();
           }
         },
 
-        disabledChanged: function(oldValue, newValue){
+        disabledChanged: function (oldValue, newValue) {
           if (this._selectizeInstance !== undefined) {
             if (newValue === true) {
               this._selectizeInstance.disable();
@@ -122,6 +126,15 @@ It should handle
               this._selectizeInstance.enable();
             }
           }
+        },
+
+        usedropdownChanged: function (oldValue, newValue) {
+          if (this._selectizeInstance !== undefined) {
+            this._selectizeInstance.destroy();
+            this.$.selectTags.style.display = "none";
+            this.$.inputTags.style.display = "none";
+          }
+          this.initialize();
         },
 
         selectedChanged: function (oldValue, newValue) {
@@ -209,7 +222,7 @@ It should handle
           }
 
           //if (this.available === '') { return; }
-          if (this.useDropdown !== undefined) {
+          if (this.usedropdown === true) {
             for (var j = 0; j < availableItems.length; j++) {
               var item = availableItems[j];
               var optionEl = document.createElement('option');
@@ -3654,7 +3667,7 @@ It should handle
             }
           };
 
-          if (htmlElement.selectize) return;
+          if (htmlElement.selectize) return htmlElement.selectize;
 
           var instance;
           var $input = htmlElement;
