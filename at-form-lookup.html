@@ -30,6 +30,7 @@ It should handle
 <link rel="import" href="../core-ajax/core-ajax.html">
 <link rel="import" href="../core-icons/core-icons.html">
 <link rel="import" href="../core-icon/core-icon.html">
+<link rel="import" href="../paper-shadow/paper-shadow.html" />
 
 <script type="text/javascript">
   var SelectBoxUtils = {
@@ -50,8 +51,8 @@ It should handle
 </script>
 <polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params">
   <template>
-    <link rel="stylesheet" href="css/selectize.css" />
-    <link rel="stylesheet" href="css/selectize.theme-default.css" />
+    <link rel="stylesheet" href="css/at-form-lookup-default.css" />
+    <link rel="stylesheet" href="css/at-form-lookup-bootstrap.css" />
     <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
     <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
@@ -1488,9 +1489,15 @@ It should handle
             $dropdown.style.display = "none";
             $dropdown_parent.appendChild($dropdown);
 
+            //debugger;
+            var paperShadow = document.createElement('paper-shadow');
+            paperShadow.setZ(2);
+            $dropdown.appendChild(paperShadow);
+
             $dropdown_content = document.createElement('div');
             $dropdown_content.classList.add(settings.dropdownContentClass);
             $dropdown.appendChild($dropdown_content);
+            paperShadow.appendChild($dropdown_content);
 
             $dropdown_content.addEventListener('mousedown', function (e) {
               self.setActiveOption(e.target, true, true);
@@ -3060,7 +3067,7 @@ It should handle
             }
 
             self.isOpen = false;
-            self.$dropdown.style.display = "none";//hide();
+            self.$dropdown.style.display = "none";
             self.setActiveOption(null);
             self.refreshState();
 
@@ -3074,18 +3081,11 @@ It should handle
           namespace.positionDropdown = function () {
             var $control = this.$control;
             var offset = this.settings.dropdownParent === 'body' ? $control.getBoundingClientRect() : { top: $control.offsetTop, left: $control.offsetLeft };
-            //var offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
-            //offset.top += $control.outerHeight(true);
-            offset.top += $control.clientHeight;
+            offset.top += completeOuterHeight($control);
 
             this.$dropdown.style.width = $control.clientWidth + 'px';
-            this.$dropdown.style.top = offset.top;
-            this.$dropdown.style.left = offset.left;
-            //this.$dropdown.css({
-            //  width: $control.outerWidth(),
-            //  top: offset.top,
-            //  left: offset.left
-            //});
+            this.$dropdown.style.top = offset.top + 'px';
+            this.$dropdown.style.left = offset.left + 'px';
           }
 
           /**
