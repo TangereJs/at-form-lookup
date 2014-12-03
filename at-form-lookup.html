@@ -93,10 +93,11 @@ It should handle
             reflect: true
           },
           value: {
-            value: this._selectizeInstance !== undefined ? this._selectizeInstance.getValue() : '',
+            value: '',
             reflect: true
           }
         },
+
         ready: function () {
           this.initialize();
         },
@@ -247,6 +248,7 @@ It should handle
           } else {
             this.$.inputTags.value = this.available;
             var instance = libraryRoot.selectize(this.$.inputTags, {
+              selectOnTab: true,
               maxItems: this.maxItems,
               polymerElement: this
             });
@@ -1489,7 +1491,6 @@ It should handle
             $dropdown.style.display = "none";
             $dropdown_parent.appendChild($dropdown);
 
-            //debugger;
             var paperShadow = document.createElement('paper-shadow');
             paperShadow.setZ(2);
             $dropdown.appendChild(paperShadow);
@@ -2123,11 +2124,14 @@ It should handle
            * @returns {mixed}
            */
           namespace.getValue = function () {
-            if (this.tagType === TAG_SELECT && this.$input.attr('multiple')) {
-              return this.items;
+            var result = '';
+            if (this.tagType === TAG_SELECT && this.$input.getAttribute('multiple')) {
+              result = this.items;
             } else {
-              return this.items.join(this.settings.delimiter);
+              result = this.items.join(this.settings.delimiter);
             }
+
+            return result;
           }
 
           /**
@@ -2759,6 +2763,12 @@ It should handle
             }
           }
 
+          namespace.updatePolymerElementValue = function() {
+            if (this.settings && this.settings.polymerElement) {
+              this.settings.polymerElement.value = this.getValue();
+            }
+          }
+
           /**
            * "Selects" an item. Adds it to the list
            * at the current caret position.
@@ -2815,6 +2825,7 @@ It should handle
                 self.trigger('item_add', value, $item);
                 self.updateOriginalInput();
               }
+              self.updatePolymerElementValue();
             });
           }
 
