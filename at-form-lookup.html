@@ -98,6 +98,16 @@ It should handle
           }
         },
 
+        valueChanged: function (oldValue, newValue) {
+          if (this._selectizeInstance !== undefined) {
+            var currentValue = this._selectizeInstance.getValue();
+            if (this._selectizeInstance.options.hasOwnProperty(newValue)) {
+              this._selectizeInstance.addItem(newValue);
+              this.fire('change');
+            }
+          }
+        },
+
         ready: function () {
           this.initialize();
         },
