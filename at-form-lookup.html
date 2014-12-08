@@ -1880,6 +1880,9 @@ It should handle
                 self.advanceSelection(1, e);
                 return;
               case KEY_TAB:
+                if (!self.$activeOption) {
+                  self.$activeOption = self.getFirstItem();
+                }
                 if (self.settings.selectOnTab && self.isOpen && self.$activeOption) {
                   self.onOptionSelect({ currentTarget: self.$activeOption });
                   e.preventDefault();
