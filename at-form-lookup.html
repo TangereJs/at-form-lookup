@@ -49,7 +49,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params">
+<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params withCredentials">
   <template>
     <link rel="stylesheet" href="css/at-form-lookup-default.css" />
     <link rel="stylesheet" href="css/at-form-lookup-bootstrap.css" />
@@ -57,7 +57,7 @@ It should handle
     <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
-    <core-ajax id="coreAjax" auto withCredentials handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
+    <core-ajax id="coreAjax" auto withcredentials?="{{withCredentials}}" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
     <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
       <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
       <core-icon class="error-icon" icon="warning"></core-icon>
@@ -2248,6 +2248,7 @@ It should handle
               height_menu = height(self.$dropdown_content);
               height_item = completeOuterHeight(self.$activeOption);
               scroll = self.$dropdown_content.scrollTop || 0;
+              if (scroll < 10) { scroll = 0; }
               var activeOptionTop = self.$activeOption.getBoundingClientRect().top;
               var dropDownContentTop = self.$dropdown_content.getBoundingClientRect().top;
               y = activeOptionTop - dropDownContentTop + scroll;
@@ -2258,7 +2259,9 @@ It should handle
                 self.$dropdown_content.scrollTop = scroll_bottom;
               } else if (y < scroll) {
                 self.$dropdown_content.scrollTop = scroll_top;
-              } else if (scroll === self.$dropdown_content.scrollTop) {
+              }
+
+              if (self.getFirstItem() === self.$activeOption) {
                 self.$dropdown_content.scrollTop = 0;
               }
             }
@@ -2767,7 +2770,7 @@ It should handle
             }
           }
 
-          namespace.updatePolymerElementValue = function() {
+          namespace.updatePolymerElementValue = function () {
             if (this.settings && this.settings.polymerElement) {
               this.settings.polymerElement.value = this.getValue();
             }
