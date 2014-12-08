@@ -10,12 +10,12 @@
   
   <div>
     Single selection (remote source):
-    <at-form-lookup id="flDropdownSingleSelection" usedropdown url="http://localhost:2014/Activity/adenin.GateKeeper.Content/connector"></at-form-lookup>
+    <at-form-lookup id="flDropdownSingleSelection" withCredentials="true" usedropdown url="http://localhost:2014/Activity/adenin.GateKeeper.Content/connector"></at-form-lookup>
   </div>
 
   <div>
     Multiple selection (remote source):
-    <at-form-lookup id="flDropdownMultipleSelection" usedropdown maxitems="4" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/card"></at-form-lookup>
+    <at-form-lookup id="flDropdownMultipleSelection" withcredentials="true" usedropdown maxitems="4" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/card"></at-form-lookup>
   </div>
 
   <script>
@@ -25,19 +25,14 @@
       var flDropdownSingleSelection = document.getElementById("flDropdownSingleSelection");
       if (flDropdownSingleSelection) {
 
-        flDropdownSingleSelection.addEventListener('at-form-lookup-beforeAjax', function (event) {
-          var data = event.detail;
-          data.coreAjax.params = '{"query":"' + data.query + '"}';
-        });
-
         flDropdownSingleSelection.addEventListener('at-form-lookup-afterAjax', function (event) {
-          var data = event.detail.response.Data.items || [];
-          var dataArray = [];
-          for (var i = 0; i < data.length; i++) {
-            var entry = data[i];
-            dataArray.push({ value: entry.id, title: entry.title });
-          }
-          event.detail.returnData = dataArray;
+          //var data = event.detail.response.Data.items || [];
+          //var dataArray = [];
+          //for (var i = 0; i < data.length; i++) {
+          //  var entry = data[i];
+          //  dataArray.push({ value: entry.id, title: entry.title });
+          //}
+          //event.detail.returnData = dataArray;
         });
       }
 
@@ -49,10 +44,7 @@
          * core-ajax element of the at-form-lookup element is available as event.detail.coreAjax
          * query for the request is available as event.detail.query
          */
-        flDropdownMultipleSelection.addEventListener('at-form-lookup-beforeAjax', function (event) {
-          var data = event.detail;
-          data.coreAjax.params = '{"query":"' + data.query + '"}';
-        });
+        //flDropdownMultipleSelection.addEventListener('at-form-lookup-beforeAjax', function (event) { });
 
         /*
          * at-form-lookup-afterAjax event
@@ -63,13 +55,13 @@
          * by default pair is (value, text); value is the value of the entry, text is used for display
          */
         flDropdownMultipleSelection.addEventListener('at-form-lookup-afterAjax', function (event) {
-          var data = event.detail.response.Data.items || [];
-          var dataArray = [];
-          for (var i = 0; i < data.length; i++) {
-            var entry = data[i];
-            dataArray.push({ value: entry.id, title: entry.title });
-          }
-          event.detail.returnData = dataArray;
+          //var data = event.detail.response.Data.items || [];
+          //var dataArray = [];
+          //for (var i = 0; i < data.length; i++) {
+          //  var entry = data[i];
+          //  dataArray.push({ value: entry.id, title: entry.title });
+          //}
+          //event.detail.returnData = dataArray;
         });
       }
     });

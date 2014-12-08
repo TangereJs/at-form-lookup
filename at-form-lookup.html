@@ -166,7 +166,13 @@ It should handle
               this._selectizeLoadCallback(eventObject.returnData);
             }
             else {
-              // use default
+              var data = event.detail.response.Data.items || [];
+              var dataArray = [];
+              for (var i = 0; i < data.length; i++) {
+                var entry = data[i];
+                dataArray.push({ value: entry.id, title: entry.title });
+              }
+              this._selectizeLoadCallback(dataArray);
             }
           };
         },
