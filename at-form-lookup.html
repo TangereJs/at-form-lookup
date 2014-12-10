@@ -58,6 +58,7 @@ It should handle
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
     <core-ajax id="coreAjax" auto withcredentials?="{{withCredentials}}" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
+    <core-ajax id="loadDefaultAjax" auto withcredentials?="{{withCredentials}}" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
     <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
       <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
       <core-icon class="error-icon" icon="warning"></core-icon>
@@ -205,6 +206,13 @@ It should handle
           this.isInvalid = false;
         },
 
+        loadDefaultOnResponse: function (event) {
+          var item = event.detail.response.Data;
+          this._selectizeInstance.addOption({ "value": item.id, "title": item.title });
+          this._selectizeInstance.addItem(item.id);
+        },
+        loadDefaultOnComplete: function (event) { },
+
         initialize: function () {
           var availableItems = [];
           if (isArray(this.available)) {
@@ -225,7 +233,12 @@ It should handle
           for (var i = 0; i < selectedByDefault.length; i++) {
             selectedByDefault[i] = selectedByDefault[i].trim();
             if (availableItemsInitialLen === 0) {
-              availableItems.push({ title: selectedByDefault[i], value: selectedByDefault[i] });
+              if (this.url !== undefined && this.url !== "") {
+                this.$.loadDefaultAjax.params = '{"id": "' + selectedByDefault[i] + '"}';
+                this.$.loadDefaultAjax.go();
+              } else {
+                availableItems.push({ title: selectedByDefault[i], value: selectedByDefault[i] });
+              }
             }
           }
 
