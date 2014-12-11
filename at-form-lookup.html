@@ -105,6 +105,12 @@ It should handle
             if (this._selectizeInstance.options.hasOwnProperty(newValue)) {
               this._selectizeInstance.addItem(newValue);
               this.fire('change');
+            } else {
+              // do remote lookup
+              if (this.url !== "") {
+                this.$.loadDefaultAjax.url = this.url + newValue;
+                this.$.loadDefaultAjax.go();
+              }
             }
           }
         },
