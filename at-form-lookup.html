@@ -109,6 +109,7 @@ It should handle
               // do remote lookup
               if (this.url !== "") {
                 this.$.loadDefaultAjax.url = this.url + newValue;
+                console.log("112: value changed: loadDefaultAjax.go();");
                 this.$.loadDefaultAjax.go();
               }
             }
@@ -201,6 +202,7 @@ It should handle
           polyElem._selectizeLoadCallback = callback;
           polyElem.$.coreAjax.params = '{ "query": "' + query + '"}';
           polyElem.fire('at-form-lookup-beforeAjax', { coreAjax: polyElem.$.coreAjax, query: query });
+          console.log("205: value changed: coreAjax.go();");
           polyElem.$.coreAjax.go();
         },
 
@@ -231,19 +233,22 @@ It should handle
               availableItems.push({ title: tag, value: tag });
             }
           } else {
-            console.log("Available items should be an array of (id, value) pairs or comma separated string");
+            //console.log("Available items should be an array of (id, value) pairs or comma separated string");
           }
 
           var availableItemsInitialLen = availableItems.length;
           var selectedByDefault = this.value.split(',');
-          for (var i = 0; i < selectedByDefault.length; i++) {
-            selectedByDefault[i] = selectedByDefault[i].trim();
-            if (availableItemsInitialLen === 0) {
-              if (this.url !== undefined && this.url !== "") {
-                this.$.loadDefaultAjax.url = this.url + selectedByDefault[i];
-                this.$.loadDefaultAjax.go();
-              } else {
-                availableItems.push({ title: selectedByDefault[i], value: selectedByDefault[i] });
+          if (isArray(this.value)) {
+            for (var i = 0; i < selectedByDefault.length; i++) {
+              selectedByDefault[i] = selectedByDefault[i].trim();
+              if (availableItemsInitialLen === 0) {
+                if (this.url !== undefined && this.url !== "") {
+                  this.$.loadDefaultAjax.url = this.url + selectedByDefault[i];
+                  console.log("247: initialize: loadDefaultAjax.go();");
+                  this.$.loadDefaultAjax.go();
+                } else {
+                  availableItems.push({ title: selectedByDefault[i], value: selectedByDefault[i] });
+                }
               }
             }
           }
