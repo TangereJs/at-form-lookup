@@ -1496,7 +1496,7 @@ It should handle
             var classes_plugins;
 
             inputMode = self.settings.mode;
-            tab_index = $input.getAttribute('tabindex') !== null ? $input.getAttribute('tabindex') : -1;
+            tab_index = $input.getAttribute('tabindex') !== null ? $input.getAttribute('tabindex') : 1;
             classes = $input.getAttribute('class') !== null ? $input.getAttribute('class') : '';
 
             $wrapper = document.createElement('div');
@@ -1648,11 +1648,11 @@ It should handle
             var tabIndexAttr = $input.attributes.getNamedItem('tabindex');
             this.revertSettings = {
               $children: childElements,
-              tabindex: tabIndexAttr ? tabIndexAttr.value : '-1'
+              tabindex: tabIndexAttr ? tabIndexAttr.value : '1'
             };
 
             var tabIndexAttr = document.createAttribute('tabindex');
-            tabIndexAttr.value = -1;
+            tabIndexAttr.value = 1;
             $input.attributes.setNamedItem(tabIndexAttr);
             $input.style.display = 'none';
             $input.parentNode.insertBefore(self.$wrapper, $input.nextSibling);
