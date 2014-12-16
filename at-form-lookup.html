@@ -237,7 +237,7 @@ It should handle
           }
 
           var availableItemsInitialLen = availableItems.length;
-          var selectedByDefault = this.value.split(',');
+          var selectedByDefault = isArray(this.value) ? this.value : this.value.split(',');
           if (isArray(this.value)) {
             for (var i = 0; i < selectedByDefault.length; i++) {
               selectedByDefault[i] = selectedByDefault[i].trim();
