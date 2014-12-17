@@ -213,9 +213,7 @@
 
 
   .selectize-dropdown [data-selectable] {
-    margin-left: 12px;
-    margin-right: 12px;
-    padding: 0.7em 1em;
+    padding: 10px 12px;
   }
 
 .selectize-dropdown .optgroup-header {
@@ -244,7 +242,7 @@
 .selectize-dropdown-content {
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: 203px;
+  max-height: 200px;
 }
 
 
@@ -309,7 +307,7 @@
   background-color: #e5e5e5;
 }
 .selectize-dropdown-content {
-  padding: 5px 0;
+  padding: 0 12px;
 }
 .selectize-dropdown-header {
   padding: 6px 12px;
