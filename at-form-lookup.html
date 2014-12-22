@@ -186,7 +186,7 @@ It should handle
               this._selectizeLoadCallback(eventObject.returnData);
             }
             else {
-              var data = event.detail.response.Data.items || [];
+              var data = event.detail.response.Data !== undefined ? event.detail.response.Data.items : [];
               var dataArray = [];
               for (var i = 0; i < data.length; i++) {
                 var entry = data[i];
@@ -279,6 +279,7 @@ It should handle
             }
 
             var instance = libraryRoot.selectize(this.$.selectTags, {
+              plugins: ['remove_button'],
               selectOnTab: true,
               preload: this.preload,
               allowEmpty: this.allowEmpty,
@@ -290,6 +291,7 @@ It should handle
           } else {
             this.$.inputTags.value = this.available;
             var instance = libraryRoot.selectize(this.$.inputTags, {
+              plugins: ['remove_button'],
               selectOnTab: true,
               maxItems: this.maxItems,
               polymerElement: this
@@ -1559,10 +1561,8 @@ It should handle
 
             if (self.plugins.names.length) {
               classes_plugins = 'plugin-' + self.plugins.names.join(' plugin-');
-              for (var i = 0; i < classes_plugins; i++) {
-                $wrapper.classList.add(classes_plugins[i]);
-                $dropdown.classList(classes_plugins[i]);
-              }
+              $wrapper.classList.add(classes_plugins);
+              $dropdown.classList.add(classes_plugins);
             }
 
             if ((settings.maxItems === null || settings.maxItems > 1) && self.tagType === TAG_SELECT) {
@@ -2253,7 +2253,8 @@ It should handle
               for (var aiIndex = 0; self.$activeItems.length; aiIndex++) {
                 self.$activeItems[aiIndex].classList.remove('active');
               }
-              self.$activeItems = [$item.classList.add('active')];
+              $item.classList.add('active');
+              self.$activeItems = [$item];
             }
 
             // ensure control has focus
@@ -2682,6 +2683,7 @@ It should handle
 
             // update the item if it's selected
             if (self.items.indexOf(value_new) !== -1) {
+              debugger;
               $item = self.getItem(value);
               $item_new = $(self.render('item', data));
               if ($item.hasClass('active')) $item_new.addClass('active');
@@ -2847,7 +2849,8 @@ It should handle
               $item = self.render('item', self.options[value]);
               wasFull = self.isFull();
               self.items.splice(self.caretPos, 0, value);
-              self.insertAtCaret($item);
+              var insertedNode = self.insertAtCaret($item);
+              self.reattachRemoveLinkClickEventListener(insertedNode);
               if (!self.isPending || (!wasFull && self.isFull())) {
                 self.refreshState();
               }
@@ -2881,6 +2884,23 @@ It should handle
             });
           }
 
+          namespace.reattachRemoveLinkClickEventListener = function (insertedNode) {
+            var removeItem = insertedNode.querySelector('.remove');
+            if (removeItem !== null && removeItem !== undefined) {
+              var __self = this;
+              removeItem.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (__self.isLocked) return;
+
+                var $item = e.currentTarget.parentElement;
+                __self.setActiveItem($item);
+                if (__self.deleteSelection()) {
+                  __self.setCaret(__self.items.length);
+                }
+              });
+            }
+          }
+
           /**
            * Removes the selected item matching
            * the provided value.
@@ -2892,7 +2912,9 @@ It should handle
             var $item, i, idx;
 
             $item = (typeof value === 'object') ? value : self.getItem(value);
-            value = hash_key($item.getAttribute('data-value'));
+            if ($item.getAttribute !== undefined) {
+              value = hash_key($item.getAttribute('data-value'));
+            }
             i = self.items.indexOf(value);
 
             if (i !== -1) {
@@ -3190,6 +3212,7 @@ It should handle
               this.$control.insertBefore($elAsChild, refElement);
             }
             this.setCaret(caret + 1);
+            return $elAsChild;
           }
 
           /**
@@ -3216,12 +3239,23 @@ It should handle
             values = [];
 
             if (self.$activeItems.length) {
-              $tail = self.$control.children('.active:' + (direction > 0 ? 'last' : 'first'));
-              caret = self.$control.children(':not(input)').index($tail);
+              var $possibleTails = self.$control.querySelectorAll('.active');
+              if ($possibleTails.length > 0 && direction > 0) {
+                $tail = $possibleTails[$possibleTails.length - 1];
+              } else {
+                $tail = $possibleTails[0];
+              }
+              //$tail = self.$control.querySelectorAll('.active:' + (direction > 0 ? 'last' : 'first'));
+              var notInputs = self.$control.querySelectorAll(':not(input)');
+              caret = Array.prototype.indexOf.call(notInputs, $tail)
+
               if (direction > 0) { caret++; }
 
               for (i = 0, n = self.$activeItems.length; i < n; i++) {
-                values.push($(self.$activeItems[i]).attr('data-value'));
+                if (self.$activeItems[i] !== undefined) {
+                  var data_value = self.$activeItems[i].getAttribute('data-value');
+                  values.push(data_value);
+                }
               }
               if (e) {
                 e.preventDefault();
@@ -3468,6 +3502,10 @@ It should handle
               value = hash_key(data[self.settings.valueField]);
               cache = !!value;
             }
+
+            //if (templateName === 'item') {
+            //  cache = false;
+            //}
 
             // pull markup from cache if it exists
             if (cache) {
@@ -3968,31 +4006,32 @@ It should handle
             var original = self.setup;
             return function () {
               // override the item rendering method to add the button to each
+              //debugger;
               if (options.append) {
                 var render_item = self.settings.render.item;
                 self.settings.render.item = function (data) {
-                  return append(render_item.apply(this, arguments), html);
-                };
+                  var result = append(render_item.apply(this, arguments), html);
+                  return result;
+                }
               }
-
               original.apply(this, arguments);
 
               // add event listener
-              var item = this.$control.querySelector('.' + options.className)
-              item.addEventListener('click', function (e) {
-                e.preventDefault();
-                if (self.isLocked) return;
+              var removeItems = this.$control.querySelectorAll('.' + options.className)
+              for (var i = 0; i < removeItems.length; i++) {
+                removeItems[i].addEventListener('click', function (e) {
+                  e.preventDefault();
+                  if (self.isLocked) return;
 
-                var $item = $(e.currentTarget).parent();
-                self.setActiveItem($item);
-                if (self.deleteSelection()) {
-                  self.setCaret(self.items.length);
-                }
-              });
-
-            };
+                  var $item = e.currentTarget.parentElement;
+                  self.setActiveItem($item);
+                  if (self.deleteSelection()) {
+                    self.setCaret(self.items.length);
+                  }
+                });
+              }
+            }
           })();
-
         });
 
         Selectize.define('restore_on_backspace', function (options) {
