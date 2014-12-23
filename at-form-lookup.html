@@ -1692,7 +1692,7 @@ It should handle
             self.trigger('initialize');
 
             // preload options
-            if (settings.preload === true) {
+            if (settings.preload === true || settings.preload === "true") {
               self.onSearchChange('');
             }
           }
