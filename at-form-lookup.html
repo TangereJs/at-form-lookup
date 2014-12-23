@@ -186,7 +186,10 @@ It should handle
               this._selectizeLoadCallback(eventObject.returnData);
             }
             else {
-              var data = event.detail.response.Data !== undefined ? event.detail.response.Data.items : [];
+              var data = [];
+              if ((event.detail.response.Data !== undefined && event.detail.response.Data !== null) && (event.detail.response.Data.items !== undefined && event.detail.response.Data.items !== null)) {
+                data = event.detail.response.Data.items;
+              }
               var dataArray = [];
               for (var i = 0; i < data.length; i++) {
                 var entry = data[i];
