@@ -51,10 +51,19 @@ It should handle
 </script>
 <polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params withCredentials">
   <template>
+    <style>
+      .lookupLabel {
+        font-size: 14px;
+        font-weight: bold;
+        display: block;
+        padding: 0 0 0.3em 0;
+      }
+    </style>
     <link rel="stylesheet" href="css/at-form-lookup-default.css" />
     <link rel="stylesheet" href="css/at-form-lookup-bootstrap.css" />
     <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
     <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
+    <label id="label" class="lookupLabel"></label>
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
     <core-ajax id="coreAjax" auto withcredentials?="{{withCredentials}}" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
@@ -96,7 +105,15 @@ It should handle
           value: {
             value: '',
             reflect: true
+          },
+          label: {
+            value: '',
+            reflect: true
           }
+        },
+
+        labelChanged: function (oldValue, newValue) {
+          this.$.label.textContent = newValue;
         },
 
         valueChanged: function (oldValue, newValue) {
@@ -108,6 +125,7 @@ It should handle
             } else {
               // do remote lookup
               if (this.url !== "") {
+                // here is why default channel doens't show ; url is broken
                 this.$.loadDefaultAjax.url = this.url + newValue;
                 console.log("112: value changed: loadDefaultAjax.go();");
                 this.$.loadDefaultAjax.go();
@@ -1548,6 +1566,7 @@ It should handle
             paperShadow.appendChild($dropdown_content);
 
             $dropdown_content.addEventListener('mousedown', function (e) {
+              e.preventDefault();
               if (e.target !== $dropdown_content) {
                 self.setActiveOption(e.target, true, true);
                 self.onOptionSelect({ currentTarget: self.$activeOption });
@@ -1568,7 +1587,7 @@ It should handle
               $dropdown.classList.add(classes_plugins);
             }
 
-            if ((settings.maxItems === null || settings.maxItems > 1) && self.tagType === TAG_SELECT) {
+            if ((settings.maxItems === null || settings.maxItems > 1)) { //&& self.tagType === TAG_SELECT
               var multipleAttr = document.createAttribute('multiple');
               multipleAttr.value = 'multiple';
               $input.attributes.setNamedItem(multipleAttr);
