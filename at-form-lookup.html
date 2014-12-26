@@ -109,7 +109,17 @@ It should handle
           label: {
             value: '',
             reflect: true
-          }
+          },
+          url: { value: '', reflect: true },
+          maxItems: { value: 1, reflect: true },
+        },
+
+        urlChanged: function(oldValue, newValue){
+          this.initialize();
+        },
+
+        maxItemsChanged: function(oldValue, newValue){
+          this.initialize();
         },
 
         labelChanged: function (oldValue, newValue) {
