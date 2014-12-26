@@ -30,35 +30,19 @@
 .selectize-dropdown-header {
   position: relative;
   padding: 3px 12px;
-  
-
-
-
-
 }
+
 .selectize-dropdown-header-close {
   position: absolute;
   right: 12px;
-  top: 50%;
-  
-  
+  top: 50%;  
   margin-top: -12px;
-  line-height: 20px;
-  
+  line-height: 20px;  
 }
 
-
-
-.selectize-dropdown.plugin-optgroup_columns .optgroup {
-  
-  
-  float: left;
-  
-  
-  
+.selectize-dropdown.plugin-optgroup_columns .optgroup {  
+  float: left;  
 }
-
-
 
 .selectize-dropdown.plugin-optgroup_columns .optgroup:before {
   display: none;
@@ -66,8 +50,9 @@
 
 .selectize-control.plugin-remove_button [data-value] {
   position: relative;
-  padding-right: 24px !important;
+  padding-right: 18px !important;
 }
+
 .selectize-control.plugin-remove_button [data-value] .remove {
   z-index: 1;
   /* fixes ie bug (see #392) */
@@ -75,50 +60,32 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 17px;
-  text-align: center;
-  
-  
-  
+  width: 16px;
+  text-align: center;  
   text-decoration: none;
   vertical-align: middle;
   display: inline-block;
-  padding: 1px 0 0 0;
-  
-  
-  
-  
-  
-  
-  
+  padding: 3px 0 0 0;  
 }
+
 .selectize-control {
   position: relative;
 }
 
 .selectize-input,
-.selectize-control.single .selectize-input.input-active {
-  
-  
+.selectize-control.single .selectize-input.input-active {  
   display: inline-block;
 }
-.selectize-input {
-  
+
+.selectize-input {  
   padding: 6px 12px;
   display: inline-block;
   width: 100%;
   overflow: hidden;
   position: relative;
-  z-index: 1;
-  
-  
-  
-  
-  
-  
-  
-  
+  z-index: 1;  
 }
+
 .selectize-control.multi .selectize-input.has-items {
   padding: 5px 12px 2px;
 }
@@ -130,25 +97,12 @@
   zoom: 1;
   *display: inline;
 }
+
 .selectize-control.multi .selectize-input > div {
   cursor: pointer;
   margin: 0 3px 3px 0;
-  padding: 1px 3px;  
-  
-  
-  
+  padding: 1px 3px 1px 8px;    
 }
-
-
-
-
-
-
-
-
-
-
-
 
 .selectize-input > input {
   display: inline-block !important;
@@ -157,14 +111,11 @@
   max-height: none !important;
   max-width: 100% !important;
   margin: 0 !important;
-  text-indent: 0 !important;
-  
-  
+  text-indent: 0 !important;  
   line-height: inherit !important;
-  -webkit-user-select: auto !important;
-  
-  
+  -webkit-user-select: auto !important;  
 }
+
 .selectize-input > input::-ms-clear {
   display: none;
 }
@@ -207,12 +158,15 @@
   overflow: hidden;
 }
 
-  
-  
-  
-  
 
-.selectize-dropdown [data-selectable],
+
+
+
+
+  .selectize-dropdown [data-selectable] {
+    padding: 10px 12px;
+  }
+
 .selectize-dropdown .optgroup-header {
   padding: 3px 12px;
 }
@@ -275,28 +229,18 @@
   margin: 0 4px 0 -2px !important;
 }
 
-
-
-
 .selectize-dropdown,
 .selectize-dropdown.form-control {
   height: auto;
   padding: 0;
   margin: 2px 0 0 0;
-  z-index: 1000;
-  
-  
-  
-  
-  
-  
-  
-  
+  z-index: 1000;  
 }
-.selectize-dropdown .optgroup-header {
-  
+
+.selectize-dropdown .optgroup-header {  
   line-height: 1.42857143;
 }
+
 .selectize-dropdown .optgroup:first-child:before {
   display: none;
 }
@@ -304,7 +248,7 @@
   background-color: #e5e5e5;
 }
 .selectize-dropdown-content {
-  padding: 5px 0;
+  padding: 0 12px;
 }
 .selectize-dropdown-header {
   padding: 6px 12px;
@@ -331,3 +275,4 @@
 height: 20px;
 width: 20px;
 }
+
