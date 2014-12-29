@@ -114,11 +114,13 @@ It should handle
           maxItems: { value: 1, reflect: true },
         },
 
-        urlChanged: function(oldValue, newValue){
+        urlChanged: function (oldValue, newValue) {
+          this.destroyExisting();
           this.initialize();
         },
 
-        maxItemsChanged: function(oldValue, newValue){
+        maxItemsChanged: function (oldValue, newValue) {
+          this.destroyExisting();
           this.initialize();
         },
 
@@ -184,7 +186,7 @@ It should handle
 
         usedropdownChanged: function (oldValue, newValue) {
           if (this._selectizeInstance !== undefined) {
-            this._selectizeInstance.destroy();
+            this.destroyExisting();
             this.$.selectTags.style.display = "none";
             this.$.inputTags.style.display = "none";
           }
@@ -192,17 +194,22 @@ It should handle
         },
 
         selectedChanged: function (oldValue, newValue) {
-          if (this.$.selectTags.selectize) {
-            this.$.selectTags.selectize.destroy();
-          }
+          this.destroyExisting();
           this.initialize();
         },
 
         availableChanged: function (oldValue, newValue) {
+          this.destroyExisting();
+          this.initialize();
+        },
+
+        destroyExisting: function(){
           if (this.$.selectTags.selectize) {
             this.$.selectTags.selectize.destroy();
           }
-          this.initialize();
+          if (this.$.inputTags.selectize) {
+            this.$.inputTags.selectize.destroy();
+          }
         },
 
         coreAjaxOnComplete: function (event) {
