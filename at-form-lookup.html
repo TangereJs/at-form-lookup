@@ -49,7 +49,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params withCredentials">
+<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params withCredentials usedropdown">
   <template>
     <style>
       .lookupLabel {
@@ -83,6 +83,7 @@ It should handle
       Polymer('at-form-lookup', {
         _selectizeLoadCallback: function () { },
         _selectizeInstance: {},
+        _usedropdown: true,
         publish: {
           isInvalid: false,
           error: 'This field is required',
@@ -91,10 +92,6 @@ It should handle
             reflect: true
           },
           required: {
-            value: false,
-            reflect: true
-          },
-          usedropdown: {
             value: false,
             reflect: true
           },
@@ -184,14 +181,15 @@ It should handle
           }
         },
 
-        usedropdownChanged: function (oldValue, newValue) {
-          if (this._selectizeInstance !== undefined) {
-            this.destroyExisting();
-            this.$.selectTags.style.display = "none";
-            this.$.inputTags.style.display = "none";
-          }
-          this.initialize();
-        },
+        //_usedropdownChanged: function (oldValue, newValue) {
+        //  this._usedropdown = newValue
+        //  if (this._selectizeInstance !== undefined) {
+        //    this.destroyExisting();
+        //    this.$.selectTags.style.display = "none";
+        //    this.$.inputTags.style.display = "none";
+        //  }
+        //  this.initialize();
+        //},
 
         selectedChanged: function (oldValue, newValue) {
           this.destroyExisting();
@@ -267,6 +265,8 @@ It should handle
         loadDefaultOnComplete: function (event) { },
 
         initialize: function () {
+          var usedropDownAttr = this.getAttribute('usedropdown');
+          this._usedropdown = usedropDownAttr !== null ? usedropDownAttr.value : this._usedropdown;
           var availableItems = [];
           if (isArray(this.available)) {
             availableItems = this.available;
@@ -309,7 +309,7 @@ It should handle
           }
 
           //if (this.available === '') { return; }
-          if (this.usedropdown === true) {
+          if (this._usedropdown === true) {
             for (var j = 0; j < availableItems.length; j++) {
               var item = availableItems[j];
               var optionEl = document.createElement('option');
