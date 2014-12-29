@@ -66,8 +66,8 @@ It should handle
     <label id="label" class="lookupLabel"></label>
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
-    <core-ajax id="coreAjax" withcredentials?="{{withCredentials}}" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
-    <core-ajax id="loadDefaultAjax" withcredentials?="{{withCredentials}}" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
+    <core-ajax id="coreAjax" withCredentials="{{ withCredentials !== undefined ? withCredentials : true }}" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
+    <core-ajax id="loadDefaultAjax" withCredentials="{{ withCredentials !== undefined ? withCredentials : true }}" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
     <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
       <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
       <core-icon class="error-icon" icon="warning"></core-icon>
@@ -329,7 +329,10 @@ It should handle
             var instance = libraryRoot.selectize(this.$.inputTags, {
               plugins: ['remove_button'],
               selectOnTab: true,
+              preload: this.preload,
+              allowEmpty: this.allowEmpty,
               maxItems: this.maxItems,
+              load: this.selectizeOnLoad,
               polymerElement: this
             });
             this._selectizeInstance = instance;
@@ -1419,7 +1422,7 @@ It should handle
 
         function getTextDirectionFromParents(startElement) {
           var parentElement = startElement.parentElement || startElement.parentNode;
-          var textDirectionValue = parentElement.getAttribute !== undefined ? parentElement.getAttribute('dir') : 'rtl';
+          var textDirectionValue = parentElement.getAttribute !== undefined ? parentElement.getAttribute('dir') : 'ltrw';
           if (textDirectionValue !== undefined && textDirectionValue !== null && textDirectionValue !== '') {
             return textDirectionValue;
           } else {
