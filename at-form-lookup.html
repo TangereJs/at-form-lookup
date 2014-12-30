@@ -135,9 +135,12 @@ It should handle
               if (this.url !== "") {
                 if (!isArray(this.value)) {
                   var distinctIds = this.value.split(',');
+                    var urlParts = this.url.split('?');
+                  var baseUrl = urlParts[0];
+                  var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
                   for (var i = 0; i < distinctIds.length; i++) {
                     var distinctId = distinctIds[i];
-                    this.$.loadDefaultAjax.url = this.url + '/' + distinctId;
+                    this.$.loadDefaultAjax.url = baseUrl + '/' + distinctId + queryPart;
                     console.log("112: value changed: loadDefaultAjax.go();");
                     console.log('url:' + this.$.loadDefaultAjax.url);
                     this.$.loadDefaultAjax.go();
