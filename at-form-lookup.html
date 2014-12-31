@@ -245,7 +245,7 @@ It should handle
           // polymer element upon which selectize is constructed is passed into selectize settings and can be accessed here
           var polyElem = this.settings.polymerElement;
           polyElem._selectizeLoadCallback = callback;
-          polyElem.$.coreAjax.params = '{ "query": "' + query + '"}';
+          polyElem.$.coreAjax.params = '{ "query": "' + query + '", "page":"1", "pageSize":"25"}';
           polyElem.fire('at-form-lookup-beforeAjax', { coreAjax: polyElem.$.coreAjax, query: query });
           console.log("205: value changed: coreAjax.go();");
           polyElem.$.coreAjax.go();
