@@ -112,12 +112,10 @@ It should handle
         },
 
         urlChanged: function (oldValue, newValue) {
-          this.destroyExisting();
           this.initialize();
         },
 
         maxItemsChanged: function (oldValue, newValue) {
-          this.destroyExisting();
           this.initialize();
         },
 
@@ -197,21 +195,21 @@ It should handle
         //},
 
         selectedChanged: function (oldValue, newValue) {
-          this.destroyExisting();
           this.initialize();
         },
 
         availableChanged: function (oldValue, newValue) {
-          this.destroyExisting();
           this.initialize();
         },
 
         destroyExisting: function () {
           if (this.$.selectTags.selectize) {
             this.$.selectTags.selectize.destroy();
+            this.$.selectTags.style.display = "none";
           }
           if (this.$.inputTags.selectize) {
             this.$.inputTags.selectize.destroy();
+            this.$.inputTags.style.display = "none";
           }
         },
 
@@ -270,6 +268,7 @@ It should handle
         loadDefaultOnComplete: function (event) { },
 
         initialize: function () {
+          this.destroyExisting();
           var usedropDownAttr = this.getAttribute('usedropdown');
           this._usedropdown = usedropDownAttr !== null ? usedropDownAttr.value : this._usedropdown;
           var availableItems = [];
