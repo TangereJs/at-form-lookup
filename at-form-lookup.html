@@ -49,7 +49,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params withoutCredentials usedropdown">
+<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params withCredentials usedropdown">
   <template>
     <style>
       .lookupLabel {
@@ -66,8 +66,8 @@ It should handle
     <label id="label" class="lookupLabel"></label>
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
-    <core-ajax id="coreAjax" withcredentials?="{{ withoutCredentials == undefined }}" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
-    <core-ajax id="loadDefaultAjax" withcredentials?="{{ withoutCredentials == undefined }}" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
+    <core-ajax id="coreAjax" withCredentials="{{ !withCredentials }}"  handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
+    <core-ajax id="loadDefaultAjax" withCredentials="{{ !withCredentials }}" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
     <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
       <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
       <core-icon class="error-icon" icon="warning"></core-icon>
