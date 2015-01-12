@@ -49,7 +49,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params withCredentials usedropdown">
+<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params usedropdown">
   <template>
     <style>
       .lookupLabel {
@@ -66,8 +66,8 @@ It should handle
     <label id="label" class="lookupLabel"></label>
     <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
     <select id="selectTags" style="display:none"></select>
-    <core-ajax id="coreAjax" withCredentials="{{ !withCredentials }}"  handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
-    <core-ajax id="loadDefaultAjax" withCredentials="{{ !withCredentials }}" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
+    <core-ajax id="coreAjax" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
+    <core-ajax id="loadDefaultAjax" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
     <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
       <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
       <core-icon class="error-icon" icon="warning"></core-icon>
@@ -107,6 +107,10 @@ It should handle
             value: '',
             reflect: true
           },
+          withCredentials: {
+            value: true,
+            reflect: true
+          },
           url: { value: '', reflect: true },
           maxItems: { value: 1, reflect: true },
         },
@@ -124,28 +128,38 @@ It should handle
         },
 
         valueChanged: function (oldValue, newValue) {
+          var currentValue;
           if (this._selectizeInstance !== undefined) {
-            var currentValue = this._selectizeInstance.getValue();
+            currentValue = this._selectizeInstance.getValue();
+            if (isArray(currentValue) && currentValue.length === 0) {
+              currentValue = this.value;
+              currentValue = currentValue.split(',');
+            }
+          } else {
+            currentValue = this.value;
             currentValue = currentValue.split(',');
-            for (var i = 0; i < currentValue.length; i++) {
-              var currentItem = currentValue[i];
+          }
 
-              if (this._selectizeInstance.options.hasOwnProperty(currentItem)) {
-                this._selectizeInstance.addItem(currentItem);
-              } else {
-                // do remote lookup
-                if (this.url !== "") {
-                  // *ij* this here is request by *ma*
-                  // at-form-lookup should work in orchard without any additional configuration
-                  // code bellow makes that possible
-                  var urlParts = this.url.split('?');
-                  var baseUrl = urlParts[0];
-                  var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
-                  this.$.loadDefaultAjax.url = baseUrl + '/' + currentItem + queryPart;
-                  console.log("112: value changed: loadDefaultAjax.go();");
-                  console.log('url:' + this.$.loadDefaultAjax.url);
-                  this.$.loadDefaultAjax.go();
-                }
+          for (var i = 0; i < currentValue.length; i++) {
+            var currentItem = currentValue[i];
+
+            if (this._selectizeInstance.options.hasOwnProperty(currentItem)) {
+              this._selectizeInstance.addItem(currentItem);
+            } else {
+              // do remote lookup
+              if (this.url !== "") {
+                // *ij* this here is request by *ma*
+                // at-form-lookup should work in orchard without any additional configuration
+                // code bellow makes that possible
+                var urlParts = this.url.split('?');
+                var baseUrl = urlParts[0];
+                var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
+                this.$.loadDefaultAjax.url = baseUrl + '/' + currentItem + queryPart;
+                //console.log("112: value changed: loadDefaultAjax.go();");
+                //console.log('url:' + this.$.loadDefaultAjax.url);
+                //debugger;
+                this.$.loadDefaultAjax.withCredentials = this.withCredentials;
+                this.$.loadDefaultAjax.go();
               }
             }
           }
@@ -183,16 +197,6 @@ It should handle
             }
           }
         },
-
-        //_usedropdownChanged: function (oldValue, newValue) {
-        //  this._usedropdown = newValue
-        //  if (this._selectizeInstance !== undefined) {
-        //    this.destroyExisting();
-        //    this.$.selectTags.style.display = "none";
-        //    this.$.inputTags.style.display = "none";
-        //  }
-        //  this.initialize();
-        //},
 
         selectedChanged: function (oldValue, newValue) {
           this.initialize();
@@ -247,7 +251,9 @@ It should handle
           polyElem._selectizeLoadCallback = callback;
           polyElem.$.coreAjax.params = '{ "query": "' + query + '", "page":"1", "pageSize":"25"}';
           polyElem.fire('at-form-lookup-beforeAjax', { coreAjax: polyElem.$.coreAjax, query: query });
-          console.log("205: value changed: coreAjax.go();");
+          //console.log("205: value changed: coreAjax.go();");
+          //debugger;
+          polyElem.$.coreAjax.withCredentials = polyElem.withCredentials;
           polyElem.$.coreAjax.go();
         },
 
@@ -261,7 +267,7 @@ It should handle
 
         loadDefaultOnResponse: function (event) {
           var item = event.detail.response.Data;
-          console.log(item);
+          //console.log(item);
           this._selectizeInstance.addOption({ "value": item.id, "title": item.title });
           this._selectizeInstance.addItem(item.id);
         },
@@ -293,7 +299,8 @@ It should handle
               if (availableItemsInitialLen === 0) {
                 if (this.url !== undefined && this.url !== "") {
                   this.$.loadDefaultAjax.url = this.url + selectedByDefault[i];
-                  console.log("247: initialize: loadDefaultAjax.go();");
+                  //console.log("247: initialize: loadDefaultAjax.go();");
+                  this.$.loadDefaultAjax.withCredentials = this.withCredentials;
                   this.$.loadDefaultAjax.go();
                 } else {
                   availableItems.push({ title: selectedByDefault[i], value: selectedByDefault[i] });
@@ -2734,7 +2741,7 @@ It should handle
 
             // update the item if it's selected
             if (self.items.indexOf(value_new) !== -1) {
-              debugger;
+              //debugger;
               $item = self.getItem(value);
               $item_new = $(self.render('item', data));
               if ($item.hasClass('active')) $item_new.addClass('active');
