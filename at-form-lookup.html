@@ -113,7 +113,7 @@ It should handle
           },
           url: { value: '', reflect: true },
           maxItems: { value: 1, reflect: true },
-          _loadingInitialValues: true
+          _isUpdating: false
         },
 
         urlChanged: function (oldValue, newValue) {
@@ -129,40 +129,47 @@ It should handle
         },
 
         valueChanged: function (oldValue, newValue) {
-          var currentValue = this.value.split(',');
-          for (var i = 0; i < currentValue.length; i++) {
-            var currentItem = currentValue[i];
-            if (this._selectizeInstance.options.hasOwnProperty(currentItem)) {
-              this._selectizeInstance.addItem(currentItem);
-            } else {
-              // do remote lookup
-              if (this.url !== "" && currentItem !== "") {
-                // *ij* this here is request by *ma*
-                // at-form-lookup should work in orchard without any additional configuration
-                // code bellow makes that possible
-                var urlParts = this.url.split('?');
-                var baseUrl = urlParts[0];
-                var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
-                this.$.loadDefaultAjax.url = baseUrl + '/' + currentItem + queryPart;
-                //console.log("112: value changed: loadDefaultAjax.go();");
-                //console.log('url:' + this.$.loadDefaultAjax.url);
-                //debugger;
-                this.$.loadDefaultAjax.withCredentials = this.withCredentials;
-                this.$.loadDefaultAjax.go();
+          if (!this._isUpdating) {
+            this._isUpdating = true;
+
+            // do the update
+            var sInstance = this._selectizeInstance;
+            if (sInstance !== undefined) {
+              var newValues = this.value.split(',');
+              var selectedItems = sInstance.items;
+
+              var arrIntersection = arrayIntersect(newValues, selectedItems);
+              var itemsToAdd = arraySubtract(newValues, arrIntersection);
+              var itemsToRemove = arraySubtract(selectedItems, arrIntersection);
+
+              for (var i = 0; i < itemsToRemove.length; i++) {
+                sInstance.removeItem(itemsToRemove[i]);
+              }
+
+              for (var i = 0; i < itemsToAdd.length; i++) {
+                var currentItem = itemsToAdd[i];
+                if (sInstance.options.hasOwnProperty(currentItem)) {
+                  sInstance.addItem(currentItem);
+                } else {
+                  if (this.url !== "" && currentItem !== "") {
+                    // *ij* this here is request by *ma*
+                    // at-form-lookup should work in orchard without any additional configuration
+                    // code bellow makes that possible
+                    var urlParts = this.url.split('?');
+                    var baseUrl = urlParts[0];
+                    var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
+                    this.$.loadDefaultAjax.url = baseUrl + '/' + currentItem + queryPart;
+
+                    this.$.loadDefaultAjax.withCredentials = this.withCredentials;
+                    this.$.loadDefaultAjax.go();
+                  }
+                }
               }
             }
+
+            this._isUpdating = false;
+            this.fire('change');
           }
-
-          //if (this._selectizeInstance !== undefined) {
-          //  currentValue = this._selectizeInstance.getValue();
-          //  if (isArray(currentValue) && currentValue.length === 0) {
-          //    currentValue = this.value;
-          //    currentValue = currentValue.split(',');
-          //  }
-          //} else {
-          //}
-
-          this.fire('change');
         },
 
         ready: function () {
@@ -246,8 +253,6 @@ It should handle
           polyElem._selectizeLoadCallback = callback;
           polyElem.$.coreAjax.params = '{ "query": "' + query + '", "page":"1", "pageSize":"25"}';
           polyElem.fire('at-form-lookup-beforeAjax', { coreAjax: polyElem.$.coreAjax, query: query });
-          //console.log("205: value changed: coreAjax.go();");
-          //debugger;
           polyElem.$.coreAjax.withCredentials = polyElem.withCredentials;
           polyElem.$.coreAjax.go();
         },
@@ -262,7 +267,6 @@ It should handle
 
         loadDefaultOnResponse: function (event) {
           var item = event.detail.response.Data;
-          //console.log(item);
           this._selectizeInstance.addOption({ "value": item.id, "title": item.title });
           this._selectizeInstance.addItem(item.id);
         },
@@ -3161,13 +3165,24 @@ It should handle
             } else {
               var value = self.getValue();
               if (isArray(value)) { value = value.join(','); }
-              var valueAttr = document.createAttribute('value');
-              valueAttr.value = value;
-              self.$input.attributes.setNamedItem(valueAttr);
+              self.$input.setAttribute('value', value);
+              self.$input.value = value;
             }
 
             if (self.isSetup) {
-              self.trigger('change', self.getValue());
+              self.trigger('change', self.get$InputValue());
+            }
+          }
+
+          /**
+           * Helper function to get the value of the self.$input variable
+           */
+          namespace.get$InputValue = function () {
+            if (this.$input.tagName === 'SELECT') {
+              return this.getValue();
+            } else {
+              // self.$input.tagName is 'INPUT'
+              return self.$input.value;
             }
           }
 
@@ -3248,7 +3263,10 @@ It should handle
             var self = this;
 
             if (!self.items.length) return;
-            self.$control.querySelector(':not(input)').remove();
+            var children = self.$control.querySelectorAll(':not(input)');
+            for (var i = 0; i < children.length; i++) {
+              children[i].remove();
+            }
             self.items = [];
             self.lastQuery = null;
             self.setCaret(0);
@@ -4230,6 +4248,49 @@ It should handle
 
         return clientHeight + marginTop + marginBottom;
       }
+
+      /**
+       * Computes the intersection of two arrays
+       * 
+       * @param arr1 - {array} first array
+       * @param arr2 - {array} second array
+       * @return {array} intersection 
+       */
+      function arrayIntersect(arr1, arr2) {
+        var intersection = [];
+        if (isArray(arr1) && isArray(arr2)) {
+          for (var i = 0; i < arr1.length; i++) {
+            if (arr2.indexOf(arr1[i]) != -1) {
+              intersection.push(arr1[i]);
+            }
+          }
+        }
+
+        return intersection;
+      }
+
+      /**
+       * Subtract itemsToSubtract array from subtractFrom array
+       * Items from the itemsToSubtract are removed from subtractFrom array
+       *
+       * @param arr1 - {array} subtractFrom
+       * @param arr2 - {array} itemsToSubtract
+       * @return {array} subtraction
+       */
+      function arraySubtract(subtractFrom, itemsToSubtract) {
+        var subtraction = [];
+
+        if (isArray(subtractFrom) && isArray(itemsToSubtract)) {
+          for (var i = 0; i < subtractFrom.length; i++) {
+            if (itemsToSubtract.indexOf(subtractFrom[i]) == -1) {
+              subtraction.push(subtractFrom[i]);
+            }
+          }
+        }
+
+        return subtraction;
+      }
+
     })();
   </script>
 </polymer-element>
