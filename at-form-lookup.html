@@ -113,6 +113,7 @@ It should handle
           },
           url: { value: '', reflect: true },
           maxItems: { value: 1, reflect: true },
+          _loadingInitialValues: true
         },
 
         urlChanged: function (oldValue, newValue) {
@@ -128,26 +129,14 @@ It should handle
         },
 
         valueChanged: function (oldValue, newValue) {
-          var currentValue;
-          if (this._selectizeInstance !== undefined) {
-            currentValue = this._selectizeInstance.getValue();
-            if (isArray(currentValue) && currentValue.length === 0) {
-              currentValue = this.value;
-              currentValue = currentValue.split(',');
-            }
-          } else {
-            currentValue = this.value;
-            currentValue = currentValue.split(',');
-          }
-
+          var currentValue = this.value.split(',');
           for (var i = 0; i < currentValue.length; i++) {
             var currentItem = currentValue[i];
-
             if (this._selectizeInstance.options.hasOwnProperty(currentItem)) {
               this._selectizeInstance.addItem(currentItem);
             } else {
               // do remote lookup
-              if (this.url !== "") {
+              if (this.url !== "" && currentItem !== "") {
                 // *ij* this here is request by *ma*
                 // at-form-lookup should work in orchard without any additional configuration
                 // code bellow makes that possible
@@ -163,6 +152,16 @@ It should handle
               }
             }
           }
+
+          //if (this._selectizeInstance !== undefined) {
+          //  currentValue = this._selectizeInstance.getValue();
+          //  if (isArray(currentValue) && currentValue.length === 0) {
+          //    currentValue = this.value;
+          //    currentValue = currentValue.split(',');
+          //  }
+          //} else {
+          //}
+
           this.fire('change');
         },
 
@@ -196,10 +195,6 @@ It should handle
               this._selectizeInstance.enable();
             }
           }
-        },
-
-        selectedChanged: function (oldValue, newValue) {
-          this.initialize();
         },
 
         availableChanged: function (oldValue, newValue) {
@@ -273,6 +268,16 @@ It should handle
         },
         loadDefaultOnComplete: function (event) { },
 
+        selectizeChange: function (newValue) {
+          // *this* in this function is selectize instance; freaking javascript and function calling
+          var polyElem = this.settings.polymerElement;
+          if (isArray(newValue)) {
+            polyElem.value = newValue.join(',');
+          } else {
+            polyElem.value = newValue;
+          }
+        },
+
         initialize: function () {
           this.destroyExisting();
           var usedropDownAttr = this.getAttribute('usedropdown');
@@ -339,8 +344,10 @@ It should handle
               allowEmpty: this.allowEmpty,
               maxItems: this.maxItems,
               load: this.selectizeOnLoad,
+              onChange: this.selectizeChange,
               polymerElement: this
             });
+
             this._selectizeInstance = instance;
           } else {
             this.$.inputTags.value = this.available;
@@ -351,6 +358,7 @@ It should handle
               allowEmpty: this.allowEmpty,
               maxItems: this.maxItems,
               load: this.selectizeOnLoad,
+              onChange: this.selectizeChange,
               polymerElement: this
             });
             this._selectizeInstance = instance;
@@ -2876,9 +2884,9 @@ It should handle
           }
 
           namespace.updatePolymerElementValue = function () {
-            if (this.settings && this.settings.polymerElement) {
-              this.settings.polymerElement.value = this.getValue();
-            }
+            //if (this.settings && this.settings.polymerElement) {
+            //  this.settings.polymerElement.value = this.getValue();
+            //}
           }
 
           /**
@@ -3151,14 +3159,15 @@ It should handle
               }
               self.$input.innerHTML = options.join('');
             } else {
-              self.$input.value = self.getValue();
+              var value = self.getValue();
+              if (isArray(value)) { value = value.join(','); }
               var valueAttr = document.createAttribute('value');
-              valueAttr.value = self.$input.value;
+              valueAttr.value = value;
               self.$input.attributes.setNamedItem(valueAttr);
             }
 
             if (self.isSetup) {
-              self.trigger('change', self.$input.value);
+              self.trigger('change', self.getValue());
             }
           }
 
