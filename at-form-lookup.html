@@ -285,7 +285,10 @@ It should handle
         initialize: function () {
           this.destroyExisting();
           var usedropDownAttr = this.getAttribute('usedropdown');
-          this._usedropdown = usedropDownAttr !== null ? usedropDownAttr.value : this._usedropdown;
+          this._usedropdown = false;
+          if (usedropDownAttr !== null) {
+            if (usedropDownAttr === "true") { this._usedropdown = true; }
+          }
           var availableItems = [];
           if (isArray(this.available)) {
             availableItems = this.available;
