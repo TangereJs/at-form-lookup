@@ -111,6 +111,10 @@ It should handle
             value: true,
             reflect: true
           },
+          create: {
+            value: false,
+            reflect:true
+          },
           url: { value: '', reflect: true },
           maxItems: { value: 1, reflect: true },
           _isUpdating: false
@@ -346,6 +350,7 @@ It should handle
 
             var instance = libraryRoot.selectize(this.$.selectTags, {
               plugins: ['remove_button'],
+              create: this.create,
               selectOnTab: true,
               preload: this.preload,
               allowEmpty: this.allowEmpty,
@@ -360,6 +365,7 @@ It should handle
             this.$.inputTags.value = this.available;
             var instance = libraryRoot.selectize(this.$.inputTags, {
               plugins: ['remove_button'],
+              create: this.create,
               selectOnTab: true,
               preload: this.preload,
               allowEmpty: this.allowEmpty,
