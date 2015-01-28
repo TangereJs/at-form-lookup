@@ -2891,9 +2891,9 @@ It should handle
           }
 
           namespace.updatePolymerElementValue = function () {
-            //if (this.settings && this.settings.polymerElement) {
-            //  this.settings.polymerElement.value = this.getValue();
-            //}
+            if (this.settings && this.settings.polymerElement) {
+              this.settings.polymerElement.value = this.getValue();
+            }
           }
 
           /**
