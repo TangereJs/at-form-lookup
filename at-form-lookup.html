@@ -117,7 +117,14 @@ It should handle
           },
           url: { value: '', reflect: true },
           maxItems: { value: 1, reflect: true },
-          _isUpdating: false
+          _isUpdating: false,
+          render: {}
+        },
+
+        renderChanged: function (oldValue, newValue) {
+          if (this._selectizeInstance !== undefined) {
+            this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, newValue);
+          }
         },
 
         urlChanged: function (oldValue, newValue) {
@@ -243,7 +250,9 @@ It should handle
               var dataArray = [];
               for (var i = 0; i < data.length; i++) {
                 var entry = data[i];
-                dataArray.push({ value: entry.id, title: entry.title });
+                entry.value = entry.id;
+                //dataArray.push({ value: entry.id, title: entry.title });
+                dataArray.push(entry);
               }
               this._selectizeLoadCallback(dataArray);
             }
@@ -357,7 +366,8 @@ It should handle
               maxItems: this.maxItems,
               load: this.selectizeOnLoad,
               onChange: this.selectizeChange,
-              polymerElement: this
+              polymerElement: this,
+              render: this.render
             });
 
             this._selectizeInstance = instance;
@@ -372,7 +382,8 @@ It should handle
               maxItems: this.maxItems,
               load: this.selectizeOnLoad,
               onChange: this.selectizeChange,
-              polymerElement: this
+              polymerElement: this,
+              render: this.render
             });
             this._selectizeInstance = instance;
           }
@@ -1624,9 +1635,14 @@ It should handle
 
             $dropdown_content.addEventListener('mousedown', function (e) {
               e.preventDefault();
-              if (e.target !== $dropdown_content) {
-                self.setActiveOption(e.target, true, true);
+              if (e.target !== self.$dropdown_content) {
+                if (e.target.parentElement === self.$dropdown_content) {
+                  self.setActiveOption(e.target, true, true);
+                  self.onOptionSelect({ currentTarget: self.$activeOption });
+                } else {
+                  self.setActiveOption(e.target.parentElement, true, true);
                 self.onOptionSelect({ currentTarget: self.$activeOption });
+                }
               }
             });
 
@@ -4156,81 +4172,6 @@ It should handle
           })();
         });
 
-        function isFunction(arg) {
-          return Object.prototype.toString.call(arg) === "[object Function]";
-        }
-
-        function isPlainObject(arg) {
-          return Object.prototype.toString.call(arg) === "[object Object]";
-        }
-
-        function isArray(arg) {
-          return Object.prototype.toString.call(arg) === "[object Array]";
-        }
-
-        function extend() {
-          var src, copyIsArray, copy, name, options, clone, target = arguments[0] || {},
-              i = 1,
-              length = arguments.length,
-              deep = false;
-
-          // Handle a deep copy situation
-          if (typeof target === "boolean") {
-            deep = target;
-            target = arguments[1] || {};
-            // skip the boolean and the target
-            i = 2;
-          }
-
-          // Handle case when target is a string or something (possible in deep copy)
-          if (typeof target !== "object" && !isFunction(target)) {
-            target = {};
-          }
-
-          // extend jQuery itself if only one argument is passed
-          if (length === i) {
-            target = this;
-            --i;
-          }
-
-          for (; i < length; i++) {
-            // Only deal with non-null/undefined values
-            if ((options = arguments[i]) != null) {
-              // Extend the base object
-              for (name in options) {
-                src = target[name];
-                copy = options[name];
-
-                // Prevent never-ending loop
-                if (target === copy) {
-                  continue;
-                }
-
-                // Recurse if we're merging plain objects or arrays
-                if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
-                  if (copyIsArray) {
-                    copyIsArray = false;
-                    clone = src && isArray(src) ? src : [];
-
-                  } else {
-                    clone = src && isPlainObject(src) ? src : {};
-                  }
-
-                  // Never move original objects, clone them
-                  target[name] = extend(deep, clone, copy);
-
-                  // Don't bring in undefined values
-                } else if (copy !== undefined) {
-                  target[name] = copy;
-                }
-              }
-            }
-          }
-
-          // Return the modified object
-          return target;
-        }
-
         return Selectize;
       }));
 
@@ -4256,6 +4197,81 @@ It should handle
         marginBottom = !parseInt(marginBottom) ? 0 : parseInt(marginBottom);
 
         return clientHeight + marginTop + marginBottom;
+      }
+
+      function isFunction(arg) {
+        return Object.prototype.toString.call(arg) === "[object Function]";
+      }
+
+      function isPlainObject(arg) {
+        return Object.prototype.toString.call(arg) === "[object Object]";
+      }
+
+      function isArray(arg) {
+        return Object.prototype.toString.call(arg) === "[object Array]";
+      }
+
+      function extend() {
+        var src, copyIsArray, copy, name, options, clone, target = arguments[0] || {},
+            i = 1,
+            length = arguments.length,
+            deep = false;
+
+        // Handle a deep copy situation
+        if (typeof target === "boolean") {
+          deep = target;
+          target = arguments[1] || {};
+          // skip the boolean and the target
+          i = 2;
+        }
+
+        // Handle case when target is a string or something (possible in deep copy)
+        if (typeof target !== "object" && !isFunction(target)) {
+          target = {};
+        }
+
+        // extend jQuery itself if only one argument is passed
+        if (length === i) {
+          target = this;
+          --i;
+        }
+
+        for (; i < length; i++) {
+          // Only deal with non-null/undefined values
+          if ((options = arguments[i]) != null) {
+            // Extend the base object
+            for (name in options) {
+              src = target[name];
+              copy = options[name];
+
+              // Prevent never-ending loop
+              if (target === copy) {
+                continue;
+              }
+
+              // Recurse if we're merging plain objects or arrays
+              if (deep && copy && (isPlainObject(copy) || (copyIsArray = isArray(copy)))) {
+                if (copyIsArray) {
+                  copyIsArray = false;
+                  clone = src && isArray(src) ? src : [];
+
+                } else {
+                  clone = src && isPlainObject(src) ? src : {};
+                }
+
+                // Never move original objects, clone them
+                target[name] = extend(deep, clone, copy);
+
+                // Don't bring in undefined values
+              } else if (copy !== undefined) {
+                target[name] = copy;
+              }
+            }
+          }
+        }
+
+        // Return the modified object
+        return target;
       }
 
       /**
