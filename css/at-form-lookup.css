@@ -70,9 +70,15 @@
   position: relative;
 }
 
+.selectize-control input {
+  font-size: inherit;
+  font-family: inherit;
+}
+
+
   .selectize-input,
   .selectize-control.single .selectize-input.input-active {
-    display: inline-block;
+    display: inline-block;    
   }
 
 .selectize-input {
