@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>at-form-lookup orchard tags</title>
+  <script src="../webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="at-form-lookup.html">
+</head>
+<body>
+  <div>
+    <h2>Orchard tags using at-form-lookup</h2>
+  </div>
+  <div>
+    Orchard tags using at-form-lookup:
+    <at-form-lookup id="orchardTags" create="true" maxitems="99" url="http://localhost:2014/Admin/Tags/FetchSimilarTags" />
+  </div>
+
+  <script>
+    document.addEventListener('polymer-ready', function () {
+      orchardTags = document.getElementById('orchardTags');
+
+      orchardTags.addEventListener('at-form-lookup-beforeAjax', function (event) {
+        var data = event.detail;
+        if (data.query !== "") {
+          data.coreAjax.params = '{"snippet":"' + data.query + '"}';
+        } else {
+          data.coreAjax.params = {};
+        }
+      });
+
+      orchardTags.addEventListener('at-form-lookup-afterAjax', function (event) {
+        var response = event.detail.response;
+        var options = [];
+        for (var i = 0; i < response.length; i++) {
+          options.push({ value: response[i], title: response[i] });
+        }
+
+        event.detail.returnData = options;
+      });
+    });
+  </script>
+</body>
+</html>
