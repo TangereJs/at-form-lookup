@@ -63,18 +63,20 @@ It should handle
     <link rel="stylesheet" href="css/at-form-lookup-default.css" />
     <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
     <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
-    <label id="label" class="lookupLabel"></label>
-    <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
-    <select id="selectTags" style="display:none"></select>
-    <core-ajax id="coreAjax" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
-    <core-ajax id="loadDefaultAjax" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
-    <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
-      <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
-      <core-icon class="error-icon" icon="warning"></core-icon>
-    </div>
+    <div class="{{ class }}" style="{{ style }}">
+      <label id="label" class="lookupLabel"></label>
+      <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
+      <select id="selectTags" style="display:none"></select>
+      <core-ajax id="coreAjax" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
+      <core-ajax id="loadDefaultAjax" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
+      <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
+        <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
+        <core-icon class="error-icon" icon="warning"></core-icon>
+      </div>
 
-    <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden?="{{ isInvalid }}"></div>
-    <content></content>
+      <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden?="{{ isInvalid }}"></div>
+      <content></content>
+    </div>
   </template>
   <script>
     (function () {
@@ -282,6 +284,8 @@ It should handle
           var item = event.detail.response.Data;
           this._selectizeInstance.addOption({ "value": item.id, "title": item.title });
           this._selectizeInstance.addItem(item.id);
+
+          this.fire('at-form-lookup-initialized', {data: item});
         },
         loadDefaultOnComplete: function (event) { },
 
