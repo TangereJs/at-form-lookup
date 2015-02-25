@@ -49,7 +49,7 @@ It should handle
     }
   };
 </script>
-<polymer-element name="at-form-lookup" attributes="allowEmpty preload maxItems url params usedropdown">
+<polymer-element name="at-form-lookup" attributes="allowEmpty url params usedropdown">
   <template>
     <style>
       .lookupLabel {
@@ -115,7 +115,11 @@ It should handle
           },
           create: {
             value: false,
-            reflect:true
+            reflect: true
+          },
+          preload: {
+            value: true,
+            reflect: true
           },
           url: { value: '', reflect: true },
           maxItems: { value: 1, reflect: true },
@@ -285,7 +289,7 @@ It should handle
           this._selectizeInstance.addOption({ "value": item.id, "title": item.title });
           this._selectizeInstance.addItem(item.id);
 
-          this.fire('at-form-lookup-initialized', {data: item});
+          this.fire('at-form-lookup-initialized', { data: item });
         },
         loadDefaultOnComplete: function (event) { },
 
@@ -1645,7 +1649,7 @@ It should handle
                   self.onOptionSelect({ currentTarget: self.$activeOption });
                 } else {
                   self.setActiveOption(e.target.parentElement, true, true);
-                self.onOptionSelect({ currentTarget: self.$activeOption });
+                  self.onOptionSelect({ currentTarget: self.$activeOption });
                 }
               }
             });
@@ -4280,10 +4284,10 @@ It should handle
 
       /**
        * Computes the intersection of two arrays
-       * 
+       *
        * @param arr1 - {array} first array
        * @param arr2 - {array} second array
-       * @return {array} intersection 
+       * @return {array} intersection
        */
       function arrayIntersect(arr1, arr2) {
         var intersection = [];
