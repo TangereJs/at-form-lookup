@@ -2231,9 +2231,12 @@ It should handle
            */
           namespace.load = function (fn) {
             var self = this;
-            var $wrapper = self.$wrapper.classList.add('loading');
-
-            self.loading++;
+            var polyElem = this.settings.polymerElement;
+            if (polyElem.url !== undefined && polyElem.url !== '') {
+              self.$wrapper.classList.add('loading');
+              self.loading++;
+            }
+            
             fn.apply(self, [function (results) {
               self.loading = Math.max(self.loading - 1, 0);
               if (results && results.length) {
