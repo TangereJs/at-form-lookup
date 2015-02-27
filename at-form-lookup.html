@@ -3286,7 +3286,7 @@ It should handle
             var offset = this.settings.dropdownParent === 'body' ? $control.getBoundingClientRect() : { top: $control.offsetTop, left: $control.offsetLeft };
             offset.top += completeOuterHeight($control);
 
-            this.$dropdown.style.width = $control.clientWidth + 'px';
+            this.$dropdown.style.width = '100%'; //$control.clientWidth + 'px';
             this.$dropdown.style.top = offset.top + 'px';
             this.$dropdown.style.left = offset.left + 'px';
           }
