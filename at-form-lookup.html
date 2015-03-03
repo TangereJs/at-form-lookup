@@ -52,31 +52,70 @@ It should handle
 <polymer-element name="at-form-lookup" attributes="allowEmpty url params usedropdown">
   <template>
     <style>
+      #contentWrapper {
+        position: relative;
+        height: 100%;
+      }
+
       .lookupLabel {
         font-size: 14px;
         font-weight: bold;
         display: block;
         padding: 0 0 0.3em 0;
       }
+
+      #content {
+        opacity: 1;
+      }
+
+        #content[disabled] {
+          opacity: 0.5;
+        }
+
+      #disabledOverlay {
+        display: none;
+      }
+
+        #disabledOverlay[disabled] {
+          display: block;
+          position: absolute;
+          bottom: 0px;
+          filter: alpha(opacity=40);
+          height: expression(parentElement.scrollHeight + 'px');
+          width: 100%;
+          z-index: 99999;
+          height: 100%;
+        }
+
+      #disabledText {
+        text-align: center;
+        opacity: 0.5;
+      }
     </style>
     <link rel="stylesheet" href="css/at-form-lookup.css" />
     <link rel="stylesheet" href="css/at-form-lookup-default.css" />
     <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
     <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
-    <div class="{{ class }}" style="{{ style }}">
-      <label id="label" class="lookupLabel"></label>
-      <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
-      <select id="selectTags" style="display:none"></select>
-      <core-ajax id="coreAjax" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
-      <core-ajax id="loadDefaultAjax" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
-      <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
-        <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
-        <core-icon class="error-icon" icon="warning"></core-icon>
-      </div>
 
-      <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden?="{{ isInvalid }}"></div>
-      <content></content>
+    <div id="contentWrapper">
+      <div id="content" class="{{ class }}">
+        <label id="label" class="lookupLabel"></label>
+        <input id="inputTags" type="text" value="{{ available }}" style="display:none" />
+        <select id="selectTags" style="display:none"></select>
+        <core-ajax id="coreAjax" handleas="json" url="{{ url }}" params="{{ params }}" on-core-response="{{ coreAjaxOnResponse }}" on-core-complete="{{ coreAjaxOnComplete }}"></core-ajax>
+        <core-ajax id="loadDefaultAjax" handleas="json" on-core-response="{{ loadDefaultOnResponse }}" on-core-complete="{{ loadDefaultOnComplete }}"></core-ajax>
+        <div id="errorMessage" class="error" layout horizontal center hidden?="{{ !isInvalid }}">
+          <div class="error-text" flex auto role="alert" aria-hidden="{{ !isInvalid }}">{{ error }}</div>
+          <core-icon class="error-icon" icon="warning"></core-icon>
+        </div>
+
+        <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden?="{{ isInvalid }}"></div>
+      </div>
+      <div id="disabledOverlay">
+        <p id="disabledText">Loading ... </p>
+      </div>
     </div>
+    <content></content>
   </template>
   <script>
     (function () {
@@ -172,6 +211,8 @@ It should handle
                     // *ij* this here is request by *ma*
                     // at-form-lookup should work in orchard without any additional configuration
                     // code bellow makes that possible
+                    this._selectizeInstance.disable();
+                    this.$.disabledOverlay.setAttribute('disabled', true);
                     var urlParts = this.url.split('?');
                     var baseUrl = urlParts[0];
                     var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
@@ -288,6 +329,9 @@ It should handle
           var item = event.detail.response.Data;
           this._selectizeInstance.addOption({ "value": item.id, "title": item.title });
           this._selectizeInstance.addItem(item.id);
+
+          this.$.disabledOverlay.removeAttribute('disabled');
+          this._selectizeInstance.enable();
 
           this.fire('at-form-lookup-initialized', { data: item });
         },
@@ -2236,7 +2280,7 @@ It should handle
               self.$wrapper.classList.add('loading');
               self.loading++;
             }
-            
+
             fn.apply(self, [function (results) {
               self.loading = Math.max(self.loading - 1, 0);
               if (results && results.length) {
@@ -3544,6 +3588,9 @@ It should handle
           namespace.disable = function () {
             var self = this;
             self.$input.setAttribute('disabled', true);
+            var $inputElement = self.$control.querySelector('input');
+            $inputElement.setAttribute('tabIndex', -1);
+            self.$wrapper.classList.add('loading');
             self.isDisabled = true;
             self.lock();
           }
@@ -3554,7 +3601,10 @@ It should handle
            */
           namespace.enable = function () {
             var self = this;
-            self.$input.setAttribute('disabled', false);
+            self.$input.removeAttribute('disabled');
+            var $inputElement = self.$control.querySelector('input');            
+            $inputElement.setAttribute('tabIndex', 1);
+            self.$wrapper.classList.remove('loading');
             self.isDisabled = false;
             self.unlock();
           }
