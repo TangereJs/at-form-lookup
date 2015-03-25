@@ -1,25 +1,27 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>&lt;at-form-lookup&gt;</title>
   <script src="../webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="at-form-lookup.html">
 </head>
+
 <body>
-  
+
   <div>
     Single selection (remote source):
-    <at-form-lookup id="flDropdownSingleSelection" withcredentials="false" usedropdown url="http://gdata.youtube.com/feeds/api/videos/"></at-form-lookup>
+    <at-form-lookup id="flDropdownSingleSelection" handle-as="json" no-credentials usedropdown url="http://gdata.youtube.com/feeds/api/videos/"></at-form-lookup>
   </div>
 
   <div>
     Multiple selection (remote source):
-    <at-form-lookup id="flDropdownMultipleSelection" withCredentials="false" usedropdown maxitems="4" url="http://gdata.youtube.com/feeds/api/videos/"></at-form-lookup>
+    <at-form-lookup id="flDropdownMultipleSelection" handle-as="json" no-credentials usedropdown max-items="4" url="http://gdata.youtube.com/feeds/api/videos/"></at-form-lookup>
   </div>
 
   <script>
-    window.addEventListener('polymer-ready', function () {
+    window.addEventListener('WebComponentsReady', function () {
       console.log('Polymer ready event');
 
       var flDropdownSingleSelection = document.getElementById("flDropdownSingleSelection");
@@ -27,15 +29,21 @@
 
         flDropdownSingleSelection.addEventListener('at-form-lookup-beforeAjax', function (event) {
           var data = event.detail;
-          data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
+          data.coreAjax.params = {
+            "alt": "json",
+            "q": data.query
+          };
         });
 
         flDropdownSingleSelection.addEventListener('at-form-lookup-afterAjax', function (event) {
-          var data = event.detail.response.feed.entry || [];
+          var data = event.detail && event.detail.response ? event.detail.response.feed.entry : [];
           var dataArray = [];
           for (var i = 0; i < data.length; i++) {
             var entry = data[i];
-            dataArray.push({ value: entry.id.$t, title: entry.title.$t });
+            dataArray.push({
+              value: entry.id.$t,
+              title: entry.title.$t
+            });
           }
           event.detail.returnData = dataArray;
         });
@@ -51,7 +59,10 @@
          */
         flDropdownMultipleSelection.addEventListener('at-form-lookup-beforeAjax', function (event) {
           var data = event.detail;
-          data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
+          data.coreAjax.params = {
+            "alt": "json",
+            "q": data.query
+          };
         });
 
         /*
@@ -63,11 +74,14 @@
          * by default pair is (value, text); value is the value of the entry, text is used for display
          */
         flDropdownMultipleSelection.addEventListener('at-form-lookup-afterAjax', function (event) {
-          var data = event.detail.response.feed.entry || [];
+          var data = event.detail && event.detail.response ? event.detail.response.feed.entry : [];
           var dataArray = [];
           for (var i = 0; i < data.length; i++) {
             var entry = data[i];
-            dataArray.push({ value: entry.id.$t, title: entry.title.$t });
+            dataArray.push({
+              value: entry.id.$t,
+              title: entry.title.$t
+            });
           }
           event.detail.returnData = dataArray;
         });
@@ -75,4 +89,5 @@
     });
   </script>
 </body>
+
 </html>

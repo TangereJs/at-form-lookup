@@ -1,5 +1,6 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
@@ -7,33 +8,34 @@
   <script src="../webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="at-form-lookup.html">
 </head>
-<body>
-    <div>
-      Tags demo:
-      <at-form-lookup id="tagsLookup" available="neat,awesome"></at-form-lookup>
-    </div>
-    <div>
-      Dropdown demo:
-      <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" ></at-form-lookup>
-    </div>
-    <div>
-      Dropdown demo (programatic initialization):
-      <at-form-lookup id="ddLookupProg" disabled></at-form-lookup>
-    </div>
-    <div>
-      Tags demo (remote source):
-      <at-form-lookup id="flTagsRemote" url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":""}'></at-form-lookup>
 
-    </div>
+<body>
+  <div>
+    Tags demo:
+    <at-form-lookup id="tagsLookup" available="neat,awesome"></at-form-lookup>
+  </div>
+  <div>
+    Dropdown demo:
+    <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika"></at-form-lookup>
+  </div>
+  <div>
+    Dropdown demo (programatic initialization):
+    <at-form-lookup id="ddLookupProg" disabled></at-form-lookup>
+  </div>
+  <div>
+    Tags demo (remote source):
+    <at-form-lookup id="flTagsRemote" maxItems="1" no-credentials handle-as="json" url="http://gdata.youtube.com/feeds/api/videos/"></at-form-lookup>
+
+  </div>
   <form action="#">
     <div>
       Dropdown demo (remote source):
-      <at-form-lookup id="flDropdownRemote" maxItems="5" preload required url="http://gdata.youtube.com/feeds/api/videos/" params='{"alt":"json", "q":"chrome"}'></at-form-lookup>
+      <at-form-lookup id="flDropdownRemote" no-credentials max-items="5" handle-as="json" required url="http://gdata.youtube.com/feeds/api/videos/"></at-form-lookup>
     </div>
     <input type="submit" value="submit" />
   </form>
   <script>
-    window.addEventListener('polymer-ready', function () {
+    window.addEventListener('WebComponentsReady', function () {
       console.log('Polymer ready event');
       //var demoLookup = document.getElementById("demoLookup");
 
@@ -51,7 +53,10 @@
          */
         flDropdownRemote.addEventListener('at-form-lookup-beforeAjax', function (event) {
           var data = event.detail;
-          data.coreAjax.params = '{"alt":"json", "q":"' + data.query + '"}';
+          data.coreAjax.params = {
+            "alt": "json",
+            "q": data.query
+          };
         });
 
         /*
@@ -63,18 +68,49 @@
          * by default pair is (value, text); value is the value of the entry, text is used for display
          */
         flDropdownRemote.addEventListener('at-form-lookup-afterAjax', function (event) {
-          var data = event.detail.response.feed.entry;
+          var data = event.detail && event.detail.response && event.detail.response.feed.entry;
           var dataArray = [];
-          if (data !== undefined && data.length !== undefined) {
+          if (data && data.length !== undefined) {
             for (var i = 0; i < data.length; i++) {
               var entry = data[i];
-              dataArray.push({ value: entry.id.$t, title: entry.title.$t });
+              dataArray.push({
+                value: entry.id.$t,
+                title: entry.title.$t
+              });
             }
           }
           event.detail.returnData = dataArray;
         });
       }
+
+      var tagsLookup = document.getElementById('flTagsRemote');
+      if (tagsLookup) {
+        tagsLookup.addEventListener('at-form-lookup-beforeAjax', function (event) {
+          var data = event.detail;
+          data.coreAjax.params = {
+            "alt": "json",
+            "q": data.query
+          };
+        });
+
+        tagsLookup.addEventListener('at-form-lookup-afterAjax', function (event) {
+          var data = event.detail && event.detail.response && event.detail.response.feed.entry;
+          var dataArray = [];
+          if (data && data.length !== undefined) {
+            for (var i = 0; i < data.length; i++) {
+              var entry = data[i];
+              dataArray.push({
+                value: entry.id.$t,
+                title: entry.title.$t
+              });
+            }
+          }
+          event.detail.returnData = dataArray;
+        });
+      }
+
     });
   </script>
 </body>
+
 </html>

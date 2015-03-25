@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>&lt;at-form-lookup&gt;</title>
   <script src="../webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="at-form-lookup.html">
 </head>
+
 <body>
-  
+
   <div>
     Single selection (remote source):
     <at-form-lookup id="flDropdownSingleSelection" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/connector"></at-form-lookup>
@@ -15,7 +17,7 @@
 
   <div>
     Multiple selection (remote source):
-    <at-form-lookup id="flDropdownMultipleSelection" maxitems="4" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/card"></at-form-lookup>
+    <at-form-lookup id="flDropdownMultipleSelection" max-items="4" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/card"></at-form-lookup>
   </div>
 
   <script>
@@ -67,4 +69,5 @@
     });
   </script>
 </body>
+
 </html>

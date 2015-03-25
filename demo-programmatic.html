@@ -1,23 +1,25 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>&lt;at-form-lookup&gt;</title>
   <script src="../webcomponentsjs/webcomponents.js"></script>
   <link rel="import" href="at-form-lookup.html">
 </head>
+
 <body>
   <div>
     Dropdown demo:
-    <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" selected="mika" useDropdown></at-form-lookup>
+    <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" value="mika" usedropdown></at-form-lookup>
   </div>
   <div>
     Dropdown demo (programatic initialization):
-    <at-form-lookup id="ddLookupProg" useDropdown ></at-form-lookup>
+    <at-form-lookup id="ddLookupProg" usedropdown></at-form-lookup>
   </div>
 
   <script>
-    window.addEventListener('polymer-ready', function () {
+    window.addEventListener('WebComponentsReady', function () {
       var demoLookup = document.getElementById("demoLookup");
 
       var ddLookupProg = document.getElementById("ddLookupProg");
@@ -26,4 +28,5 @@
     });
   </script>
 </body>
+
 </html>
