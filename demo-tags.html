@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>&lt;at-form-lookup&gt;</title>
+  <script src="../webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="at-form-lookup.html">
+</head>
+
+<body>
+  <div>
+    <p>Tags demo:</p>
+    <p>Current value: <span id="tagsValue"></span>
+    </p>
+    <at-form-lookup id="tagsLookup" available="neat,awesome" value="neat"></at-form-lookup>
+  </div>
+  <div>
+    <p>Dropdown demo:</p>
+    <p>Current value: <span id="ddLookupValue"></span>
+    </p>
+    <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" value="neat,mika" max-items="3"></at-form-lookup>
+  </div>
+
+  <script>
+    window.addEventListener('WebComponentsReady', function () {
+      var tagsLookup, ddLookup;
+
+      tagsLookup = document.getElementById('tagsLookup');
+      tagsValueChanged(tagsLookup.value);
+      tagsLookup.addEventListener('change', function (e) {
+        tagsValueChanged(e.detail);
+      });
+
+      ddLookup = document.getElementById('ddLookup');
+      ddLookupValueChanged(ddLookup.value);
+      ddLookup.addEventListener('change', function (e) {
+        ddLookupValueChanged(e.detail);
+      });
+
+    });
+
+    function tagsValueChanged(newValue) {
+      var tagsValue = document.getElementById('tagsValue');
+      tagsValue.innerHTML = newValue;
+    }
+
+    function ddLookupValueChanged(newValue) {
+      var ddLookupValue = document.getElementById('ddLookupValue');
+      ddLookupValue.innerHTML = newValue;
+    }
+  </script>
+</body>
+
+</html>

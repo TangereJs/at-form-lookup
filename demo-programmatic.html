@@ -11,11 +11,11 @@
 <body>
   <div>
     Dropdown demo:
-    <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" value="mika" usedropdown></at-form-lookup>
+    <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" value="mika"></at-form-lookup>
   </div>
   <div>
     Dropdown demo (programatic initialization):
-    <at-form-lookup id="ddLookupProg" usedropdown></at-form-lookup>
+    <at-form-lookup id="ddLookupProg"></at-form-lookup>
   </div>
 
   <script>
@@ -23,8 +23,8 @@
       var demoLookup = document.getElementById("demoLookup");
 
       var ddLookupProg = document.getElementById("ddLookupProg");
-      ddLookupProg.selected = "mika";
       ddLookupProg.available = "neat,awesome,peka,mika,zika";
+      ddLookupProg.value = "mika";
     });
   </script>
 </body>

@@ -2,34 +2,47 @@
 It should handle
 
 1. Allow to select one entries
-2. Allow to select multiple entries (if this causes to many issues we can exclude this from the first prototype)
-- this can be achieved with maxEntries attribute; maxEntries == 1 is for single entry
+2. Allow to select multiple entries(
+  if this causes to many issues we can exclude this from the first prototype)-this can be achieved with maxEntries attribute;
+maxEntries == 1 is
+for single entry
 
 3. Be required or not
-- this can be achieved with required attribute- by default false; required="true" for required
-- need confirmation for situation when only required is written without ="true"
+ -this can be achieved with required attribute-by
+default false;
+required = "true"
+for required
+ -need confirmation
+for situation when only required is written without = "true"
 
 4. Be enabled or not
-- this can be achieved with enabled attribute- by default false; enabled="true" for enabled
-- need confirmation for situation when only enabled is written without ="true"
+ -this can be achieved with enabled attribute-by
+default false;
+enabled = "true"
+for enabled
+ -need confirmation
+for situation when only enabled is written without = "true"
 
-5a. Lookup information from a remote data source
-- core-ajax should be used for communication; data handing should be done in component
+5 a.Lookup information from a remote data source-core-ajax should be used
+for communication;
+data handing should be done in component
 
-5b. Lookup information from a local data source
-- local data should be array of key value pairs "key" for display "value" for data or
-- local data should be array of objects { title: "value", data: "value" }
+5 b.Lookup information from a local data source-local data should be array of key value pairs "key"
+for display "value"
+for data or
+ -local data should be array of objects {
+    title: "value",
+    data: "value"
+  }
 
-6. Select items from the drop down list with mouse and/or keyboard
-- Should not be overly complicated
+6. Select items from the drop down list with mouse and / or keyboard-Should not be overly complicated
 
-7. Work with both Chrome and IE10+ (so with and without the polyfill)
-- I have no idea what this means (Chrome should have webcomponents.js baked into it)
- -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../at-core-activity/at-core-activity.html">
-<link rel="import" href="../core-icons/core-icons.html">
-<link rel="import" href="../core-icon/core-icon.html">
+7. Work with both Chrome and IE10 + (so with and without the polyfill)-I have no idea what this means(Chrome should have webcomponents.js baked into it)
+  -->
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../at-core-activity/at-core-activity.html" />
+<link rel="import" href="../core-icons/core-icons.html" />
+<link rel="import" href="../core-icon/core-icon.html" />
 <link rel="import" href="../paper-shadow/paper-shadow.html" />
 
 <script type="text/javascript">
@@ -51,57 +64,54 @@ It should handle
 </script>
 
 <dom-module id="at-form-lookup">
+  <link rel="stylesheet" href="css/at-form-lookup.css" />
+  <link rel="stylesheet" href="css/at-form-lookup-default.css" />
+  <style>
+    #contentWrapper {
+      position: relative;
+      height: 100 %;
+    }
+    
+    .lookupLabel {
+      font-size: 14 px;
+      font-weight: bold;
+      display: block;
+      padding: 0 0 0.3e m 0;
+    }
+    
+    #content {
+      opacity: 1;
+    }
+    
+    #content[disabled] {
+      opacity: 0.5;
+    }
+    
+    #disabledOverlay {
+      display: none;
+    }
+    
+    #disabledOverlay[disabled] {
+      display: block;
+      position: absolute;
+      bottom: 0 px;
+      filter: alpha(opacity 40);
+      height: expression(parentElement.scrollHeight + 'px');
+      width: 100 %;
+      z-index: 99999;
+      height: 100 %;
+    }
+    
+    #disabledText {
+      text-align: center;
+      opacity: 0.5;
+    }
+  </style>
   <template>
-    <style>
-      #contentWrapper {
-        position: relative;
-        height: 100%;
-      }
-      
-      .lookupLabel {
-        font-size: 14px;
-        font-weight: bold;
-        display: block;
-        padding: 0 0 0.3em 0;
-      }
-      
-      #content {
-        opacity: 1;
-      }
-      
-      #content[disabled] {
-        opacity: 0.5;
-      }
-      
-      #disabledOverlay {
-        display: none;
-      }
-      
-      #disabledOverlay[disabled] {
-        display: block;
-        position: absolute;
-        bottom: 0px;
-        filter: alpha(opacity=40);
-        height: expression(parentElement.scrollHeight + 'px');
-        width: 100%;
-        z-index: 99999;
-        height: 100%;
-      }
-      
-      #disabledText {
-        text-align: center;
-        opacity: 0.5;
-      }
-    </style>
-    <link rel="stylesheet" href="css/at-form-lookup.css" />
-    <link rel="stylesheet" href="css/at-form-lookup-default.css" />
-    <!--<link rel="stylesheet" href="css/selectize.default.css" />-->
-    <!--<link rel="stylesheet" href="css/selectize.bootstrap3.css" />-->
-
     <div id="contentWrapper">
       <div id="content" class="{{class}}">
         <label id="label" class="lookupLabel"></label>
-        <input id="inputTags" type="text" value="{{available}}" style="display:none" />
+        <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handleas="json" url="{{url}}" params="{{params}}" on-core-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
         <at-core-activity id="loadDefaultAjax" handleas="json" on-core-response="loadDefaultOnResponse" on-complete="loadDefaultOnComplete"></at-core-activity>
@@ -113,13 +123,21 @@ It should handle
         <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden="{{isInvalid}}"></div>
       </div>
       <div id="disabledOverlay">
-        <p id="disabledText">Loading ... </p>
+        <p id="disabledText">Loading...</p>
       </div>
     </div>
     <content></content>
   </template>
 </dom-module>
 <script>
+  function isArray(obj) {
+    return Object.prototype.toString.call(obj) === Object.prototype.toString.call([]);
+  }
+
+  function isCommaSeparated(obj) {
+    return obj !== undefined && obj.indexOf !== undefined && obj.indexOf(',') !== -1;
+  }
+
   Polymer({
     is: 'at-form-lookup',
     _selectizeLoadCallback: function () {},
@@ -129,7 +147,10 @@ It should handle
     _isReady: false,
     render: {},
     properties: {
-      isInvalid: false,
+      isInvalid: {
+        type: Boolean,
+        value: false
+      },
       error: 'This field is required',
       disabled: {
         type: Boolean,
@@ -150,7 +171,7 @@ It should handle
       value: {
         type: String,
         value: '',
-        reflectToAttribute: true,
+        notify: true,
         observer: 'valueChanged'
       },
       label: {
@@ -185,8 +206,7 @@ It should handle
       },
       maxItems: {
         type: Number,
-        value: 1,
-        observer: 'maxItemsChanged'
+        value: 1
       },
       usedropdown: {
         type: Boolean,
@@ -205,71 +225,90 @@ It should handle
       }
     },
 
+    labelChanged: function (oldValue, newValue) {
+      this.$.label.textContent = newValue;
+    },
+
     urlChanged: function (oldValue, newValue) {
       this.noPreload = true;
       if (this.url !== '') {
         this.noPreload = false;
       }
-      this.initialize();
+      //      this.initialize();
     },
 
-    maxItemsChanged: function (oldValue, newValue) {
-      this.initialize();
-    },
+    availableChanged: function (oldValue, newValue) {
+      var i;
 
-    labelChanged: function (oldValue, newValue) {
-      this.$.label.textContent = newValue;
+      if (this._isReady) {
+        var instance = this._selectizeInstance;
+        instance.clearOptions();
+
+        if (isArray(this.available)) {
+          instance.addOption(this.available);
+        } else if (isCommaSeparated(this.available)) {
+          var items = this.available.split(',');
+          for (i = 0; i < items.length; i += 1) {
+            var newOption = {
+              value: items[i],
+              title: items[i]
+            };
+            instance.addOption(newOption);
+          }
+        }
+      }
     },
 
     valueChanged: function (oldValue, newValue) {
       if (this._isReady) {
-        if (!this._isUpdating) {
+        if (!this._isUpdating && !this._selectizeUpdate) {
           this._isUpdating = true;
 
           // do the update
           var sInstance = this._selectizeInstance;
-          if (sInstance !== undefined) {
-            var newValues = this.value;
-            if (!isArray(this.value)) {
-              newValues = this.value.split(',');
-            }
 
-            var selectedItems = sInstance.items;
+          var newValues = this.value;
+          if (!isArray(this.value)) {
+            newValues = this.value.split(',');
+          }
 
-            var arrIntersection = arrayIntersect(newValues, selectedItems);
-            var itemsToAdd = arraySubtract(newValues, arrIntersection);
-            var itemsToRemove = arraySubtract(selectedItems, arrIntersection);
+          var selectedItems = sInstance.items;
 
-            for (var i = 0; i < itemsToRemove.length; i++) {
-              sInstance.removeItem(itemsToRemove[i]);
-            }
+          var arrIntersection = arrayIntersect(newValues, selectedItems);
+          var itemsToAdd = arraySubtract(newValues, arrIntersection);
+          var itemsToRemove = arraySubtract(selectedItems, arrIntersection);
 
-            for (var i = 0; i < itemsToAdd.length; i++) {
-              var currentItem = itemsToAdd[i];
-              if (sInstance.options.hasOwnProperty(currentItem)) {
-                sInstance.addItem(currentItem);
-              } else {
-                if (this.url !== "" && currentItem !== "") {
-                  // *ij* this here is request by *ma*
-                  // at-form-lookup should work in orchard without any additional configuration
-                  // code bellow makes that possible
-                  this._selectizeInstance.disable();
-                  this.$.disabledOverlay.setAttribute('disabled', true);
-                  var urlParts = this.url.split('?');
-                  var baseUrl = urlParts[0];
-                  var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
-                  this.$.loadDefaultAjax.url = baseUrl + '/' + currentItem + queryPart;
+          for (var i = 0; i < itemsToRemove.length; i++) {
+            sInstance.removeItem(itemsToRemove[i]);
+          }
 
-                  this.$.loadDefaultAjax.noCredentials = this.noCredentials;
-                  this.$.loadDefaultAjax.generateRequest();
-                }
+          for (var i = 0; i < itemsToAdd.length; i++) {
+            var currentItem = itemsToAdd[i];
+            if (sInstance.options.hasOwnProperty(currentItem)) {
+              sInstance.addItem(currentItem);
+            } else {
+              if (this.url !== "" && currentItem !== "") {
+                // *ij* this here is request by *ma*
+                // at-form-lookup should work in orchard without any additional configuration
+                // code bellow makes that possible
+                this._selectizeInstance.disable();
+                this.$.disabledOverlay.setAttribute('disabled', true);
+                var urlParts = this.url.split('?');
+                var baseUrl = urlParts[0];
+                var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
+                this.$.loadDefaultAjax.url = baseUrl + '/' + currentItem + queryPart;
+
+                this.$.loadDefaultAjax.noCredentials = this.noCredentials;
+                this.$.loadDefaultAjax.generateRequest();
               }
             }
           }
 
+
           this._isUpdating = false;
-          this.fire('change', newValue);
+          this._selectizeUpdate = false;
         }
+        this.fire('change', this.value);
       }
     },
 
@@ -302,12 +341,6 @@ It should handle
         } else {
           this._selectizeInstance.enable();
         }
-      }
-    },
-
-    availableChanged: function (oldValue, newValue) {
-      if (this._isReady) {
-        this.initialize();
       }
     },
 
@@ -355,19 +388,21 @@ It should handle
     selectizeOnLoad: function (query, callback) {
       // this here is selectize object
       // polymer element upon which selectize is constructed is passed into selectize settings and can be accessed here
-      var polyElem = this.settings.polymerElement;
-      polyElem._selectizeLoadCallback = callback;
-      polyElem.$.coreAjax.params = {
-        "query": query,
-        "page": "1",
-        "pageSize": "25"
-      };
-      polyElem.fire('at-form-lookup-beforeAjax', {
-        coreAjax: polyElem.$.coreAjax,
-        query: query
-      });
-      polyElem.$.coreAjax.noCredentials = polyElem.noCredentials;
-      polyElem.$.coreAjax.generateRequest();
+      if (this.url !== '') {
+
+        this._selectizeLoadCallback = callback;
+        this.$.coreAjax.params = {
+          "query": query,
+          "page": "1",
+          "pageSize": "25"
+        };
+        this.fire('at-form-lookup-beforeAjax', {
+          coreAjax: this.$.coreAjax,
+          query: query
+        });
+        this.$.coreAjax.noCredentials = this.noCredentials;
+        this.$.coreAjax.generateRequest();
+      }
     },
 
     setValid: function () {
@@ -396,115 +431,97 @@ It should handle
     loadDefaultOnComplete: function (event) {},
 
     selectizeChange: function (newValue) {
-      // *this* in this function is selectize instance; freaking javascript and function calling
-      var polyElem = this.settings.polymerElement;
+      this._selectizeUpdate = true;
+
       if (isArray(newValue)) {
-        polyElem.value = newValue.join(',');
+        this.value = newValue.join(',');
       } else {
-        polyElem.value = newValue;
+        this.value = newValue;
       }
     },
 
     initialize: function () {
-      this.destroyExisting();
-      var usedropDownAttr = this.getAttribute('usedropdown');
-      this._usedropdown = false;
-      if (this.usedropdown) {
-        this._usedropdown = this.usedropdown;
-      }
-      var availableItems = [];
-      if (isArray(this.available)) {
-        availableItems = this.available;
-      } else if (isString(this.available) && this.available !== "") {
-        var availableTags = this.available.split(',');
-        for (var i = 0; i < availableTags.length; i++) {
-          availableTags[i] = availableTags[i].trim();
-          var tag = availableTags[i];
-          availableItems.push({
-            title: tag,
-            value: tag
-          });
-        }
-      } else {
-        //console.log("Available items should be an array of (id, value) pairs or comma separated string");
-      }
 
-      var availableItemsInitialLen = availableItems.length;
-      var selectedByDefault = isArray(this.value) ? this.value : this.value.split(',');
-      if (isArray(this.value)) {
-        for (var i = 0; i < selectedByDefault.length; i++) {
-          selectedByDefault[i] = selectedByDefault[i].trim();
-          if (availableItemsInitialLen === 0) {
-            if (this.url !== undefined && this.url !== "") {
-              this.$.loadDefaultAjax.url = this.url + selectedByDefault[i];
-              //console.log("247: initialize: loadDefaultAjax.go();");
-              this.$.loadDefaultAjax.noCredentials = this.noCredentials;
-              this.$.loadDefaultAjax.go();
-            } else {
-              availableItems.push({
-                title: selectedByDefault[i],
-                value: selectedByDefault[i]
-              });
-            }
-          }
-        }
-      }
+      // create the selectize instance
+      var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
+        plugins: ['remove_button'],
+        create: this.create,
+        selectOnTab: true,
+        preload: !this.noPreload,
+        allowEmpty: this.allowEmpty,
+        maxItems: this.maxItems,
+        load: this.selectizeOnLoad.bind(this),
+        onChange: this.selectizeChange.bind(this),
+        render: this.render
+      });
 
+      // NOT NEEDED clear options and items from from instance
+
+      // initialzie the component
+      // maxItems = 1 => show dropdown icon; maxItems > 1 do not show dropdown icon
+
+      // set disabled state
       if (this.disabled) {
-        var disabledAttr = document.createAttribute('disabled');
-        this.$.selectTags.attributes.setNamedItem(disabledAttr);
-      }
-
-      if (this.required) {
-        var requiredAttr = document.createAttribute('required');
-        this.$.selectTags.attributes.setNamedItem(requiredAttr);
-      }
-
-      //if (this.available === '') { return; }
-      if (this._usedropdown === true) {
-        for (var j = 0; j < availableItems.length; j++) {
-          var item = availableItems[j];
-          var optionEl = document.createElement('option');
-          optionEl.value = item.value;
-          optionEl.innerText = item.title;
-          if (selectedByDefault.indexOf(item.value) > -1) {
-            optionEl.setAttribute('selected', 'selected');
-          }
-          Polymer.dom(this.$.selectTags).appendChild(optionEl);
-        }
-
-        var instance = window.atFormLookup.selectize(this.$.selectTags, {
-          plugins: ['remove_button'],
-          create: this.create,
-          selectOnTab: true,
-          preload: !this.noPreload,
-          allowEmpty: this.allowEmpty,
-          maxItems: this.maxItems,
-          load: this.selectizeOnLoad,
-          onChange: this.selectizeChange,
-          polymerElement: this,
-          render: this.render
-        });
-
-        this._selectizeInstance = instance;
-      } else {
-        var instance = window.atFormLookup.selectize(this.$.inputTags, {
-          plugins: ['remove_button'],
-          create: this.create,
-          selectOnTab: true,
-          preload: !this.noPreload,
-          allowEmpty: this.allowEmpty,
-          maxItems: this.maxItems,
-          load: this.selectizeOnLoad,
-          onChange: this.selectizeChange,
-          polymerElement: this,
-          render: this.render
-        });
-        this._selectizeInstance = instance;
-        this.$.inputTags.value = this.available;
+        instance.disable();
       }
 
       this._isReady = true;
+
+      // set available options
+      // empty arrays are used here because these parameters are not used in the function
+      this.availableChanged([], []);
+
+      // set items selected by default
+      // empty arrays are used here because these parameters are not used in the function
+      this.valueChanged([], []);
+
+      // set required state
+      if (this.required && this.value.length === 0) {
+        this.isInvalid = true;
+      }
+
+      //      this.destroyExisting();
+      //      var usedropDownAttr = this.getAttribute('usedropdown');
+      //      this._usedropdown = false;
+      //      if (this.usedropdown) {
+      //        this._usedropdown = this.usedropdown;
+      //      }
+      //      var availableItems = [];
+      //      if (isArray(this.available)) {
+      //        availableItems = this.available;
+      //      } else if (isString(this.available) && this.available !== "") {
+      //        var availableTags = this.available.split(',');
+      //        for (var i = 0; i <availableTags.length; i++) {
+      //          availableTags[i] = availableTags[i].trim();
+      //          var tag = availableTags[i];
+      //          availableItems.push({
+      //            title: tag,
+      //            value: tag
+      //          });
+      //        }
+      //      } else {
+      //        //console.log("Available items should be an array of (id, value) pairs or comma separated string");
+      //      }
+
+      //      var availableItemsInitialLen = availableItems.length;
+      //      var selectedByDefault = isArray(this.value) ? this.value : this.value.split(',');
+      //      if (isArray(this.value)) {
+      //        for (var i = 0; i <selectedByDefault.length; i++) {
+      //          selectedByDefault[i] = selectedByDefault[i].trim();
+      //          if (availableItemsInitialLen === 0) {
+      //            if (this.url !== undefined && this.url !== "") {
+      //              this.$.loadDefaultAjax.url = this.url + selectedByDefault[i];
+      //              this.$.loadDefaultAjax.noCredentials = this.noCredentials;
+      //              this.$.loadDefaultAjax.go();
+      //            } else {
+      //              availableItems.push({
+      //                title: selectedByDefault[i],
+      //                value: selectedByDefault[i]
+      //              });
+      //            }
+      //          }
+      //        }
+      //      }
     }
   });
 
@@ -519,8 +536,8 @@ It should handle
   /**
    * Computes the intersection of two arrays
    *
-   * @param arr1 - {array} first array
-   * @param arr2 - {array} second array
+   * @param arr1-{array} first array
+   * @param arr2-{array} second array
    * @return {array} intersection
    */
   function arrayIntersect(arr1, arr2) {
@@ -540,8 +557,8 @@ It should handle
    * Subtract itemsToSubtract array from subtractFrom array
    * Items from the itemsToSubtract are removed from subtractFrom array
    *
-   * @param arr1 - {array} subtractFrom
-   * @param arr2 - {array} itemsToSubtract
+   * @param arr1-{array} subtractFrom
+   * @param arr2-{array} itemsToSubtract
    * @return {array} subtraction
    */
   function arraySubtract(subtractFrom, itemsToSubtract) {
@@ -742,7 +759,7 @@ It should handle
     "use strict";
 
     // utilities
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    //----------------------------------------
 
     var cmp = function (a, b) {
       if (typeof a === 'number' && typeof b === 'number') {
@@ -804,7 +821,7 @@ It should handle
     };
 
     // export
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+    //----------------------------------------  
 
     /**
      * Textually searches arrays and hashes of objects
@@ -1144,19 +1161,19 @@ It should handle
      *
      * The `options` parameter can contain:
      *
-     *   - fields {string|array}
-     *   - sort {array}
-     *   - score {function}
-     *   - filter {bool}
-     *   - limit {integer}
+     *  -fields {string|array}
+     *  -sort {array}
+     *  -score {function}
+     *  -filter {bool}
+     *  -limit {integer}
      *
      * Returns an object containing:
      *
-     *   - options {object}
-     *   - query {string}
-     *   - tokens {array}
-     *   - total {int}
-     *   - items {array}
+     *  -options {object}
+     *  -query {string}
+     *  -tokens {array}
+     *  -total {int}
+     *  -items {array}
      *
      * @param {string} query
      * @param {object} options
@@ -1243,7 +1260,7 @@ It should handle
 
     // ---- start of util functions
 
-    // returs the height of the html elem as clientHeight - padding top and bottom
+    // returs the height of the html elem as clientHeight-padding top and bottom
     function height(htmlElem) {
       var clientHeight = htmlElem.clientHeight;
       var computedStyle = window.getComputedStyle(htmlElem);
@@ -1415,7 +1432,7 @@ It should handle
     /**
      * Mixin will delegate all MicroEvent.js function in the destination object.
      *
-     * - MicroEvent.mixin(Foobar) will make Foobar able to use MicroEvent
+     *-MicroEvent.mixin(Foobar) will make Foobar able to use MicroEvent
      *
      * @param {object} the object which will support MicroEvent
      */
@@ -1635,10 +1652,10 @@ It should handle
     /**
      * A workaround for http://bugs.jquery.com/ticket/6696
      *
-     * @param {object} $parent - Parent element to listen on.
-     * @param {string} event - Event name.
-     * @param {string} selector - Descendant selector to filter by.
-     * @param {function} fn - Event handler.
+     * @param {object} $parent-Parent element to listen on.
+     * @param {string} event-Event name.
+     * @param {string} selector-Descendant selector to filter by.
+     * @param {function} fn-Event handler.
      */
     var watchChildEvent = function ($parent, event, selector, fn) {
       var children = $parent.querySelectorAll(selector),
@@ -1659,8 +1676,8 @@ It should handle
     /**
      * Determines the current selection within a text input control.
      * Returns an object containing:
-     *   - start
-     *   - length
+     *  -start
+     *  -length
      *
      * @param {object} input
      * @returns {object}
@@ -1903,14 +1920,14 @@ It should handle
     };
 
     // mixins
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    //-------------------------------------------- -
 
     MicroEvent.mixin(Selectize);
     MicroPlugin.mixin(Selectize);
 
 
     // methods
-    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    //-------------------------------------------- -
     (function (namespace) {
 
       /**
@@ -2113,7 +2130,7 @@ It should handle
         // restored when the destroy() method is called.
         var childElements = [];
         for (i = 0; i < Polymer.dom($input).childNodes.length; i += 1) {
-          var child = $input.children[i];
+          var child = Polymer.dom($input).childNodes[i];
           Polymer.dom($input).removeChild(child);
           childElements.push(child);
         }
@@ -2288,9 +2305,10 @@ It should handle
        */
       namespace.onChange = function () {
         var changeEvent = document.createEvent('HTMLEvents');
-        changeEvent.initEvent('change', true, true);
+        changeEvent.initEvent('change', false, false);
         this.$input.dispatchEvent(changeEvent);
-        //this.$input.trigger('change');
+
+        //        this.$input.trigger('change');
       };
 
       /**
@@ -2633,10 +2651,6 @@ It should handle
       namespace.load = function (fn) {
         var self = this;
         var polyElem = this.settings.polymerElement;
-        if (polyElem.url !== undefined && polyElem.url !== '') {
-          self.$wrapper.classList.add('loading');
-          self.loading += 1;
-        }
 
         fn.apply(self, [function (results) {
           self.loading = Math.max(self.loading - 1, 0);
@@ -2945,10 +2959,10 @@ It should handle
        *
        * Returns an object containing:
        *
-       *   - query {string}
-       *   - tokens {array}
-       *   - total {int}
-       *   - items {array}
+       *  -query {string}
+       *  -tokens {array}
+       *  -total {int}
+       *  -items {array}
        *
        * @param {string} query
        * @returns {object}
@@ -3364,9 +3378,9 @@ It should handle
       };
 
       namespace.updatePolymerElementValue = function () {
-        if (this.settings && this.settings.polymerElement && this.settings.polymerElement._isReady) {
-          this.settings.polymerElement.value = this.getValue();
-        }
+        //        if (this.settings && this.settings.polymerElement && this.settings.polymerElement._isReady) {
+        //          this.settings.polymerElement.value = this.getValue();
+        //        }
       };
 
       /**
@@ -3901,8 +3915,8 @@ It should handle
        * Selects the previous / next item (depending
        * on the `direction` argument).
        *
-       * > 0 - right
-       * < 0 - left
+       * > 0-right
+       * <0-left
        *
        * @param {int} direction
        * @param {object} e (optional)
