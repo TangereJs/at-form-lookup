@@ -106,6 +106,10 @@ for data or
       text-align: center;
       opacity: 0.5;
     }
+    
+    .error-text {
+      display: inline-block;
+    }
   </style>
   <template>
     <div id="contentWrapper">
@@ -116,8 +120,8 @@ for data or
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
         <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-complete="loadDefaultOnComplete"></at-core-activity>
         <div id="errorMessage" class="error" layout horizontal center hidden="{{!isInvalid}}">
+          <core-icon flex class="error-icon" icon="warning"></core-icon>
           <div class="error-text" flex auto role="alert" aria-hidden="{{!isInvalid}}">{{error}}</div>
-          <core-icon class="error-icon" icon="warning"></core-icon>
         </div>
 
         <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden="{{isInvalid}}"></div>
@@ -149,9 +153,13 @@ for data or
     properties: {
       isInvalid: {
         type: Boolean,
-        value: false
+        value: false,
+        observer: 'isInvalidChanged'
       },
-      error: 'This field is required',
+      error: {
+        type: String,
+        value: 'This field is required'
+      },
       disabled: {
         type: Boolean,
         value: false,
@@ -160,7 +168,7 @@ for data or
       required: {
         type: Boolean,
         value: false,
-        reflectToAttribute: true
+        observer: 'requiredChanged'
       },
       available: {
         type: String,
@@ -207,11 +215,6 @@ for data or
       maxItems: {
         type: Number,
         value: 1
-      },
-      usedropdown: {
-        type: Boolean,
-        value: false,
-        observer: 'usedropdownChanged'
       }
     },
 
@@ -308,6 +311,7 @@ for data or
           this._isUpdating = false;
           this._selectizeUpdate = false;
         }
+        this.updateValidState();
         this.fire('change', this.value);
       }
     },
@@ -317,7 +321,7 @@ for data or
     },
 
     isInvalidChanged: function (oldValue, newValue) {
-      if (newValue === false) {
+      if (this.isInvalid === false) {
         // component is valid
         this.$.errorMessage.style.display = "none";
         this.$.emptyError.style.display = "";
@@ -328,9 +332,14 @@ for data or
     },
 
     requiredChanged: function (oldValue, newValue) {
-      if (this._selectizeInstance !== undefined) {
-        this._selectizeInstance.$input.setAttribute('required', newValue);
-        this._selectizeInstance.updateValidState();
+      this.updateValidState();
+    },
+
+    updateValidState: function () {
+      if (this.required && this.value === '') {
+        this.isInvalid = true;
+      } else {
+        this.isInvalid = false;
       }
     },
 
@@ -2408,7 +2417,6 @@ for data or
             });
           }
           e.preventDefault();
-          self.updateValidState();
           return;
         case KEY_LEFT:
           self.advanceSelection(-1, e);
@@ -2434,33 +2442,16 @@ for data or
             blurEvent.initEvent('blur', true, true);
             self.$control_input.dispatchEvent(blurEvent);
           }
-          self.updateValidState();
           return;
         case KEY_BACKSPACE:
         case KEY_DELETE:
           self.deleteSelection(e);
-          self.updateValidState();
           return;
         }
 
         if ((self.isFull() || self.isInputHidden) && !(IS_MAC ? e.metaKey : e.ctrlKey)) {
           e.preventDefault();
           return;
-        }
-      };
-
-      namespace.updateValidState = function () {
-        var selectedItems = this.$control.getElementsByClassName("item");
-
-        if (this.$input.getAttribute('required') === "true" && selectedItems && selectedItems.length === 0) {
-          // reference to polymer component needed here
-          if (this.settings.polymerElement && this.settings.polymerElement.isInvalid !== undefined) {
-            this.settings.polymerElement.isInvalid = true;
-          }
-        } else {
-          if (this.settings.polymerElement && this.settings.polymerElement.isInvalid !== undefined) {
-            this.settings.polymerElement.isInvalid = false;
-          }
         }
       };
 
@@ -3597,8 +3588,6 @@ for data or
           self.$control_input.setAttribute('required', invalid);
         }
         self.refreshClasses();
-
-        self.updateValidState();
       };
 
       function toggleClass(element, className, toggle) {
@@ -4721,7 +4710,5 @@ for data or
     });
 
     return Selectize;
-
-
   })); // end of atfromlookup definition
 </script>
