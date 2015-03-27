@@ -379,8 +379,8 @@ for data or
           this._selectizeLoadCallback(eventObject.returnData);
         } else {
           var data = [];
-          if (event.detail.response && (event.detail.response.Data !== undefined && event.detail.response.Data !== null) && (event.detail.response.Data.items !== undefined && event.detail.response.Data.items !== null)) {
-            data = event.detail.response.Data.items;
+          if (event.detail && (event.detail.Data !== undefined && event.detail.Data !== null) && (event.detail.Data.items !== undefined && event.detail.Data.items !== null)) {
+            data = event.detail.Data.items;
           }
           var dataArray = [];
           for (var i = 0; i < data.length; i++) {
@@ -4035,7 +4035,7 @@ for data or
         self.$input.setAttribute('disabled', true);
         var $inputElement = self.$control.querySelector('input');
         $inputElement.setAttribute('tabIndex', -1);
-        self.$wrapper.classList.add('loading');
+        //        self.$wrapper.classList.add('loading');
         self.isDisabled = true;
         self.lock();
       };

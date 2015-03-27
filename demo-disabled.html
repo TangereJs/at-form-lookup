@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>&lt;at-form-lookup&gt;</title>
+  <script src="../webcomponentsjs/webcomponents.js"></script>
+  <link rel="import" href="at-form-lookup.html">
+</head>
+
+<body>
+  <div>
+    Dropdown demo (programatic initialization, disabled):
+    <at-form-lookup id="ddLookupProg" disabled></at-form-lookup>
+  </div>
+  <div>
+    Tags demo (remote source, disabled):
+    <at-form-lookup id="flTagsRemote" disabled maxItems="1" no-credentials handle-as="json" url="http://gdata.youtube.com/feeds/api/videos/"></at-form-lookup>
+
+  </div>
+  <script>
+    window.addEventListener('WebComponentsReady', function () {
+      console.log('Polymer ready event');
+      //var demoLookup = document.getElementById("demoLookup");
+
+      var ddLookupProg = document.getElementById("ddLookupProg");
+      ddLookupProg.value = "v1";
+      ddLookupProg.available = JSON.parse('[{"title": "Pera", "value": "v1"},{"title": "Mika", "value": "v2"},{ "title": "Zika", "value": "v3"}]');
+
+      var tagsLookup = document.getElementById('flTagsRemote');
+      if (tagsLookup) {
+        tagsLookup.addEventListener('at-form-lookup-beforeAjax', function (event) {
+          var data = event.detail;
+          data.coreAjax.params = {
+            "alt": "json",
+            "q": data.query
+          };
+        });
+
+        tagsLookup.addEventListener('at-form-lookup-afterAjax', function (event) {
+          var data = event.detail && event.detail.response && event.detail.response.feed.entry;
+          var dataArray = [];
+          if (data && data.length !== undefined) {
+            for (var i = 0; i < data.length; i++) {
+              var entry = data[i];
+              dataArray.push({
+                value: entry.id.$t,
+                title: entry.title.$t
+              });
+            }
+          }
+          event.detail.returnData = dataArray;
+        });
+      }
+
+    });
+  </script>
+</body>
+
+</html>
