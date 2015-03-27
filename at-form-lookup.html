@@ -113,8 +113,8 @@ for data or
         <label id="label" class="lookupLabel"></label>
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
-        <at-core-activity id="coreAjax" handleas="json" url="{{url}}" params="{{params}}" on-core-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
-        <at-core-activity id="loadDefaultAjax" handleas="json" on-core-response="loadDefaultOnResponse" on-complete="loadDefaultOnComplete"></at-core-activity>
+        <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
+        <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-complete="loadDefaultOnComplete"></at-core-activity>
         <div id="errorMessage" class="error" layout horizontal center hidden="{{!isInvalid}}">
           <div class="error-text" flex auto role="alert" aria-hidden="{{!isInvalid}}">{{error}}</div>
           <core-icon class="error-icon" icon="warning"></core-icon>
@@ -360,7 +360,7 @@ for data or
     coreAjaxOnResponse: function (event) {
       // extract the data from the event
       var eventObject = {
-        response: event.detail.response,
+        response: event.detail,
         returnData: []
       };
       this.fire('at-form-lookup-afterAjax', eventObject);
@@ -1994,7 +1994,6 @@ for data or
         $dropdown_content = document.createElement('div');
         $dropdown_content.classList.add(settings.dropdownContentClass);
         Polymer.dom($dropdown).appendChild($dropdown_content);
-        Polymer.dom(paperShadow).appendChild($dropdown_content);
 
         $dropdown_content.addEventListener('mousedown', function (e) {
           e.preventDefault();
@@ -3120,7 +3119,7 @@ for data or
               if ($create && !self.settings.addPrecedence) {
                 $active = self.getAdjacentOption($create, 1);
               } else {
-                $active = $dropdown_content.querySelector('.selected'); //$dropdown_content.find('[data-selectable]:first');
+                $active = Polymer.dom($dropdown_content).querySelector('.selected'); //$dropdown_content.find('[data-selectable]:first');
               }
             }
           } else {
@@ -3301,7 +3300,7 @@ for data or
        * @returns {object}
        */
       namespace.getOption = function (value) {
-        return this.getElementWithValue(value, this.$dropdown_content.querySelectorAll('[data-selectable]'));
+        return this.getElementWithValue(value, Polymer.dom(this.$dropdown_content).querySelectorAll('[data-selectable]'));
       };
 
       /**
@@ -3424,7 +3423,7 @@ for data or
           }
 
           if (self.isSetup) {
-            $options = self.$dropdown_content.querySelectorAll('[data-selectable]');
+            $options = Polymer.dom(self.$dropdown_content).querySelectorAll('[data-selectable]');
 
             // update menu / remove the option (if this is not one item being added as part of series)
             if (!self.isPending) {
