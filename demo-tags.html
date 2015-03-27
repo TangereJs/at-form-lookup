@@ -29,14 +29,14 @@
 
       tagsLookup = document.getElementById('tagsLookup');
       tagsValueChanged(tagsLookup.value);
-      tagsLookup.addEventListener('change', function (e) {
-        tagsValueChanged(e.detail);
+      tagsLookup.addEventListener('value-changed', function (e) {
+        tagsValueChanged(e.detail.value);
       });
 
       ddLookup = document.getElementById('ddLookup');
       ddLookupValueChanged(ddLookup.value);
-      ddLookup.addEventListener('change', function (e) {
-        ddLookupValueChanged(e.detail);
+      ddLookup.addEventListener('value-changed', function (e) {
+        ddLookupValueChanged(e.detail.value);
       });
 
     });

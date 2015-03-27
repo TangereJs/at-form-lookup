@@ -292,16 +292,20 @@ for data or
             } else {
               if (this.url !== "" && currentItem !== "") {
                 // *ij* this here is request by *ma*
-                // at-form-lookup should work in orchard without any additional configuration
+                // at-form-lookup should work in orchard without any additional configuration                
                 // code bellow makes that possible
+                // component is first disabled so user can't input
                 this._selectizeInstance.disable();
+                // an disabled overlay is "displayed" 
                 this.$.disabledOverlay.setAttribute('disabled', true);
+                // a correct url is constructed
                 var urlParts = this.url.split('?');
                 var baseUrl = urlParts[0];
                 var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
                 this.$.loadDefaultAjax.url = baseUrl + '/' + currentItem + queryPart;
-
+                // noCredentials parameter is set on the ajax component
                 this.$.loadDefaultAjax.noCredentials = this.noCredentials;
+                // request is made
                 this.$.loadDefaultAjax.generateRequest();
               }
             }
@@ -312,7 +316,6 @@ for data or
           this._selectizeUpdate = false;
         }
         this.updateValidState();
-        this.fire('change', this.value);
       }
     },
 
