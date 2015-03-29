@@ -6,6 +6,6 @@
     "at-core-activity": "TangereJs/at-core-activity#0.8-preview",
     "core-icon": "TangereJs/core-icon#0.8-preview",
     "core-icons": "TangereJs/core-icons#0.8-preview",
-    "paper-shadow": "Polymer/paper-shadow#0.8-preview",
+    "paper-shadow": "Polymer/paper-shadow#0.8-preview"
   }
 }
