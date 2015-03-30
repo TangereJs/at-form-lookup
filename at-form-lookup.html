@@ -1846,7 +1846,7 @@ for data or
 
     function getTextDirectionFromParents(startElement) {
       var parentElement = startElement.parentElement || startElement.parentNode;
-      var textDirectionValue = parentElement.getAttribute !== undefined ? parentElement.getAttribute('dir') : 'ltrw';
+      var textDirectionValue = parentElement && parentElement.getAttribute ? parentElement.getAttribute('dir') : 'ltrw';
       if (textDirectionValue !== undefined && textDirectionValue !== null && textDirectionValue !== '') {
         return textDirectionValue;
       } else {
