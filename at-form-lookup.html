@@ -114,7 +114,7 @@ for data or
   <template>
     <div id="contentWrapper">
       <div id="content" class="{{class}}">
-        <label id="label" class="lookupLabel"></label>
+        <label id="label" class="lookupLabel">{{label}}</label>
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
