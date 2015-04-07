@@ -119,12 +119,12 @@ for data or
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
         <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-complete="loadDefaultOnComplete"></at-core-activity>
-        <div id="errorMessage" class="error" layout horizontal center hidden="{{!isInvalid}}">
+        <div id="errorMessage" class="error" layout horizontal center hidden="{{valid}}">
           <core-icon flex class="error-icon" icon="warning"></core-icon>
-          <div class="error-text" flex auto role="alert" aria-hidden="{{!isInvalid}}">{{error}}</div>
+          <div class="error-text" flex auto role="alert" aria-hidden="{{valid}}">{{error}}</div>
         </div>
 
-        <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden="{{isInvalid}}"></div>
+        <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden="{{!valid}}"></div>
       </div>
       <div id="disabledOverlay">
         <p id="disabledText">Loading...</p>
@@ -151,10 +151,12 @@ for data or
     _isReady: false,
     render: {},
     properties: {
-      isInvalid: {
+      valid: {
         type: Boolean,
-        value: false,
-        observer: 'isInvalidChanged'
+        value: true,
+        readOnly: true,
+        notify: true,
+        observer: 'validChanged'
       },
       error: {
         type: String,
@@ -323,8 +325,8 @@ for data or
       this.initialize();
     },
 
-    isInvalidChanged: function (oldValue, newValue) {
-      if (this.isInvalid === false) {
+    validChanged: function (oldValue, newValue) {
+      if (this.valid === false) {
         // component is valid
         this.$.errorMessage.style.display = "none";
         this.$.emptyError.style.display = "";
@@ -339,11 +341,8 @@ for data or
     },
 
     updateValidState: function () {
-      if (this.required && this.value === '') {
-        this.isInvalid = true;
-      } else {
-        this.isInvalid = false;
-      }
+      var newValue = this.required?this.value !== undefined && this.value !== '' : true;
+        this._setValid(newValue);
     },
 
     disabledChanged: function (oldValue, newValue) {
@@ -417,14 +416,6 @@ for data or
       }
     },
 
-    setValid: function () {
-      this.isInvalid = true;
-    },
-
-    setInvalid: function () {
-      this.isInvalid = false;
-    },
-
     loadDefaultOnResponse: function (event) {
       var item = event.detail.Data;
       this._selectizeInstance.addOption({
@@ -489,7 +480,7 @@ for data or
 
       // set required state
       if (this.required && this.value.length === 0) {
-        this.isInvalid = true;
+        this._setValid(true);
       }
 
       //      this.destroyExisting();
