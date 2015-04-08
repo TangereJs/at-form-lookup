@@ -165,7 +165,8 @@ for data or
       disabled: {
         type: Boolean,
         value: false,
-        reflectToAttribute: true
+        reflectToAttribute: true,
+        observer: 'disabledChanged'
       },
       required: {
         type: Boolean,
@@ -345,14 +346,14 @@ for data or
         this._setValid(newValue);
     },
 
-    disabledChanged: function (oldValue, newValue) {
-      if (this._selectizeInstance !== undefined) {
-        if (newValue === true) {
-          this._selectizeInstance.disable();
-        } else {
-          this._selectizeInstance.enable();
+     disabledChanged: function (newValue, oldValue) {
+        if (this._isReady && this._selectizeInstance !== undefined) {
+            if (newValue === true) {
+                this._selectizeInstance.disable();
+            } else {
+                this._selectizeInstance.enable();
+            }
         }
-      }
     },
 
     destroyExisting: function () {
