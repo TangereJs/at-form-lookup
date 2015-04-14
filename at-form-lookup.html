@@ -220,7 +220,7 @@ for data or
         value: 1
       }
     },
-
+    _scopeCssViaAttr: true,
     usedropdownChanged: function () {},
     maxItemsChanged: function () {},
     paramsChanged: function () {},
@@ -342,18 +342,18 @@ for data or
     },
 
     updateValidState: function () {
-      var newValue = this.required?this.value !== undefined && this.value !== '' : true;
-        this._setValid(newValue);
+      var newValue = this.required ? this.value !== undefined && this.value !== '' : true;
+      this._setValid(newValue);
     },
 
-     disabledChanged: function (newValue, oldValue) {
-        if (this._isReady && this._selectizeInstance !== undefined) {
-            if (newValue === true) {
-                this._selectizeInstance.disable();
-            } else {
-                this._selectizeInstance.enable();
-            }
+    disabledChanged: function (newValue, oldValue) {
+      if (this._isReady && this._selectizeInstance !== undefined) {
+        if (newValue === true) {
+          this._selectizeInstance.disable();
+        } else {
+          this._selectizeInstance.enable();
         }
+      }
     },
 
     destroyExisting: function () {
@@ -1962,11 +1962,14 @@ for data or
         inputMode = self.settings.mode;
         tab_index = $input.getAttribute('tabindex') !== null ? $input.getAttribute('tabindex') : 1;
         classes = $input.getAttribute('class') !== null ? $input.getAttribute('class') : '';
+        classes = classes.split(' ');
 
         $wrapper = document.createElement('div');
         $wrapper.classList.add(settings.wrapperClass);
         for (i = 0; i < classes.length; i += 1) {
-          $wrapper.classList.add(classes[i]);
+          if (classes[i] !== "") {
+            $wrapper.classList.add(classes[i]);
+          }
         }
         $wrapper.classList.add(inputMode);
 
@@ -2018,7 +2021,9 @@ for data or
 
         if (self.settings.copyClassesToDropdown) {
           for (i = 0; i < classes.length; i += 1) {
-            $dropdown.addClass(classes[i]);
+            if (classes[i] !== "") {
+              $dropdown.classList.add(classes[i]);
+            }
           }
         }
 
