@@ -119,7 +119,7 @@ for data or
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
         <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-complete="loadDefaultOnComplete"></at-core-activity>
-        <div id="errorMessage" class="error" layout horizontal center hidden="{{valid}}">
+        <div id="errorMessage" class="error layout horizontal center" hidden="{{valid}}">
           <core-icon flex class="error-icon" icon="warning"></core-icon>
           <div class="error-text" flex auto role="alert" aria-hidden="{{valid}}">{{error}}</div>
         </div>
@@ -149,6 +149,7 @@ for data or
     _usedropdown: true,
     _isUpdating: false,
     _isReady: false,
+    _validValueBeforeDisable: true,
     render: {},
     properties: {
       valid: {
@@ -318,7 +319,7 @@ for data or
           this._isUpdating = false;
           this._selectizeUpdate = false;
         }
-        this.updateValidState();
+        this._updateValidState();
       }
     },
 
@@ -326,8 +327,8 @@ for data or
       this.initialize();
     },
 
-    validChanged: function (oldValue, newValue) {
-      if (this.valid === false) {
+    validChanged: function (newValue, oldValue) {
+      if (this.valid === true) {
         // component is valid
         this.$.errorMessage.style.display = "none";
         this.$.emptyError.style.display = "";
@@ -338,12 +339,18 @@ for data or
     },
 
     requiredChanged: function (oldValue, newValue) {
-      this.updateValidState();
+      this._updateValidState();
     },
 
-    updateValidState: function () {
-      var newValue = this.required ? this.value !== undefined && this.value !== '' : true;
+    _updateValidState: function () {
+      var newValue = this.required ? this.value.length > 0 : true;
       this._setValid(newValue);
+    },
+    
+    validate: function(){
+      this._updateValidState();
+      this.validChanged();
+      return this.valid;
     },
 
     disabledChanged: function (newValue, oldValue) {
@@ -353,6 +360,18 @@ for data or
         } else {
           this._selectizeInstance.enable();
         }
+
+        if (this.disabled) {
+          this._validValueBeforeDisable = this.valid;
+          this._setValid(true);
+          //this.$.errorMessage.setAttribute('hidden', true);
+          //this.$.emptyError.setATtribute('hidden', false);
+          //this.toggleAttribute('error', false, this.$.fileDiv);
+        } else {
+          this._setValid(this._validValueBeforeDisable);
+          //this.toggleAttribute('error', !this.valid, this.$.fileDiv);
+        } 
+        this.validChanged();
       }
     },
 
@@ -481,7 +500,7 @@ for data or
 
       // set required state
       if (this.required && this.value.length === 0) {
-        this._setValid(true);
+        this._setValid(false);
       }
 
       //      this.destroyExisting();
