@@ -71,42 +71,42 @@ for data or
       position: relative;
       height: 100 %;
     }
-    
+
     .lookupLabel {
       font-size: 14 px;
       font-weight: bold;
       display: block;
       padding: 0 0 0.3e m 0;
     }
-    
+
     #content {
       opacity: 1;
     }
-    
-    #content[disabled] {
-      opacity: 0.5;
-    }
-    
+
+      #content[disabled] {
+        opacity: 0.5;
+      }
+
     #disabledOverlay {
       display: none;
     }
-    
-    #disabledOverlay[disabled] {
-      display: block;
-      position: absolute;
-      bottom: 0 px;
-      filter: alpha(opacity 40);
-      height: expression(parentElement.scrollHeight + 'px');
-      width: 100 %;
-      z-index: 99999;
-      height: 100 %;
-    }
-    
+
+      #disabledOverlay[disabled] {
+        display: block;
+        position: absolute;
+        bottom: 0 px;
+        filter: alpha(opacity 40);
+        height: expression(parentElement.scrollHeight + 'px');
+        width: 100 %;
+        z-index: 99999;
+        height: 100 %;
+      }
+
     #disabledText {
       text-align: center;
       opacity: 0.5;
     }
-    
+
     .error-text {
       display: inline-block;
     }
@@ -144,7 +144,7 @@ for data or
 
   Polymer({
     is: 'at-form-lookup',
-    _selectizeLoadCallback: function () {},
+    _selectizeLoadCallback: function () { },
     _selectizeInstance: {},
     _usedropdown: true,
     _isUpdating: false,
@@ -222,9 +222,9 @@ for data or
       }
     },
     _scopeCssViaAttr: true,
-    usedropdownChanged: function () {},
-    maxItemsChanged: function () {},
-    paramsChanged: function () {},
+    usedropdownChanged: function () { },
+    maxItemsChanged: function () { },
+    paramsChanged: function () { },
 
     renderChanged: function (oldValue, newValue) {
       if (this._selectizeInstance !== undefined) {
@@ -296,11 +296,11 @@ for data or
             } else {
               if (this.url !== "" && currentItem !== "") {
                 // *ij* this here is request by *ma*
-                // at-form-lookup should work in orchard without any additional configuration                
+                // at-form-lookup should work in orchard without any additional configuration
                 // code bellow makes that possible
                 // component is first disabled so user can't input
                 this._selectizeInstance.disable();
-                // an disabled overlay is "displayed" 
+                // an disabled overlay is "displayed"
                 this.$.disabledOverlay.setAttribute('disabled', true);
                 // a correct url is constructed
                 var urlParts = this.url.split('?');
@@ -346,8 +346,8 @@ for data or
       var newValue = this.required ? this.value.length > 0 : true;
       this._setValid(newValue);
     },
-    
-    validate: function(){
+
+    validate: function () {
       this._updateValidState();
       this.validChanged();
       return this.valid;
@@ -370,7 +370,7 @@ for data or
         } else {
           this._setValid(this._validValueBeforeDisable);
           //this.toggleAttribute('error', !this.valid, this.$.fileDiv);
-        } 
+        }
         this.validChanged();
       }
     },
@@ -386,7 +386,7 @@ for data or
       }
     },
 
-    coreAjaxOnComplete: function (event) {},
+    coreAjaxOnComplete: function (event) { },
 
     coreAjaxOnResponse: function (event) {
       // extract the data from the event
@@ -421,12 +421,33 @@ for data or
       // polymer element upon which selectize is constructed is passed into selectize settings and can be accessed here
       if (this.url !== '') {
 
+        this.$.coreAjax.params = {};
+
+        var urlParts = this.url.split('?');
+        var baseUrl = urlParts[0];
+        var queryPart = urlParts.length > 1 ? urlParts[1] : '';
+
+        var queryPieces = queryPart.split('&');
+        var index;
+        for (index = 0; index < queryPieces.length; index++) {
+          var queryPiece = queryPieces[index];
+          var pieceParts = queryPiece.split('=');
+          if (pieceParts.length && pieceParts.length === 2) {
+            this.$.coreAjax.params[pieceParts[0]] = pieceParts[1];
+          }
+        }
+
         this._selectizeLoadCallback = callback;
-        this.$.coreAjax.params = {
-          "query": query,
-          "page": "1",
-          "pageSize": "25"
-        };
+        this.$.coreAjax.params["query"] = query;
+        this.$.coreAjax.params["page"] = 1;
+        this.$.coreAjax.params["pageSize"] = 25;
+        this.$.coreAjax.url = baseUrl;
+        //this.$.coreAjax.params = {
+        //  "query": query,
+        //  "page": "1",
+        //  "pageSize": "25"
+        //};
+
         this.fire('at-form-lookup-beforeAjax', {
           coreAjax: this.$.coreAjax,
           query: query
@@ -451,7 +472,7 @@ for data or
         data: item
       });
     },
-    loadDefaultOnComplete: function (event) {},
+    loadDefaultOnComplete: function (event) { },
 
     selectizeChange: function (newValue) {
       this._selectizeUpdate = true;
@@ -844,7 +865,7 @@ for data or
     };
 
     // export
-    //----------------------------------------  
+    //----------------------------------------
 
     /**
      * Textually searches arrays and hashes of objects
@@ -1418,7 +1439,7 @@ for data or
       return highlight($element);
     };
 
-    var MicroEvent = function () {};
+    var MicroEvent = function () { };
     MicroEvent.prototype = {
       on: function (event, fct) {
         this._events = this._events || {};
@@ -1769,7 +1790,7 @@ for data or
       'fontFamily',
       'fontWeight',
       'textTransform'
-    ]);
+      ]);
 
       var width = test.clientWidth;
       test.remove();
@@ -2387,85 +2408,85 @@ for data or
         }
 
         switch (e.keyCode) {
-        case KEY_A:
-          if (self.isCmdDown) {
-            self.selectAll();
+          case KEY_A:
+            if (self.isCmdDown) {
+              self.selectAll();
+              return;
+            }
+            break;
+          case KEY_ESC:
+            self.close();
             return;
-          }
-          break;
-        case KEY_ESC:
-          self.close();
-          return;
-        case KEY_DOWN:
-          if (e.keyCode === KEY_N && ((!e.ctrlKey || e.altKey))) {
-            break;
-          }
-          if (!self.isOpen && self.hasOptions) {
-            self.open();
-          } else if (self.$activeOption) {
-            self.ignoreHover = true;
-            var $next = self.getAdjacentOption(self.$activeOption, 1);
-            if ($next.length) {
-              self.setActiveOption($next[0], true, true);
+          case KEY_DOWN:
+            if (e.keyCode === KEY_N && ((!e.ctrlKey || e.altKey))) {
+              break;
             }
-          } else {
-            var $first = self.getFirstItem();
-            if ($first !== undefined) {
-              self.setActiveOption($first, true, true);
+            if (!self.isOpen && self.hasOptions) {
+              self.open();
+            } else if (self.$activeOption) {
+              self.ignoreHover = true;
+              var $next = self.getAdjacentOption(self.$activeOption, 1);
+              if ($next.length) {
+                self.setActiveOption($next[0], true, true);
+              }
+            } else {
+              var $first = self.getFirstItem();
+              if ($first !== undefined) {
+                self.setActiveOption($first, true, true);
+              }
             }
-          }
-          e.preventDefault();
-          return;
-        case KEY_UP:
-          if (e.keyCode === KEY_P && (!e.ctrlKey || e.altKey)) {
-            break;
-          }
-          if (self.$activeOption) {
-            self.ignoreHover = true;
-            var $prev = self.getAdjacentOption(self.$activeOption, -1);
-            if ($prev.length) {
-              self.setActiveOption($prev[0], true, true);
-            }
-          }
-          e.preventDefault();
-          return;
-        case KEY_RETURN:
-          if (self.isOpen && self.$activeOption) {
-            self.onOptionSelect({
-              currentTarget: self.$activeOption
-            });
-          }
-          e.preventDefault();
-          return;
-        case KEY_LEFT:
-          self.advanceSelection(-1, e);
-          return;
-        case KEY_RIGHT:
-          self.advanceSelection(1, e);
-          return;
-        case KEY_TAB:
-          if (!self.$activeOption) {
-            self.$activeOption = self.getFirstItem();
-          }
-          if (self.settings.selectOnTab && self.isOpen && self.$activeOption) {
-            self.onOptionSelect({
-              currentTarget: self.$activeOption
-            });
             e.preventDefault();
-          }
-          if (self.settings.create && self.createItem()) {
+            return;
+          case KEY_UP:
+            if (e.keyCode === KEY_P && (!e.ctrlKey || e.altKey)) {
+              break;
+            }
+            if (self.$activeOption) {
+              self.ignoreHover = true;
+              var $prev = self.getAdjacentOption(self.$activeOption, -1);
+              if ($prev.length) {
+                self.setActiveOption($prev[0], true, true);
+              }
+            }
             e.preventDefault();
-          }
-          if (self.isOpen) {
-            var blurEvent = document.createEvent('Event');
-            blurEvent.initEvent('blur', true, true);
-            self.$control_input.dispatchEvent(blurEvent);
-          }
-          return;
-        case KEY_BACKSPACE:
-        case KEY_DELETE:
-          self.deleteSelection(e);
-          return;
+            return;
+          case KEY_RETURN:
+            if (self.isOpen && self.$activeOption) {
+              self.onOptionSelect({
+                currentTarget: self.$activeOption
+              });
+            }
+            e.preventDefault();
+            return;
+          case KEY_LEFT:
+            self.advanceSelection(-1, e);
+            return;
+          case KEY_RIGHT:
+            self.advanceSelection(1, e);
+            return;
+          case KEY_TAB:
+            if (!self.$activeOption) {
+              self.$activeOption = self.getFirstItem();
+            }
+            if (self.settings.selectOnTab && self.isOpen && self.$activeOption) {
+              self.onOptionSelect({
+                currentTarget: self.$activeOption
+              });
+              e.preventDefault();
+            }
+            if (self.settings.create && self.createItem()) {
+              e.preventDefault();
+            }
+            if (self.isOpen) {
+              var blurEvent = document.createEvent('Event');
+              blurEvent.initEvent('blur', true, true);
+              self.$control_input.dispatchEvent(blurEvent);
+            }
+            return;
+          case KEY_BACKSPACE:
+          case KEY_DELETE:
+            self.deleteSelection(e);
+            return;
         }
 
         if ((self.isFull() || self.isInputHidden) && !(IS_MAC ? e.metaKey : e.ctrlKey)) {
@@ -2671,7 +2692,7 @@ for data or
             self.$wrapper.classList.remove('loading');
           }
           self.trigger('load', results);
-      }]);
+        }]);
       };
 
       /**
