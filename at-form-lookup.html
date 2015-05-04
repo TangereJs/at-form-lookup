@@ -241,6 +241,11 @@ for data or
       if (this.url !== '') {
         this.noPreload = false;
       }
+      if (this._selectizeInstance.clear && this._selectizeInstance.clearOptions) {
+        this._selectizeInstance.clear();
+        this._selectizeInstance.clearOptions();
+        this._selectizeInstance.onSearchChange('');
+      }
       //      this.initialize();
     },
 
