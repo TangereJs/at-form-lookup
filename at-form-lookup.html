@@ -118,7 +118,7 @@ for data or
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
-        <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-complete="loadDefaultOnComplete"></at-core-activity>
+        <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-error="loadDefaultOnComplete"></at-core-activity>
         <div id="errorMessage" class="error layout horizontal center" hidden="{{valid}}">
           <core-icon flex class="error-icon" icon="warning"></core-icon>
           <div class="error-text" flex auto role="alert" aria-hidden="{{valid}}">{{error}}</div>
@@ -391,7 +391,10 @@ for data or
       }
     },
 
-    coreAjaxOnComplete: function (event) { },
+    coreAjaxOnComplete: function (event) {
+      this.$.disabledOverlay.removeAttribute('disabled');
+      this._selectizeInstance.enable();
+    },
 
     coreAjaxOnResponse: function (event) {
       // extract the data from the event
