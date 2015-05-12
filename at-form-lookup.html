@@ -41,8 +41,7 @@ for data or
   -->
 <link rel="import" href="../polymer/polymer.html" />
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
-<link rel="import" href="../core-icons/core-icons.html" />
-<link rel="import" href="../core-icon/core-icon.html" />
+<link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../paper-shadow/paper-shadow.html" />
 
 <script type="text/javascript">
@@ -120,7 +119,7 @@ for data or
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
         <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-error="loadDefaultOnComplete"></at-core-activity>
         <div id="errorMessage" class="error layout horizontal center" hidden="{{valid}}">
-          <core-icon flex class="error-icon" icon="warning"></core-icon>
+          <at-carbon-icon flex class="error-icon" icon="now:error"></at-carbon-icon>
           <div class="error-text" flex auto role="alert" aria-hidden="{{valid}}">{{error}}</div>
         </div>
 
