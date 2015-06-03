@@ -347,6 +347,7 @@ for data or
     },
 
     _updateValidState: function () {
+      this.value = this.value ? this.value : '';
       var newValue = this.required ? this.value.length > 0 : true;
       this._setValid(newValue);
     },
@@ -3525,7 +3526,7 @@ for data or
         i = self.items.indexOf(value);
 
         if (i !== -1) {
-          $item.remove();
+          $item.parentElement.removeChild($item);//Iremove();
           if ($item.classList.contains('active')) {
             idx = self.$activeItems.indexOf($item);
             self.$activeItems.splice(idx, 1);
@@ -3827,7 +3828,9 @@ for data or
         }
         var children = self.$control.querySelectorAll(':not(input)');
         for (i = 0; i < children.length; i += 1) {
-          children[i].remove();
+          var child = children[i];
+          child.parentElement.removeChild(child);
+//          children[i].remove();
         }
         self.items = [];
         self.lastQuery = null;
