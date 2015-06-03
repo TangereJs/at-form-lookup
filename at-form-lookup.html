@@ -1801,7 +1801,7 @@ for data or
       ]);
 
       var width = test.clientWidth;
-      test.remove();
+      test.parentElement.removeChild(test);
 
       return width;
     };
