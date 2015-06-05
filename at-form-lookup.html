@@ -2115,10 +2115,16 @@ for data or
         $control.addEventListener('mousedown', function () {
           return self.onMouseDown.apply(self, arguments);
         });
+        $control.addEventListener('touchstart', function () {
+          return self.onMouseDown.apply(self, arguments);
+        });
         $control.addEventListener('click', function () {
           return self.onClick.apply(self, arguments);
         });
 
+        $control.addEventListener('touchstart', function (e) {
+          e.stopPropagation();
+        });
         $control_input.addEventListener('mousedown', function (e) {
           e.stopPropagation();
         });
@@ -2910,7 +2916,7 @@ for data or
 
         self.setTextboxValue('');
         self.$control_input.style.opacity = 0;
-        self.$control_input.style.position = 'absolute';
+//        self.$control_input.style.position = 'absolute';
         self.$control_input.style.left = self.rtl ? 10000 : -10000;
         //self.$control_input.css({ opacity: 0, position: 'absolute', left: self.rtl ? 10000 : -10000 });
         self.isInputHidden = true;
@@ -3509,6 +3515,18 @@ for data or
               __self.setCaret(__self.items.length);
             }
           });
+          removeItem.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+            if (__self.isLocked) {
+              return;
+            }
+
+            var $item = e.currentTarget.parentElement;
+            __self.setActiveItem($item);
+            if (__self.deleteSelection()) {
+              __self.setCaret(__self.items.length);
+            }
+          });
         }
       };
 
@@ -3871,7 +3889,10 @@ for data or
         // so now mousedown event listener needs to be applied here        
         // when child is inserted an event listener should be attached
         var self = this;
-        $elAsChild.addEventListener('mousedown', function () {
+        $elAsChild.addEventListener('mousedown', function () {          
+          self.onItemSelect.apply(self, arguments);
+        });
+        $elAsChild.addEventListener('touchstart', function () {
           self.onItemSelect.apply(self, arguments);
         });
 
@@ -4739,6 +4760,18 @@ for data or
                 self.setCaret(self.items.length);
               }
             });
+            removeItems[i].addEventListener('touchstart', function (e) {
+              e.preventDefault();
+              if (self.isLocked) {
+                return;
+              }
+
+              var $item = e.currentTarget.parentElement;
+              self.setActiveItem($item);
+              if (self.deleteSelection()) {
+                self.setCaret(self.items.length);
+              }
+            });            
           }
         };
       }());
