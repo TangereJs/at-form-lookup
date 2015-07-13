@@ -2915,7 +2915,6 @@ for data or
                 if (self.settings.mode === 'single') {
                     return;
                 }
-
                 self.$activeItems = Array.prototype.slice.apply(self.$control.children(':not(input)').addClass('active'));
                 if (self.$activeItems.length) {
                     self.hideInput();
@@ -3180,13 +3179,13 @@ for data or
                         } else if (self.settings.mode === 'single' && self.items.length) {
                             $active = self.getOption(self.items[0]);
                         }
-                        if (!$active || !$active.length) {
-                            if ($create && !self.settings.addPrecedence) {
-                                $active = self.getAdjacentOption($create, 1);
-                            } else {
-                                $active = Polymer.dom($dropdown_content).querySelector('[data-selectable]'); //$dropdown_content.find('[data-selectable]:first');
-                            }
-                        }
+                        //if (!$active || (!$active.length && !self.items.length)) {
+                        //    if ($create && !self.settings.addPrecedence) {
+                        //        $active = self.getAdjacentOption($create, 1);
+                        //    } else {
+                        //        $active = Polymer.dom($dropdown_content).querySelector('[data-selectable]'); //$dropdown_content.find('[data-selectable]:first');
+                        //    }
+                        //}
                     } else {
                         $active = $create;
                     }
