@@ -68,14 +68,14 @@ for data or
     <style>
         #contentWrapper {
             position: relative;
-            height: 100 %;
+            height: 100%;
         }
 
         .lookupLabel {
-            font-size: 14 px;
+            font-size: 14px;
             font-weight: bold;
             display: block;
-            padding: 0 0 0.3e m 0;
+            padding: 0 0 0.3em 0;
         }
 
         #content {
@@ -93,12 +93,12 @@ for data or
             #disabledOverlay[disabled] {
                 display: block;
                 position: absolute;
-                bottom: 0 px;
+                bottom: 0px;
                 filter: alpha(opacity 40);
                 height: expression(parentElement.scrollHeight + 'px');
-                width: 100 %;
+                width: 100%;
                 z-index: 99999;
-                height: 100 %;
+                height: 100%;
             }
 
         #disabledText {
@@ -277,7 +277,7 @@ for data or
             }
         },
 
-        valueChanged: function (oldValue, newValue) {
+        valueChanged: function (newValue, oldValue) {
             if (this._isReady) {
                 if (!this._isUpdating && !this._selectizeUpdate) {
                     this._isUpdating = true;
@@ -287,7 +287,12 @@ for data or
 
                     var newValues = this.value;
                     if (!isArray(this.value)) {
-                        newValues = this.value.split(',');
+
+                        if (this.value.length <= 0) {
+                            newValues = new Array();
+                        } else {
+                            newValues = this.value.split(',');
+                        }
                     }
 
                     var selectedItems = sInstance.items;
@@ -302,6 +307,7 @@ for data or
 
                     for (var i = 0; i < itemsToAdd.length; i++) {
                         var currentItem = itemsToAdd[i];
+
                         if (sInstance.options.hasOwnProperty(currentItem)) {
                             sInstance.addItem(currentItem);
                         } else {
@@ -325,7 +331,6 @@ for data or
                             }
                         }
                     }
-
 
                     this._isUpdating = false;
                     this._selectizeUpdate = false;
@@ -506,8 +511,6 @@ for data or
                 this.value = newValue;
             }
         },
-
-
 
         initialize: function () {
 
@@ -3459,7 +3462,6 @@ for data or
                     var inputMode = self.settings.mode;
                     var i, active, value_next, wasFull;
                     value = hash_key(value);
-
                     if (self.items.indexOf(value) !== -1) {
                         if (inputMode === 'single') {
                             self.close();
