@@ -53,7 +53,7 @@
 .selectize-control.plugin-remove_button [data-value] .remove {
   z-index: 1;
   /* fixes ie bug (see #392) */
-  
+
   position: absolute;
   top: 0;
   right: 0;
@@ -226,7 +226,7 @@
 }
 
 .selectize-input {
-  min-height: 34px;
+  min-height: 40px;
 }
 
 .selectize-input.dropdown-active::before {
