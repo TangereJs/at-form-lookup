@@ -81,6 +81,10 @@ for data or
             opacity: 1;
         }
 
+            #content.field {
+                margin: 0;
+            }
+
             #content[disabled] {
                 opacity: 0.5;
             }
@@ -110,7 +114,7 @@ for data or
         }
     </style>
     <template>
-        <div id="contentWrapper">
+        <div id="contentWrapper" class="ui form">
             <div id="content" class="{{class}}">
                 <label id="label" class="lookupLabel">{{label}}</label>
                 <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
