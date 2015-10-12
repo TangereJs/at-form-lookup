@@ -84,6 +84,7 @@
   -webkit-border-radius: 2px;
   -moz-border-radius: 2px;
   border-radius: 2px;
+  min-height:37px;
 }
 .selectize-input.full {
   background-color: #ffffff;
@@ -100,6 +101,9 @@
   -webkit-border-radius: 2px 2px 0 0;
   -moz-border-radius: 2px 2px 0 0;
   border-radius: 2px 2px 0 0;
+}
+.selectize-control{
+    height:37px;
 }
 .selectize-control.multi .selectize-input > div {
   cursor: pointer;
