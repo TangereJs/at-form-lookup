@@ -179,7 +179,6 @@ for data or
             available: {
                 type: String,
                 value: '',
-                reflectToAttribute: true,
                 observer: 'availableChanged'
             },
             value: {
@@ -258,7 +257,7 @@ for data or
             }
         },
 
-        availableChanged: function (oldValue, newValue) {
+        availableChanged: function (newValue, oldValue) {
             var i;
 
             if (this._isReady) {
@@ -266,13 +265,25 @@ for data or
                 instance.clearOptions();
 
                 if (isArray(this.available)) {
+                  for (i=0; i< newValue.length; i+= 1) {
+                    var option = newValue[i];
+                    if (isString(option)) {
+                      option = option.trim();
+                      instance.addOption({
+                        value: option,
+                        title: option
+                      });
+                    } else {
+                      instance.addOption(option);
+                    }
+                  }
                     instance.addOption(this.available);
                 } else if (isCommaSeparated(this.available)) {
                     var items = this.available.split(',');
                     for (i = 0; i < items.length; i += 1) {
                         var newOption = {
-                            value: items[i],
-                            title: items[i]
+                            value: items[i].trim(),
+                            title: items[i].trim()
                         };
                         instance.addOption(newOption);
                     }
