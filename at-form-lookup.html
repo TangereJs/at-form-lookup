@@ -112,11 +112,17 @@ for data or
         .error-text {
             display: inline-block;
         }
+
+        .hide-label {
+          display: none;
+        }
     </style>
     <template>
         <div id="contentWrapper" class="ui form">
+          <div id="labelContainer">
+            <label id="label" class="lookupLabel">{{label}}</label>
+          </div>
             <div id="content" class="field">
-                <label id="label" class="lookupLabel">{{label}}</label>
                 <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
                 <select id="selectTags" style="display:none"></select>
                 <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
@@ -220,12 +226,19 @@ for data or
             maxItems: {
                 type: Number,
                 value: 1
+            },
+            hideTitle: {
+              type: Boolean,
+              value: false,
+              observer: 'hideTitleChanged'
             }
         },
         _scopeCssViaAttr: true,
         usedropdownChanged: function () { },
         maxItemsChanged: function () { },
-
+        hideTitleChanged: function (newValue, oldValue) {
+          this.toggleClass("hide-label", newValue, this.$.labelContainer);
+        },
         renderChanged: function (oldValue, newValue) {
             if (this._selectizeInstance !== undefined) {
                 this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, newValue);
