@@ -187,6 +187,30 @@ for data or
         value: '',
         observer: 'availableChanged'
       },
+      // ------------------------------------------------------------
+      // "Why is xvaluelist here?" - you ask.
+      // "We already have available just above" - you say.
+      // xvaluelist is here to improve compatibility with copyProperties function in at-core-form/script/schema-helpers.js
+      // this function goes through element properties and copies property values from property definition in json schema to element properties
+      // now available doens't exist in property definition in json schema so undefined will be copied
+      // xvaluelist exists in json schema and when property name is valuelist, xvaluelist should be copied
+      // so we introduce xvaluelist property in at-form-radio to remove if statement that would detect this situation
+      // ------------------------------------------------------------
+      xvaluelist: {
+        type: String,
+        value: '',
+        observer: 'availableChanged'
+      },
+      // ------------------------------------------------------------
+      // "Why is enum here?" - you ask.
+      // "We already have available and xvaluelist just above" - you say.
+      // read explanation for xvaluelist, enum is here for the same reason
+      // ------------------------------------------------------------
+      enum: {
+        type: String,
+        value: '',
+        observer: 'availableChanged'
+      },
       value: {
         type: String,
         value: '',
@@ -284,7 +308,7 @@ for data or
         var instance = this._selectizeInstance;
         instance.clearOptions();
 
-        if (isArray(this.available)) {
+        if (isArray(newValue)) {
           for (i = 0; i < newValue.length; i += 1) {
             var option = newValue[i];
             if (isString(option)) {
@@ -297,9 +321,9 @@ for data or
               instance.addOption(option);
             }
           }
-          instance.addOption(this.available);
-        } else if (isCommaSeparated(this.available)) {
-          var items = this.available.split(',');
+          instance.addOption(newValue);
+        } else if (isCommaSeparated(newValue)) {
+          var items = newValue.split(',');
           for (i = 0; i < items.length; i += 1) {
             var newOption = {
               value: items[i].trim(),
