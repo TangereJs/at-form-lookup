@@ -251,10 +251,10 @@ for data or
         type: Number,
         value: 1
       },
-      hideTitle: {
+      hideLabel: {
         type: Boolean,
         value: false,
-        observer: 'hideTitleChanged'
+        observer: 'hideLabelChanged'
       }
     },
     $meta: [{
@@ -269,7 +269,7 @@ for data or
     _scopeCssViaAttr: true,
     usedropdownChanged: function() {},
     maxItemsChanged: function() {},
-    hideTitleChanged: function(newValue, oldValue) {
+    hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hide-label", newValue, this.$.labelContainer);
     },
     renderChanged: function(oldValue, newValue) {
