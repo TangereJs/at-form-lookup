@@ -257,13 +257,15 @@ for data or
         observer: 'hideTitleChanged'
       }
     },
-    $meta: {
+    $meta: [{
+      title: "Enum",
+      type: "string",
+      xtype: "enum"
+    }, {
       title: "Lookup",
-      form: {
-        type: "string",
-        xtype: ["enum", "lookup"]
-      }
-    },
+      type: "string",
+      xtype: "lookup"
+    }],
     _scopeCssViaAttr: true,
     usedropdownChanged: function() {},
     maxItemsChanged: function() {},
