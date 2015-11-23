@@ -197,9 +197,25 @@ for data or
       // so we introduce xvaluelist property in at-form-radio to remove if statement that would detect this situation
       // ------------------------------------------------------------
       xvaluelist: {
-        type: String,
-        value: '',
-        observer: 'availableChanged'
+        type: Array,
+        value: function () {
+          return [];
+        },
+        observer: 'availableChanged',
+        schema: {
+          items: {
+            type: "object",
+            properties: {
+              title: {
+                "type": "string"
+              },
+              value: {
+                type: "string"
+              }
+            }
+          }
+        },
+        layout: 'horizontal'
       },
       // ------------------------------------------------------------
       // "Why is enum here?" - you ask.
@@ -207,7 +223,7 @@ for data or
       // read explanation for xvaluelist, enum is here for the same reason
       // ------------------------------------------------------------
       enum: {
-        type: String,
+        type: Array,
         value: '',
         observer: 'availableChanged'
       },
