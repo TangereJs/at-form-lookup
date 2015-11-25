@@ -273,6 +273,9 @@ for data or
         observer: 'hideLabelChanged'
       }
     },
+    observers: [
+      'xvaluelistSplicesChanged(xvaluelist.splices)'
+    ],
     $meta: [{
       title: "Enum",
       type: "string",
@@ -285,6 +288,9 @@ for data or
     _scopeCssViaAttr: true,
     usedropdownChanged: function() {},
     maxItemsChanged: function() {},
+    xvaluelistSplicesChanged: function (newValue, oldValue) {
+        debugger;
+    },
     hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hide-label", newValue, this.$.labelContainer);
     },
