@@ -288,9 +288,7 @@ for data or
     _scopeCssViaAttr: true,
     usedropdownChanged: function() {},
     maxItemsChanged: function() {},
-    xvaluelistSplicesChanged: function (newValue, oldValue) {
-        debugger;
-    },
+    xvaluelistSplicesChanged: function (newValue, oldValue) {},
     hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hide-label", newValue, this.$.labelContainer);
     },
@@ -324,7 +322,10 @@ for data or
         this.requestParamsChanged();
       }
     },
-
+    // this function is here to improve compatibility with form designer
+    xvaluelistChanged: function (newValue, oldValue) {
+      this.availableChanged(newValue, oldValue);
+    },
     availableChanged: function(newValue, oldValue) {
       var i;
 
