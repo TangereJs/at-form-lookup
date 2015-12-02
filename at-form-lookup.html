@@ -113,7 +113,7 @@ for data or
       display: inline-block;
     }
 
-    .hide-label {
+    .hidden {
       display: none;
     }
   </style>
@@ -271,6 +271,17 @@ for data or
         type: Boolean,
         value: false,
         observer: 'hideLabelChanged'
+      },
+      /**
+       * Hides the element. When hidden nothing is displayed for the element
+       * @property hide
+       * @type Boolean
+       * @default false
+       */
+      hide: {
+        type: Boolean,
+        value: false,
+        observer: 'hideChanged'
       }
     },
     observers: [
@@ -286,11 +297,15 @@ for data or
       xtype: "lookup"
     }],
     _scopeCssViaAttr: true,
+    hideChanged: function (newValue, oldValue) {
+      var wrapper = this.$.contentWrapper;
+      this.toggleClass('hidden', newValue, wrapper);
+    },
     usedropdownChanged: function() {},
     maxItemsChanged: function() {},
     xvaluelistSplicesChanged: function (newValue, oldValue) {},
     hideLabelChanged: function(newValue, oldValue) {
-      this.toggleClass("hide-label", newValue, this.$.labelContainer);
+      this.toggleClass("hidden", newValue, this.$.labelContainer);
     },
     renderChanged: function(oldValue, newValue) {
       if (this._selectizeInstance !== undefined) {
