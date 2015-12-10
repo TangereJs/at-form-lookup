@@ -116,6 +116,13 @@ for data or
     .hidden {
       display: none;
     }
+
+      .hint {
+          display: block;
+          font-size: 0.923em;
+          padding: 0 8px;
+          color: #7c7c7c;
+      }
   </style>
   <template>
     <div id="contentWrapper" class="ui form">
@@ -127,6 +134,7 @@ for data or
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
         <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-error="loadDefaultOnComplete"></at-core-activity>
+        <span class="hint">{{hint}}</span>
         <div id="errorMessage" class="error layout horizontal center" hidden="{{valid}}">
           <at-carbon-icon flex class="error-icon" icon="now:error"></at-carbon-icon>
           <div class="error-text" flex auto role="alert" aria-hidden="{{valid}}">{{error}}</div>
