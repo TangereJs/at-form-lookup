@@ -278,6 +278,11 @@ for data or
         value: '',
         observer: 'urlChanged'
       },
+      xurl: {
+        type: String,
+        value: '',
+        observer: 'xurlChanged'
+      },
       params: {
         type: String,
         value: '',
@@ -346,6 +351,11 @@ for data or
         this.requestParamsChanged();
       }
     },
+    
+    xurlChanged: function(newValue) {
+      // xurl is now mapped to url
+      if(newValue != this.url) this.url = newValue;
+    },
 
     urlChanged: function(oldValue, newValue) {
       if (this._isReady) {
@@ -356,6 +366,7 @@ for data or
 
         this.requestParamsChanged();
       }
+      this.xurl = this.url; // update legacy xurl parameter
     },
     // this function is here to improve compatibility with form designer
     xvaluelistChanged: function (newValue, oldValue) {
