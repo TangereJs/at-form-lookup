@@ -332,13 +332,13 @@ for data or
     hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hidden", newValue, this.$.labelContainer);
     },
-    renderChanged: function(oldValue, newValue) {
+    renderChanged: function(newValue, oldValue) {
       if (this._selectizeInstance !== undefined) {
         this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, newValue);
       }
     },
 
-    labelChanged: function(oldValue, newValue) {
+    labelChanged: function(newValue, oldValue) {
       this.$.label.textContent = newValue;
     },
 
@@ -351,13 +351,13 @@ for data or
         this.requestParamsChanged();
       }
     },
-    
+
     xurlChanged: function(newValue) {
       // xurl is now mapped to url
       if(newValue != this.url) this.url = newValue;
     },
 
-    urlChanged: function(oldValue, newValue) {
+    urlChanged: function(newValue, oldValue) {
       if (this._isReady) {
         this.noPreload = true;
         if (this.url !== '') {
@@ -391,7 +391,7 @@ for data or
             } else if (!option.title) {
               option.title = option.value;
               instance.addOption(option);
-            } else {              
+            } else {
               instance.addOption(option);
             }
           }
@@ -494,7 +494,7 @@ for data or
       }
     },
 
-    requiredChanged: function(oldValue, newValue) {
+    requiredChanged: function(newValue, oldValue) {
       this._updateValidState();
     },
 
