@@ -133,7 +133,6 @@ for data or
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
-        <at-core-activity id="loadDefaultAjax" handle-as="json" on-response="loadDefaultOnResponse" on-error="loadDefaultOnComplete"></at-core-activity>
         <span class="hint">{{hint}}</span>
         <div id="errorMessage" class="error layout horizontal center" hidden="{{valid}}">
           <at-carbon-icon flex class="error-icon" icon="now:error"></at-carbon-icon>
@@ -190,6 +189,9 @@ for data or
         value: false,
         observer: 'requiredChanged'
       },
+      /**
+       * the list of items that should initially be present for selection
+       */
       available: {
         type: String,
         value: '',
@@ -263,6 +265,9 @@ for data or
         value: false,
         reflectToAttribute: true
       },
+      /**
+       * allows to create new entries when no matching record is found
+       */
       create: {
         type: Boolean,
         value: false,
@@ -354,7 +359,7 @@ for data or
 
     xurlChanged: function(newValue) {
       // xurl is now mapped to url
-      if(newValue != this.url) this.url = newValue;
+      if(newValue != this.url) { this.url = newValue; }
     },
 
     urlChanged: function(newValue, oldValue) {
@@ -450,16 +455,21 @@ for data or
                 // component is first disabled so user can't input
                 this._selectizeInstance.disable();
                 // an disabled overlay is "displayed"
-                this.$.disabledOverlay.setAttribute('disabled', true);
+                Polymer.dom(this.$.disabledOverlay).setAttribute('disabled', true);
                 // a correct url is constructed
                 var urlParts = this.url.split('?');
                 var baseUrl = urlParts[0];
                 var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
-                this.$.loadDefaultAjax.url = baseUrl + '/' + currentItem + queryPart;
+                var coreActivity = document.createElement('at-core-activity');
+                coreActivity.handleAs = 'json';
+                var finalUrl = baseUrl + '/' + currentItem + queryPart;
+                coreActivity.url = finalUrl;
                 // noCredentials parameter is set on the ajax component
-                this.$.loadDefaultAjax.noCredentials = this.noCredentials;
+                coreActivity.noCredentials = this.noCredentials;
+                // add listener for response event
+                coreActivity.addEventListener('response', this.loadDefaultOnResponse.bind(this));
                 // request is made
-                this.$.loadDefaultAjax.generateRequest();
+                coreActivity.generateRequest();
               }
             }
           }
@@ -632,7 +642,6 @@ for data or
         data: item
       });
     },
-    loadDefaultOnComplete: function(event) {},
 
     selectizeChange: function(newValue) {
       this._selectizeUpdate = true;
@@ -674,12 +683,10 @@ for data or
       this._isReady = true;
 
       // set available options
-      // empty arrays are used here because these parameters are not used in the function
-      this.availableChanged([], []);
+      this.availableChanged(this.available, []);
 
       // set items selected by default
-      // empty arrays are used here because these parameters are not used in the function
-      this.valueChanged([], []);
+      this.valueChanged(this.value, []);
 
       // set required state
       if (this.required && this.value.length === 0) {
