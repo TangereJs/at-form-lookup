@@ -370,6 +370,8 @@ for data or
         }
 
         this.requestParamsChanged();
+        // AT-32 when value is set before url, that value needs to be displayed
+        this.valueChanged(this.value, this.value);
       }
       this.xurl = this.url; // update legacy xurl parameter
     },
