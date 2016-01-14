@@ -43,6 +43,7 @@ for data or
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../paper-shadow/paper-shadow.html" />
+<link rel="import" href="../at-form-behaviors/at-form-behaviors-validation.html">
 
 <script type="text/javascript">
   var SelectBoxUtils = {
@@ -113,33 +114,34 @@ for data or
       display: inline-block;
     }
 
+    :host {
+      --error-color: #e41e2b;
+    }
+
     .hidden {
       display: none;
     }
 
-      .hint {
-          display: block;
-          font-size: 0.923em;
-          padding: 0 8px;
-          color: #7c7c7c;
-      }
+    .label-container.error > label {
+      color: var(--error-color);
+    }
+
+    .hint-container.error > p {
+      color: var(--error-color);
+    }
   </style>
   <template>
     <div id="contentWrapper" class="ui form">
-      <div id="labelContainer">
+      <div id="labelContainer" class="label-container">
         <label id="label" class="lookupLabel">{{label}}</label>
       </div>
-      <div id="content" class="field">
+      <div id="content" class="field has-error">
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
-        <span class="hint">{{hint}}</span>
-        <div id="errorMessage" class="error layout horizontal center" hidden="{{valid}}">
-          <at-carbon-icon flex class="error-icon" icon="now:error"></at-carbon-icon>
-          <div class="error-text" flex auto role="alert" aria-hidden="{{valid}}">{{error}}</div>
-        </div>
-
-        <div id="emptyError" class="error" style="height: 26px" layout horizontal center hidden="{{!valid}}"></div>
+      </div>
+      <div id="hintContainer" class="hint-container">
+        <p id="errorHtml" class="hint"></p>
       </div>
       <div id="disabledOverlay">
         <p id="disabledText">Loading...</p>
@@ -149,6 +151,7 @@ for data or
   </template>
 </dom-module>
 <script>
+  'use strict';
   function isArray(obj) {
     return Object.prototype.toString.call(obj) === Object.prototype.toString.call([]);
   }
@@ -159,6 +162,7 @@ for data or
 
   Polymer({
     is: 'at-form-lookup',
+    behaviors: [AtFormBehaviors.AtFormBehaviorsValidation],
     _selectizeLoadCallback: function() {},
     _selectizeInstance: {},
     _usedropdown: true,
@@ -167,21 +171,9 @@ for data or
     _validValueBeforeDisable: true,
     render: {},
     properties: {
-      valid: {
-        type: Boolean,
-        value: true,
-        readOnly: true,
-        notify: true,
-        observer: 'validChanged'
-      },
-      error: {
-        type: String,
-        value: 'This field is required'
-      },
       disabled: {
         type: Boolean,
         value: false,
-        reflectToAttribute: true,
         observer: 'disabledChanged'
       },
       required: {
@@ -257,26 +249,22 @@ for data or
       },
       label: {
         type: String,
-        value: '',
-        reflectToAttribute: true
+        value: ''
       },
       noCredentials: {
         type: Boolean,
-        value: false,
-        reflectToAttribute: true
+        value: false
       },
       /**
        * allows to create new entries when no matching record is found
        */
       create: {
         type: Boolean,
-        value: false,
-        reflectToAttribute: true
+        value: false
       },
       noPreload: {
         type: Boolean,
-        value: false,
-        reflectToAttribute: true
+        value: false
       },
       url: {
         type: String,
@@ -314,9 +302,6 @@ for data or
         observer: 'hideChanged'
       }
     },
-    observers: [
-      'xvaluelistSplicesChanged(xvaluelist.splices)'
-    ],
     $meta: [{
       title: "Enum",
       type: "string",
@@ -327,13 +312,8 @@ for data or
       xtype: "lookup"
     }],
     _scopeCssViaAttr: true,
-    hideChanged: function (newValue, oldValue) {
-      var wrapper = this.$.contentWrapper;
-      this.toggleClass('hidden', newValue, wrapper);
-    },
     usedropdownChanged: function() {},
     maxItemsChanged: function() {},
-    xvaluelistSplicesChanged: function (newValue, oldValue) {},
     hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hidden", newValue, this.$.labelContainer);
     },
@@ -479,7 +459,7 @@ for data or
           this._isUpdating = false;
           this._selectizeUpdate = false;
         }
-        this._updateValidState();
+        this.validate();
       }
     },
 
@@ -495,31 +475,21 @@ for data or
       this.initialize();
     },
 
-    validChanged: function(newValue, oldValue) {
-      if (this.valid === true) {
-        // component is valid
-        this.$.errorMessage.style.display = "none";
-        this.$.emptyError.style.display = "";
-      } else {
-        this.$.errorMessage.style.display = "";
-        this.$.emptyError.style.display = "none";
-      }
+    set valid(newValue) { },
+
+    _updateUIValidState: function(isValid) {
+      var labelContainer = this.$.labelContainer;
+      this.toggleClass('error', !isValid, labelContainer);
+      var contentContainer = this.$.content;
+      this.toggleClass('has-error', !isValid, contentContainer);
+      var hintContainer = this.$.hintContainer;
+      this.toggleClass('error', !isValid, hintContainer);
     },
 
     requiredChanged: function(newValue, oldValue) {
-      this._updateValidState();
-    },
-
-    _updateValidState: function() {
-      this.value = this.value ? this.value : '';
-      var newValue = this.required ? this.value.length > 0 : true;
-      this._setValid(newValue);
-    },
-
-    validate: function() {
-      this._updateValidState();
-      this.validChanged();
-      return this.valid;
+      if (this._isReady) {
+        this.validate();
+      }
     },
 
     disabledChanged: function(newValue, oldValue) {
@@ -530,17 +500,15 @@ for data or
           this._selectizeInstance.enable();
         }
 
-        if (this.disabled) {
-          this._validValueBeforeDisable = this.valid;
-          this._setValid(true);
-          //this.$.errorMessage.setAttribute('hidden', true);
-          //this.$.emptyError.setATtribute('hidden', false);
-          //this.toggleAttribute('error', false, this.$.fileDiv);
-        } else {
-          this._setValid(this._validValueBeforeDisable);
-          //this.toggleAttribute('error', !this.valid, this.$.fileDiv);
-        }
-        this.validChanged();
+        this.validate();
+      }
+    },
+
+    hideChanged: function (newValue, oldValue) {
+      var wrapper = this.$.contentWrapper;
+      this.toggleClass('hidden', newValue, wrapper);
+      if (this._isReady) {
+        this.validate();
       }
     },
 
@@ -689,54 +657,6 @@ for data or
 
       // set items selected by default
       this.valueChanged(this.value, []);
-
-      // set required state
-      if (this.required && this.value.length === 0) {
-        this._setValid(false);
-      }
-
-      //      this.destroyExisting();
-      //      var usedropDownAttr = this.getAttribute('usedropdown');
-      //      this._usedropdown = false;
-      //      if (this.usedropdown) {
-      //        this._usedropdown = this.usedropdown;
-      //      }
-      //      var availableItems = [];
-      //      if (isArray(this.available)) {
-      //        availableItems = this.available;
-      //      } else if (isString(this.available) && this.available !== "") {
-      //        var availableTags = this.available.split(',');
-      //        for (var i = 0; i <availableTags.length; i++) {
-      //          availableTags[i] = availableTags[i].trim();
-      //          var tag = availableTags[i];
-      //          availableItems.push({
-      //            title: tag,
-      //            value: tag
-      //          });
-      //        }
-      //      } else {
-      //        //console.log("Available items should be an array of (id, value) pairs or comma separated string");
-      //      }
-
-      //      var availableItemsInitialLen = availableItems.length;
-      //      var selectedByDefault = isArray(this.value) ? this.value : this.value.split(',');
-      //      if (isArray(this.value)) {
-      //        for (var i = 0; i <selectedByDefault.length; i++) {
-      //          selectedByDefault[i] = selectedByDefault[i].trim();
-      //          if (availableItemsInitialLen === 0) {
-      //            if (this.url !== undefined && this.url !== "") {
-      //              this.$.loadDefaultAjax.url = this.url + selectedByDefault[i];
-      //              this.$.loadDefaultAjax.noCredentials = this.noCredentials;
-      //              this.$.loadDefaultAjax.go();
-      //            } else {
-      //              availableItems.push({
-      //                title: selectedByDefault[i],
-      //                value: selectedByDefault[i]
-      //              });
-      //            }
-      //          }
-      //        }
-      //      }
     }
   });
 
