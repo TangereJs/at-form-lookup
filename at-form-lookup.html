@@ -86,6 +86,10 @@ for data or
       margin: 0;
     }
 
+    #content.field.has-error {
+      margin: 0 0 2px;
+    }
+
     #content[disabled] {
       opacity: 0.5;
     }
@@ -165,10 +169,8 @@ for data or
     behaviors: [AtFormBehaviors.AtFormBehaviorsValidation],
     _selectizeLoadCallback: function() {},
     _selectizeInstance: {},
-    _usedropdown: true,
     _isUpdating: false,
     _isReady: false,
-    _validValueBeforeDisable: true,
     render: {},
     properties: {
       disabled: {
@@ -258,9 +260,10 @@ for data or
       /**
        * allows to create new entries when no matching record is found
        */
-      create: {
+      allowNewItems: {
         type: Boolean,
-        value: false
+        value: false,
+        observer: 'allowNewItemsChanged'
       },
       noPreload: {
         type: Boolean,
@@ -283,7 +286,8 @@ for data or
       },
       maxItems: {
         type: Number,
-        value: 1
+        value: 1,
+        observer: 'maxItemsChanged'
       },
       hideLabel: {
         type: Boolean,
@@ -312,8 +316,26 @@ for data or
       xtype: "lookup"
     }],
     _scopeCssViaAttr: true,
-    usedropdownChanged: function() {},
-    maxItemsChanged: function() {},
+    maxItemsChanged: function(newValue, oldValue) {
+      if (this._isReady && this._selectizeInstance) {
+        try {
+          var valueToSet = Number(newValue);
+          var settings = this._selectizeInstance.settings;
+          settings.maxItems = valueToSet;
+          var mode = valueToSet === 1 ? 'single' : 'multi';
+          var prevMode = settings.mode;
+          settings.mode = mode;
+          var wrapper = this._selectizeInstance.$wrapper;
+          Polymer.dom(wrapper).classList.remove(prevMode);
+          Polymer.dom(wrapper).classList.add(mode);
+          var dropdown = this._selectizeInstance.$dropdown;
+          Polymer.dom(dropdown).classList.remove(prevMode);
+          Polymer.dom(dropdown).classList.add(mode);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    },
     hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hidden", newValue, this.$.labelContainer);
     },
@@ -473,6 +495,35 @@ for data or
 
     ready: function() {
       this.initialize();
+      this._validationFunctions.push(this._validateIsValueInXValueList.bind(this));
+    },
+
+    _validateIsValueInXValueList: function (value) {
+      var valueList = this.xvaluelist;
+      var result = true;
+
+      if (valueList.length < 1) {
+        return true;
+      }
+      if (value === '') {
+        return true;
+      }
+
+      var valuesToCheck = value.split(',');
+
+      valuesToCheck.forEach(function (valueToCheck, index) {
+        var localResult = false;
+        valueList.forEach(function(item, index) {
+          localResult = localResult || item.value === valueToCheck;
+        });
+        result = result && localResult;
+      });
+
+      if (!result) {
+        this._errorMessage = 'Value ' + value + ' is invalid.';
+      }
+
+      return result;
     },
 
     set valid(newValue) { },
@@ -630,7 +681,7 @@ for data or
       // create the selectize instance
       var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
         plugins: ['remove_button'],
-        create: this.create,
+        create: this.allowNewItems,
         selectOnTab: true,
         preload: !this.noPreload,
         allowEmpty: this.allowEmpty,
@@ -657,6 +708,12 @@ for data or
 
       // set items selected by default
       this.valueChanged(this.value, []);
+    },
+    allowNewItemsChanged: function (newValue, oldValue) {
+      if (this._isReady && this._selectizeInstance) {
+        var valueToSet = Boolean(newValue);
+        this._selectizeInstance.settings.create = valueToSet;
+      }
     }
   });
 
