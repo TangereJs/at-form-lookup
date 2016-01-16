@@ -511,10 +511,18 @@ for data or
 
       var valuesToCheck = value.split(',');
 
+      if (isString(valueList)) {
+        valueList = valueList.split(',');
+      }
+
       valuesToCheck.forEach(function (valueToCheck, index) {
         var localResult = false;
         valueList.forEach(function(item, index) {
-          localResult = localResult || item.value === valueToCheck;
+          if (item.value) {
+            localResult = localResult || item.value === valueToCheck;
+          } else {
+            localResult = localResult || item === valueToCheck;
+          }
         });
         result = result && localResult;
       });
