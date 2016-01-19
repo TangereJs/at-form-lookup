@@ -2181,7 +2181,7 @@ for data or
         $control_input = document.createElement('input');
         $control_input.setAttribute('type', 'text');
         $control_input.setAttribute('autocomplete', 'off');
-        $control_input.setAttribute('tabindex', tab_index);
+        // $control_input.setAttribute('tabindex', tab_index);
 
         Polymer.dom($control).appendChild($control_input);
 
@@ -2353,7 +2353,7 @@ for data or
           tabindex: tabIndexAttr ? tabIndexAttr : '1'
         };
 
-        $input.setAttribute('tabindex', 1);
+        // $input.setAttribute('tabindex', 1);
         $input.style.display = 'none';
         Polymer.dom($input.parentNode).insertBefore(self.$wrapper, $input.nextSibling);
         //self.$wrapper.appendChild($input);
@@ -4264,7 +4264,7 @@ for data or
         var self = this;
         self.$input.setAttribute('disabled', true);
         var $inputElement = self.$control.querySelector('input');
-        $inputElement.setAttribute('tabIndex', -1);
+        // $inputElement.setAttribute('tabIndex', -1);
         //        self.$wrapper.classList.add('loading');
         self.isDisabled = true;
         self.lock();
@@ -4278,7 +4278,7 @@ for data or
         var self = this;
         self.$input.removeAttribute('disabled');
         var $inputElement = self.$control.querySelector('input');
-        $inputElement.setAttribute('tabIndex', 1);
+        // $inputElement.setAttribute('tabIndex', 1);
         self.$wrapper.classList.remove('loading');
         self.isDisabled = false;
         self.unlock();
@@ -4306,7 +4306,7 @@ for data or
         }
         self.$input.removeAttribute('tabindex');
         self.$input.classList.remove('selectized');
-        self.$input.setAttribute('tabindex', revertSettings.tabindex);
+        // self.$input.setAttribute('tabindex', revertSettings.tabindex);
         self.$input.style.display = 'block';
         //self.$input
         //  .html('')
