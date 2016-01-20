@@ -80,10 +80,10 @@
 }
 
 .selectize-input {
-  padding: 6px 12px;
+  padding: 0.67861em 1em;
   display: inline-block;
   width: 100%;
-  overflow: hidden;
+  /*overflow: hidden;*/
   position: relative;
   z-index: 1;
 }
@@ -227,7 +227,7 @@
 }
 
 .selectize-input {
-  min-height: 40px;
+  min-height: 1em;
 }
 
 .selectize-input.dropdown-active::before {
