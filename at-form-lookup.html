@@ -2623,6 +2623,11 @@ for data or
                 currentTarget: self.$activeOption
               });
             }
+            if (self.settings.maxItems === 1) {
+              var blurEvent = document.createEvent('Event');
+              blurEvent.initEvent('blur', true, true);
+              self.$control_input.dispatchEvent(blurEvent);              
+            }
             e.preventDefault();
             return;
           case KEY_LEFT:
@@ -2639,16 +2644,16 @@ for data or
               self.onOptionSelect({
                 currentTarget: self.$activeOption
               });
-              e.preventDefault();
+              // e.preventDefault();
             }
             if (self.settings.create && self.createItem()) {
-              e.preventDefault();
+              // e.preventDefault();
             }
-            if (self.isOpen) {
+            // if (self.isOpen) {
               var blurEvent = document.createEvent('Event');
               blurEvent.initEvent('blur', true, true);
               self.$control_input.dispatchEvent(blurEvent);
-            }
+            // }
             return;
           case KEY_BACKSPACE:
           case KEY_DELETE:
