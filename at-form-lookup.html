@@ -724,6 +724,11 @@ for data or
         var valueToSet = Boolean(newValue);
         this._selectizeInstance.settings.create = valueToSet;
       }
+    },
+    focus: function () {
+      if (this._selectizeInstance) {
+        this._selectizeInstance.focus();
+      }
     }
   });
 
@@ -2626,7 +2631,7 @@ for data or
             if (self.settings.maxItems === 1) {
               var blurEvent = document.createEvent('Event');
               blurEvent.initEvent('blur', true, true);
-              self.$control_input.dispatchEvent(blurEvent);              
+              self.$control_input.dispatchEvent(blurEvent);
             }
             e.preventDefault();
             return;
