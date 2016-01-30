@@ -1,44 +1,3 @@
-<!--
-It should handle
-
-1. Allow to select one entries
-2. Allow to select multiple entries(
-  if this causes to many issues we can exclude this from the first prototype)-this can be achieved with maxEntries attribute;
-maxEntries == 1 is
-for single entry
-
-3. Be required or not
- -this can be achieved with required attribute-by
-default false;
-required = "true"
-for required
- -need confirmation
-for situation when only required is written without = "true"
-
-4. Be enabled or not
- -this can be achieved with enabled attribute-by
-default false;
-enabled = "true"
-for enabled
- -need confirmation
-for situation when only enabled is written without = "true"
-
-5 a.Lookup information from a remote data source-core-ajax should be used
-for communication;
-data handing should be done in component
-
-5 b.Lookup information from a local data source-local data should be array of key value pairs "key"
-for display "value"
-for data or
- -local data should be array of objects {
-    title: "value",
-    data: "value"
-  }
-
-6. Select items from the drop down list with mouse and / or keyboard-Should not be overly complicated
-
-7. Work with both Chrome and IE10 + (so with and without the polyfill)-I have no idea what this means(Chrome should have webcomponents.js baked into it)
-  -->
 <link rel="import" href="../polymer/polymer.html" />
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
@@ -505,7 +464,7 @@ for data or
       var valueList = this.xvaluelist;
       var result = true;
 
-      if (!valuelist || valueList.length < 1) {
+      if (typeof valuelist == "undefined" || valueList.length < 1) {
         return true;
       }
       if (value === '') {
