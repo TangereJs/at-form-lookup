@@ -505,7 +505,7 @@ for data or
       var valueList = this.xvaluelist;
       var result = true;
 
-      if (valueList.length < 1) {
+      if (!valuelist || valueList.length < 1) {
         return true;
       }
       if (value === '') {
