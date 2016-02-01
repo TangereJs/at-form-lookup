@@ -457,10 +457,10 @@
 
     ready: function() {
       this.initialize();
-      this._validationFunctions.push(this._validateIsValueInXValueList.bind(this));
+      this._validationFunctions.push(this._isValueValidForXValueList.bind(this));
     },
 
-    _validateIsValueInXValueList: function (value) {
+    _isValueValidForXValueList: function (value) {
       var valueList = this.xvaluelist;
       var result = true;
 
