@@ -346,6 +346,9 @@
 
       if (this._isReady) {
         var instance = this._selectizeInstance;
+        // *ij* this setting prevents unnecessary change event
+        // which clears the current valid at-form-lookup value
+        instance.isSetup = false;
         instance.clearOptions();
 
         if (isArray(newValue)) {
