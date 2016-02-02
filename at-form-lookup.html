@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../paper-shadow/paper-shadow.html" />
@@ -25,98 +26,93 @@
 <dom-module id="at-form-lookup">
   <link rel="stylesheet" href="css/at-form-lookup.css" />
   <link rel="stylesheet" href="css/at-form-lookup-default.css" />
-  <style>
-    #contentWrapper {
-      position: relative;
-    }
-
-    .lookupLabel {
-      font-size: 1em;
-      font-weight: bold;
-    }
-
-    #content {
-      opacity: 1;
-    }
-
-    #content.field {
-      margin: 0;
-    }
-
-    #content.field.has-error {
-      margin: 0 0 2px;
-    }
-
-    #content[disabled] {
-      opacity: 0.5;
-    }
-
-    #disabledOverlay {
-      display: none;
-    }
-
-    #disabledOverlay[disabled] {
-      display: block;
-      position: absolute;
-      bottom: 0px;
-      filter: alpha(opacity 40);
-      height: expression(parentElement.scrollHeight + 'px');
-      width: 100%;
-      z-index: 99999;
-      height: 100%;
-    }
-
-    #disabledText {
-      text-align: center;
-      opacity: 0.5;
-    }
-
-    #labelContainer {
-      margin: 0em 0em 0.2857rem 0em;
-    }
-
-    .error-text {
-      display: inline-block;
-    }
-
-    :host {
-      --error-color: #e41e2b;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .label-container.error > label {
-      color: var(--error-color);
-    }
-
-    .hint-container.error > p {
-      color: var(--error-color);
-    }
-  </style>
   <template>
-    <div id="contentWrapper" class="ui form">
+    <style>
+      :host * {
+        box-sizing: border-box;
+      }
+
+      :host {
+        @apply(--at-form-host);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .error {
+        color: var(--at-error-color);
+      }
+
+      .disabled {
+        @apply(--at-form-disabled);
+      }
+
+      #atContainer {
+        @apply(--at-form-element);
+      }
+
+      #label {
+        @apply(--at-form-label);
+      }
+
+      #contentContainer.error {
+        @apply(--at-form-error-margins);
+      }
+
+      .selectize-input {
+        @apply(--at-form-input-common);
+      }
+
+      #contentContainer.error .selectize-input {
+        @apply(--at-form-content-error);
+      }
+
+      #errorHtml {
+        @apply(--at-form-error-font);
+      }
+
+      #disabledOverlay {
+        display: none;
+      }
+
+      #disabledOverlay[disabled] {
+        display: block;
+        position: absolute;
+        bottom: 0px;
+        filter: alpha(opacity 40);
+        height: expression(parentElement.scrollHeight + 'px');
+        width: 100%;
+        z-index: 99999;
+        height: 100%;
+      }
+
+      #disabledText {
+        text-align: center;
+        opacity: 0.5;
+      }
+    </style>
+    <div id="atContainer" class="at-container">
       <div id="labelContainer" class="label-container">
-        <label id="label" class="lookupLabel">{{label}}</label>
+        <label id="label" class="at-label">{{label}}</label>
       </div>
-      <div id="content" class="field has-error">
+      <div id="contentContainer" class="content-container">
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
       </div>
       <div id="hintContainer" class="hint-container">
-        <p id="errorHtml" class="hint"></p>
+        <div id="errorHtml" class="hint"></div>
       </div>
       <div id="disabledOverlay">
-        <p id="disabledText">Loading...</p>
+        <div id="disabledText">Loading...</div>
       </div>
     </div>
-    <content></content>
   </template>
 </dom-module>
 <script>
   'use strict';
+
   function isArray(obj) {
     return Object.prototype.toString.call(obj) === Object.prototype.toString.call([]);
   }
@@ -163,7 +159,7 @@
       // ------------------------------------------------------------
       xvaluelist: {
         type: Array,
-        value: function () {
+        value: function() {
           return [];
         },
         observer: 'availableChanged',
@@ -189,7 +185,7 @@
       // ------------------------------------------------------------
       enum: {
         type: Array,
-        value: function () {
+        value: function() {
           return [];
         },
         observer: 'availableChanged',
@@ -323,7 +319,9 @@
 
     xurlChanged: function(newValue) {
       // xurl is now mapped to url
-      if(newValue != this.url) { this.url = newValue; }
+      if (newValue != this.url) {
+        this.url = newValue;
+      }
     },
 
     urlChanged: function(newValue, oldValue) {
@@ -340,7 +338,7 @@
       this.xurl = this.url; // update legacy xurl parameter
     },
     // this function is here to improve compatibility with form designer
-    xvaluelistChanged: function (newValue, oldValue) {
+    xvaluelistChanged: function(newValue, oldValue) {
       this.availableChanged(newValue, oldValue);
     },
     availableChanged: function(newValue, oldValue) {
@@ -460,7 +458,7 @@
       this._validationFunctions.push(this._isValueValidForXValueList.bind(this));
     },
 
-    _isValueValidForXValueList: function (value) {
+    _isValueValidForXValueList: function(value) {
       var valueList = this.xvaluelist;
       var result = true;
 
@@ -477,7 +475,7 @@
         valueList = valueList.split(',');
       }
 
-      valuesToCheck.forEach(function (valueToCheck, index) {
+      valuesToCheck.forEach(function(valueToCheck, index) {
         var localResult = false;
         valueList.forEach(function(item, index) {
           if (item.value) {
@@ -496,13 +494,13 @@
       return result;
     },
 
-    set valid(newValue) { },
+    set valid(newValue) {},
 
     _updateUIValidState: function(isValid) {
       var labelContainer = this.$.labelContainer;
       this.toggleClass('error', !isValid, labelContainer);
-      var contentContainer = this.$.content;
-      this.toggleClass('has-error', !isValid, contentContainer);
+      var contentContainer = this.$.contentContainer;
+      this.toggleClass('error', !isValid, contentContainer);
       var hintContainer = this.$.hintContainer;
       this.toggleClass('error', !isValid, hintContainer);
     },
@@ -515,7 +513,10 @@
 
     disabledChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance !== undefined) {
-        if (newValue === true) {
+        var atContainer = this.$.atContainer;
+        this.toggleClass('disabled', newValue, atContainer);
+
+        if (newValue) {
           this._selectizeInstance.disable();
         } else {
           this._selectizeInstance.enable();
@@ -525,8 +526,8 @@
       }
     },
 
-    hideChanged: function (newValue, oldValue) {
-      var wrapper = this.$.contentWrapper;
+    hideChanged: function(newValue, oldValue) {
+      var wrapper = this.$.atContainer;
       this.toggleClass('hidden', newValue, wrapper);
       if (this._isReady) {
         this.validate();
@@ -679,13 +680,13 @@
       // set items selected by default
       this.valueChanged(this.value, []);
     },
-    allowNewItemsChanged: function (newValue, oldValue) {
+    allowNewItemsChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance) {
         var valueToSet = Boolean(newValue);
         this._selectizeInstance.settings.create = valueToSet;
       }
     },
-    focus: function () {
+    focus: function() {
       if (this._selectizeInstance) {
         this._selectizeInstance.focus();
       }
@@ -2615,9 +2616,9 @@
               // e.preventDefault();
             }
             // if (self.isOpen) {
-              var blurEvent = document.createEvent('Event');
-              blurEvent.initEvent('blur', true, true);
-              self.$control_input.dispatchEvent(blurEvent);
+            var blurEvent = document.createEvent('Event');
+            blurEvent.initEvent('blur', true, true);
+            self.$control_input.dispatchEvent(blurEvent);
             // }
             return;
           case KEY_BACKSPACE:
