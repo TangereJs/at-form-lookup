@@ -79,14 +79,14 @@
   display: inline-block;
 }
 
-.selectize-input {
+/*.selectize-input {
   padding: 0.67861em 1em;
   display: inline-block;
   width: 100%;
-  /*overflow: hidden;*/
+  overflow: hidden;
   position: relative;
   z-index: 1;
-}
+}*/
 
 .selectize-control.multi .selectize-input.has-items {
   padding: 0.67861em 1em;
@@ -97,7 +97,7 @@
   display: -moz-inline-stack;
   display: inline-block;
   zoom: 1;
-  *display: inline;
+  display: inline;
 }
 
 .selectize-control.multi .selectize-input > div {
@@ -237,16 +237,6 @@
 .selectize-control.multi .selectize-input.has-items {
   padding-left: 9px;
   padding-right: 9px;
-}
-
-.error-text {
-  font-size: 0.75em;
-  padding: 0.5em 0;
-}
-
-.error-icon {
-  height: 20px;
-  width: 20px;
 }
 
 .selectize-control::before {

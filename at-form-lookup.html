@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../paper-shadow/paper-shadow.html" />
@@ -25,30 +26,50 @@
 <dom-module id="at-form-lookup">
   <link rel="stylesheet" href="css/at-form-lookup.css" />
   <link rel="stylesheet" href="css/at-form-lookup-default.css" />
+  <template>
     <style>
-    #contentWrapper {
-      position: relative;
+      :host * {
+        box-sizing: border-box;
       }
 
-    .lookupLabel {
-      font-size: 1em;
-      font-weight: bold;
+      :host {
+        @apply(--at-form-host);
       }
 
-    #content {
-      opacity: 1;
+      .hidden {
+        display: none;
       }
 
-    #content.field {
-      margin: 0;
+      .error {
+        color: var(--at-error-color);
       }
 
-    #content.field.has-error {
-      margin: 0 0 2px;
+      .disabled {
+        @apply(--at-form-disabled);
       }
 
-    #content[disabled] {
-      opacity: 0.5;
+      #atContainer {
+        @apply(--at-form-element);
+      }
+
+      #label {
+        @apply(--at-form-label);
+      }
+
+      #contentContainer.error {
+        @apply(--at-form-error-margins);
+      }
+
+      .selectize-input {
+        @apply(--at-form-input-common);
+      }
+
+      #contentContainer.error .selectize-input {
+        @apply(--at-form-content-error);
+      }
+
+      #errorHtml {
+        @apply(--at-form-error-font);
       }
 
       #disabledOverlay {
@@ -70,53 +91,28 @@
         text-align: center;
         opacity: 0.5;
       }
-
-    #labelContainer {
-      margin: 0em 0em 0.2857rem 0em;
-    }
-
-    .error-text {
-      display: inline-block;
-    }
-
-    :host {
-      --error-color: #e41e2b;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .label-container.error > label {
-      color: var(--error-color);
-    }
-
-    .hint-container.error > p {
-      color: var(--error-color);
-    }
     </style>
-  <template>
-    <div id="contentWrapper" class="ui form">
+    <div id="atContainer" class="at-container">
       <div id="labelContainer" class="label-container">
-        <label id="label" class="lookupLabel">{{label}}</label>
+        <label id="label" class="at-label">{{label}}</label>
       </div>
-      <div id="content" class="field has-error">
+      <div id="contentContainer" class="content-container">
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
       </div>
       <div id="hintContainer" class="hint-container">
-        <p id="errorHtml" class="hint"></p>
+        <div id="errorHtml" class="hint"></div>
       </div>
       <div id="disabledOverlay">
-        <p id="disabledText">Loading...</p>
+        <div id="disabledText">Loading...</div>
       </div>
     </div>
-    <content></content>
   </template>
 </dom-module>
 <script>
   'use strict';
+
   function isArray(obj) {
     return Object.prototype.toString.call(obj) === Object.prototype.toString.call([]);
   }
@@ -323,7 +319,9 @@
 
     xurlChanged: function(newValue) {
       // xurl is now mapped to url
-      if(newValue != this.url) { this.url = newValue; }
+      if (newValue != this.url) {
+        this.url = newValue;
+      }
     },
 
     urlChanged: function(newValue, oldValue) {
@@ -505,8 +503,8 @@
     _updateUIValidState: function(isValid) {
       var labelContainer = this.$.labelContainer;
       this.toggleClass('error', !isValid, labelContainer);
-      var contentContainer = this.$.content;
-      this.toggleClass('has-error', !isValid, contentContainer);
+      var contentContainer = this.$.contentContainer;
+      this.toggleClass('error', !isValid, contentContainer);
       var hintContainer = this.$.hintContainer;
       this.toggleClass('error', !isValid, hintContainer);
     },
@@ -519,7 +517,10 @@
 
     disabledChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance !== undefined) {
-        if (newValue === true) {
+        var atContainer = this.$.atContainer;
+        this.toggleClass('disabled', newValue, atContainer);
+
+        if (newValue) {
           this._selectizeInstance.disable();
         } else {
           this._selectizeInstance.enable();
@@ -530,7 +531,7 @@
     },
 
     hideChanged: function(newValue, oldValue) {
-      var wrapper = this.$.contentWrapper;
+      var wrapper = this.$.atContainer;
       this.toggleClass('hidden', newValue, wrapper);
       if (this._isReady) {
         this.validate();
