@@ -3473,7 +3473,11 @@
        * @returns {object}
        */
       namespace.getOption = function(value) {
-        return this.getElementWithValue(value, Polymer.dom(this.$dropdown_content).querySelectorAll('[data-selectable]'));
+        var dropdownContent = this.$dropdown_content;
+        var pddc = Polymer.dom(dropdownContent);
+        var dataSelectables = pddc.querySelectorAll('[data-selectable]');
+        var result = this.getElementWithValue(value, dataSelectables);
+        return result;
       };
 
       /**
