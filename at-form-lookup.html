@@ -25,51 +25,51 @@
 <dom-module id="at-form-lookup">
   <link rel="stylesheet" href="css/at-form-lookup.css" />
   <link rel="stylesheet" href="css/at-form-lookup-default.css" />
-  <style>
+    <style>
     #contentWrapper {
       position: relative;
-    }
+      }
 
     .lookupLabel {
       font-size: 1em;
       font-weight: bold;
-    }
+      }
 
     #content {
       opacity: 1;
-    }
+      }
 
     #content.field {
       margin: 0;
-    }
+      }
 
     #content.field.has-error {
       margin: 0 0 2px;
-    }
+      }
 
     #content[disabled] {
       opacity: 0.5;
-    }
+      }
 
-    #disabledOverlay {
-      display: none;
-    }
+      #disabledOverlay {
+        display: none;
+      }
 
-    #disabledOverlay[disabled] {
-      display: block;
-      position: absolute;
-      bottom: 0px;
-      filter: alpha(opacity 40);
-      height: expression(parentElement.scrollHeight + 'px');
-      width: 100%;
-      z-index: 99999;
-      height: 100%;
-    }
+      #disabledOverlay[disabled] {
+        display: block;
+        position: absolute;
+        bottom: 0px;
+        filter: alpha(opacity 40);
+        height: expression(parentElement.scrollHeight + 'px');
+        width: 100%;
+        z-index: 99999;
+        height: 100%;
+      }
 
-    #disabledText {
-      text-align: center;
-      opacity: 0.5;
-    }
+      #disabledText {
+        text-align: center;
+        opacity: 0.5;
+      }
 
     #labelContainer {
       margin: 0em 0em 0.2857rem 0em;
@@ -94,7 +94,7 @@
     .hint-container.error > p {
       color: var(--error-color);
     }
-  </style>
+    </style>
   <template>
     <div id="contentWrapper" class="ui form">
       <div id="labelContainer" class="label-container">
@@ -163,7 +163,7 @@
       // ------------------------------------------------------------
       xvaluelist: {
         type: Array,
-        value: function () {
+        value: function() {
           return [];
         },
         observer: 'availableChanged',
@@ -189,7 +189,7 @@
       // ------------------------------------------------------------
       enum: {
         type: Array,
-        value: function () {
+        value: function() {
           return [];
         },
         observer: 'availableChanged',
@@ -340,7 +340,7 @@
       this.xurl = this.url; // update legacy xurl parameter
     },
     // this function is here to improve compatibility with form designer
-    xvaluelistChanged: function (newValue, oldValue) {
+    xvaluelistChanged: function(newValue, oldValue) {
       this.availableChanged(newValue, oldValue);
     },
     availableChanged: function(newValue, oldValue) {
@@ -350,8 +350,9 @@
         var instance = this._selectizeInstance;
         // *ij* this setting prevents unnecessary change event
         // which clears the current valid at-form-lookup value
-        instance.isSetup = false;
+        instance.MPS17DoNotTriggeerChangeOnAvailableChanged = true;
         instance.clearOptions();
+        instance.MPS17DoNotTriggeerChangeOnAvailableChanged = false;
 
         if (isArray(newValue)) {
           for (i = 0; i < newValue.length; i += 1) {
@@ -463,7 +464,7 @@
       this._validationFunctions.push(this._isValueValidForXValueList.bind(this));
     },
 
-    _isValueValidForXValueList: function (value) {
+    _isValueValidForXValueList: function(value) {
       var valueList = this.xvaluelist;
       var result = true;
 
@@ -480,7 +481,7 @@
         valueList = valueList.split(',');
       }
 
-      valuesToCheck.forEach(function (valueToCheck, index) {
+      valuesToCheck.forEach(function(valueToCheck, index) {
         var localResult = false;
         valueList.forEach(function(item, index) {
           if (item.value) {
@@ -499,7 +500,7 @@
       return result;
     },
 
-    set valid(newValue) { },
+    set valid(newValue) {},
 
     _updateUIValidState: function(isValid) {
       var labelContainer = this.$.labelContainer;
@@ -528,7 +529,7 @@
       }
     },
 
-    hideChanged: function (newValue, oldValue) {
+    hideChanged: function(newValue, oldValue) {
       var wrapper = this.$.contentWrapper;
       this.toggleClass('hidden', newValue, wrapper);
       if (this._isReady) {
@@ -682,13 +683,13 @@
       // set items selected by default
       this.valueChanged(this.value, []);
     },
-    allowNewItemsChanged: function (newValue, oldValue) {
+    allowNewItemsChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance) {
         var valueToSet = Boolean(newValue);
         this._selectizeInstance.settings.create = valueToSet;
       }
     },
-    focus: function () {
+    focus: function() {
       if (this._selectizeInstance) {
         this._selectizeInstance.focus();
       }
@@ -2618,9 +2619,9 @@
               // e.preventDefault();
             }
             // if (self.isOpen) {
-              var blurEvent = document.createEvent('Event');
-              blurEvent.initEvent('blur', true, true);
-              self.$control_input.dispatchEvent(blurEvent);
+            var blurEvent = document.createEvent('Event');
+            blurEvent.initEvent('blur', true, true);
+            self.$control_input.dispatchEvent(blurEvent);
             // }
             return;
           case KEY_BACKSPACE:
@@ -3861,7 +3862,10 @@
         }
 
         if (self.isSetup) {
-          self.trigger('change', self.get$InputValue());
+          var MPS17DoNotTriggeerChangeOnAvailableChanged = Boolean(self.MPS17DoNotTriggeerChangeOnAvailableChanged);
+          if (!MPS17DoNotTriggeerChangeOnAvailableChanged) {
+            self.trigger('change', self.get$InputValue());
+          }
         }
       };
 
