@@ -350,9 +350,9 @@
         var instance = this._selectizeInstance;
         // *ij* this setting prevents unnecessary change event
         // which clears the current valid at-form-lookup value
-        instance.MPS17DoNotTriggeerChangeOnAvailableChanged = true;
+        instance.isInitializing = true;
         instance.clearOptions();
-        instance.MPS17DoNotTriggeerChangeOnAvailableChanged = false;
+        instance.isInitializing = false;
 
         if (isArray(newValue)) {
           for (i = 0; i < newValue.length; i += 1) {
@@ -2044,6 +2044,7 @@
         isFocused: false,
         isInputHidden: false,
         isSetup: false,
+        isInitializing: false,
         isShiftDown: false,
         isCmdDown: false,
         isCtrlDown: false,
@@ -3862,8 +3863,8 @@
         }
 
         if (self.isSetup) {
-          var MPS17DoNotTriggeerChangeOnAvailableChanged = Boolean(self.MPS17DoNotTriggeerChangeOnAvailableChanged);
-          if (!MPS17DoNotTriggeerChangeOnAvailableChanged) {
+          var isInitializing = Boolean(self.isInitializing);
+          if (!isInitializing) {
             self.trigger('change', self.get$InputValue());
           }
         }
