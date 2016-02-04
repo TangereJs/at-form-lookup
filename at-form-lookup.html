@@ -4,6 +4,8 @@
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../paper-shadow/paper-shadow.html" />
 <link rel="import" href="../at-form-behaviors/at-form-behaviors-validation.html">
+<link rel="import" href="css/at-form-lookup-layout.html">
+<link rel="import" href="css/at-form-lookup-theme.html">
 
 <script type="text/javascript">
   var SelectBoxUtils = {
@@ -24,9 +26,9 @@
 </script>
 
 <dom-module id="at-form-lookup">
-  <link rel="stylesheet" href="css/at-form-lookup.css" />
-  <link rel="stylesheet" href="css/at-form-lookup-default.css" />
   <template>
+    <style include="at-form-lookup-theme"></style>
+    <style include="at-form-lookup-layout"></style>
     <style>
       :host * {
         box-sizing: border-box;
@@ -2378,19 +2380,19 @@
 
         var templates = {
           'optgroup': function(data) {
-            return '<div class="optgroup">' + data.html + '</div>';
+            return '<div class="optgroup" style-scope="at-form-lookup">' + data.html + '</div>';
           },
           'optgroup_header': function(data, escape) {
-            return '<div class="optgroup-header">' + escape(data[field_optgroup]) + '</div>';
+            return '<div class="optgroup-header" style-scope="at-form-lookup">' + escape(data[field_optgroup]) + '</div>';
           },
           'option': function(data, escape) {
-            return '<div class="option">' + escape(data[field_label]) + '</div>';
+            return '<div class="option" style-scope="at-form-lookup">' + escape(data[field_label]) + '</div>';
           },
           'item': function(data, escape) {
-            return '<div class="item">' + escape(data[field_label]) + '</div>';
+            return '<div class="item" style-scope="at-form-lookup">' + escape(data[field_label]) + '</div>';
           },
           'option_create': function(data, escape) {
-            return '<div class="create">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
+            return '<div class="create" style-scope="at-form-lookup">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
           }
         };
 
