@@ -38,7 +38,7 @@
         @apply(--at-form-host);
       }
 
-      .selectize-input {
+      .input {
         @apply(--at-form-input-common);
       }
 
@@ -46,7 +46,7 @@
         position: relative;;
       }
 
-      #contentContainer.error .selectize-input {
+      #contentContainer.error .input {
         @apply(--at-form-content-error);
       }
 
@@ -4415,10 +4415,10 @@
       searchConjunction: 'and',
 
       mode: null,
-      wrapperClass: 'selectize-control',
-      inputClass: 'selectize-input',
-      dropdownClass: 'selectize-dropdown',
-      dropdownContentClass: 'selectize-dropdown-content',
+      wrapperClass: 'control',
+      inputClass: 'input',
+      dropdownClass: 'dropdown',
+      dropdownContentClass: 'dropdown-content',
 
       dropdownParent: null,
 
@@ -4680,10 +4680,10 @@
 
       options = extend({
         title: 'Untitled',
-        headerClass: 'selectize-dropdown-header',
-        titleRowClass: 'selectize-dropdown-header-title',
-        labelClass: 'selectize-dropdown-header-label',
-        closeClass: 'selectize-dropdown-header-close',
+        headerClass: 'dropdown-header',
+        titleRowClass: 'dropdown-header-title',
+        labelClass: 'dropdown-header-label',
+        closeClass: 'dropdown-header-close',
 
         html: function(data) {
           return (
