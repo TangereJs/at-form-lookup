@@ -4,8 +4,8 @@
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../paper-shadow/paper-shadow.html" />
 <link rel="import" href="../at-form-behaviors/at-form-behaviors-validation.html">
-<link rel="import" href="css/at-form-lookup-layout.html">
-<link rel="import" href="css/at-form-lookup-theme.html">
+<link rel="import" href="at-form-lookup-styles.html">
+<link rel="import" href="../iron-label/iron-label.html">
 
 <script type="text/javascript">
   var SelectBoxUtils = {
@@ -27,8 +27,8 @@
 
 <dom-module id="at-form-lookup">
   <template>
-    <style include="at-form-lookup-theme"></style>
-    <style include="at-form-lookup-layout"></style>
+    <style include="at-form-lookup-styles"></style>
+    <style include="at-form-common"></style>
     <style>
       :host * {
         box-sizing: border-box;
@@ -38,40 +38,16 @@
         @apply(--at-form-host);
       }
 
-      .hidden {
-        display: none;
-      }
-
-      .error {
-        color: var(--at-error-color);
-      }
-
-      .disabled {
-        @apply(--at-form-disabled);
-      }
-
-      #atContainer {
-        @apply(--at-form-element);
-      }
-
-      #label {
-        @apply(--at-form-label);
-      }
-
-      #contentContainer.error {
-        @apply(--at-form-error-margins);
-      }
-
       .selectize-input {
         @apply(--at-form-input-common);
       }
 
-      #contentContainer.error .selectize-input {
-        @apply(--at-form-content-error);
+      #contentContainer {
+        position: relative;;
       }
 
-      #errorHtml {
-        @apply(--at-form-error-font);
+      #contentContainer.error .selectize-input {
+        @apply(--at-form-content-error);
       }
 
       #disabledOverlay {
@@ -79,11 +55,10 @@
       }
 
       #disabledOverlay[disabled] {
-        display: block;
+        display: flex;
+        flex-direction: row;
         position: absolute;
         bottom: 0px;
-        filter: alpha(opacity 40);
-        height: expression(parentElement.scrollHeight + 'px');
         width: 100%;
         z-index: 99999;
         height: 100%;
@@ -91,24 +66,21 @@
 
       #disabledText {
         text-align: center;
-        opacity: 0.5;
+        align-self: center;
+        flex: 1;
       }
     </style>
     <div id="atContainer" class="at-container">
-      <div id="labelContainer" class="label-container">
-        <label id="label" class="at-label">{{label}}</label>
-      </div>
-      <div id="contentContainer" class="content-container">
+      <iron-label id="label" for="selectTags" class="at-label">{{label}}</iron-label>
+      <div id="contentContainer" class="at-content-container">
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
+        <div id="disabledOverlay">
+          <div id="disabledText">Loading...</div>
+        </div>
       </div>
-      <div id="hintContainer" class="hint-container">
-        <div id="errorHtml" class="hint"></div>
-      </div>
-      <div id="disabledOverlay">
-        <div id="disabledText">Loading...</div>
-      </div>
+      <div id="hint" class="hint"></div>
     </div>
   </template>
 </dom-module>
@@ -503,12 +475,12 @@
     set valid(newValue) {},
 
     _updateUIValidState: function(isValid) {
-      var labelContainer = this.$.labelContainer;
-      this.toggleClass('error', !isValid, labelContainer);
+      var label = this.$.label;
+      this.toggleClass('error', !isValid, label);
       var contentContainer = this.$.contentContainer;
       this.toggleClass('error', !isValid, contentContainer);
-      var hintContainer = this.$.hintContainer;
-      this.toggleClass('error', !isValid, hintContainer);
+      var hint = this.$.hint;
+      this.toggleClass('error', !isValid, hint);
     },
 
     requiredChanged: function(newValue, oldValue) {
