@@ -1,8 +1,11 @@
 <link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../paper-shadow/paper-shadow.html" />
 <link rel="import" href="../at-form-behaviors/at-form-behaviors-validation.html">
+<link rel="import" href="at-form-lookup-styles.html">
+<link rel="import" href="../iron-label/iron-label.html">
 
 <script type="text/javascript">
   var SelectBoxUtils = {
@@ -23,32 +26,28 @@
 </script>
 
 <dom-module id="at-form-lookup">
-  <link rel="stylesheet" href="css/at-form-lookup.css" />
-  <link rel="stylesheet" href="css/at-form-lookup-default.css" />
+  <template>
+    <style include="at-form-lookup-styles"></style>
+    <style include="at-form-common"></style>
     <style>
-    #contentWrapper {
-      position: relative;
+      :host * {
+        box-sizing: border-box;
       }
 
-    .lookupLabel {
-      font-size: 1em;
-      font-weight: bold;
+      :host {
+        @apply(--at-form-host);
       }
 
-    #content {
-      opacity: 1;
+      .input {
+        @apply(--at-form-input-common);
       }
 
-    #content.field {
-      margin: 0;
+      #contentContainer {
+        position: relative;;
       }
 
-    #content.field.has-error {
-      margin: 0 0 2px;
-      }
-
-    #content[disabled] {
-      opacity: 0.5;
+      #contentContainer.error .input {
+        @apply(--at-form-content-error);
       }
 
       #disabledOverlay {
@@ -56,11 +55,10 @@
       }
 
       #disabledOverlay[disabled] {
-        display: block;
+        display: flex;
+        flex-direction: row;
         position: absolute;
         bottom: 0px;
-        filter: alpha(opacity 40);
-        height: expression(parentElement.scrollHeight + 'px');
         width: 100%;
         z-index: 99999;
         height: 100%;
@@ -68,55 +66,27 @@
 
       #disabledText {
         text-align: center;
-        opacity: 0.5;
+        align-self: center;
+        flex: 1;
       }
-
-    #labelContainer {
-      margin: 0em 0em 0.2857rem 0em;
-    }
-
-    .error-text {
-      display: inline-block;
-    }
-
-    :host {
-      --error-color: #e41e2b;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .label-container.error > label {
-      color: var(--error-color);
-    }
-
-    .hint-container.error > p {
-      color: var(--error-color);
-    }
     </style>
-  <template>
-    <div id="contentWrapper" class="ui form">
-      <div id="labelContainer" class="label-container">
-        <label id="label" class="lookupLabel">{{label}}</label>
-      </div>
-      <div id="content" class="field has-error">
+    <div id="atContainer" class="at-container">
+      <iron-label id="label" for="selectTags" class="at-label">{{label}}</iron-label>
+      <div id="contentContainer" class="at-content-container">
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
         <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
+        <div id="disabledOverlay">
+          <div id="disabledText">Loading...</div>
+        </div>
       </div>
-      <div id="hintContainer" class="hint-container">
-        <p id="errorHtml" class="hint"></p>
-      </div>
-      <div id="disabledOverlay">
-        <p id="disabledText">Loading...</p>
-      </div>
+      <div id="hint" class="hint"></div>
     </div>
-    <content></content>
   </template>
 </dom-module>
 <script>
   'use strict';
+
   function isArray(obj) {
     return Object.prototype.toString.call(obj) === Object.prototype.toString.call([]);
   }
@@ -299,7 +269,7 @@
       }
     },
     hideLabelChanged: function(newValue, oldValue) {
-      this.toggleClass("hidden", newValue, this.$.labelContainer);
+      this.toggleClass("hidden", newValue, this.$.label);
     },
     renderChanged: function(newValue, oldValue) {
       if (this._selectizeInstance !== undefined) {
@@ -323,7 +293,9 @@
 
     xurlChanged: function(newValue) {
       // xurl is now mapped to url
-      if(newValue != this.url) { this.url = newValue; }
+      if (newValue != this.url) {
+        this.url = newValue;
+      }
     },
 
     urlChanged: function(newValue, oldValue) {
@@ -503,12 +475,12 @@
     set valid(newValue) {},
 
     _updateUIValidState: function(isValid) {
-      var labelContainer = this.$.labelContainer;
-      this.toggleClass('error', !isValid, labelContainer);
-      var contentContainer = this.$.content;
-      this.toggleClass('has-error', !isValid, contentContainer);
-      var hintContainer = this.$.hintContainer;
-      this.toggleClass('error', !isValid, hintContainer);
+      var label = this.$.label;
+      this.toggleClass('error', !isValid, label);
+      var contentContainer = this.$.contentContainer;
+      this.toggleClass('error', !isValid, contentContainer);
+      var hint = this.$.hint;
+      this.toggleClass('error', !isValid, hint);
     },
 
     requiredChanged: function(newValue, oldValue) {
@@ -519,7 +491,10 @@
 
     disabledChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance !== undefined) {
-        if (newValue === true) {
+        var atContainer = this.$.atContainer;
+        this.toggleClass('disabled', newValue, atContainer);
+
+        if (newValue) {
           this._selectizeInstance.disable();
         } else {
           this._selectizeInstance.enable();
@@ -530,7 +505,7 @@
     },
 
     hideChanged: function(newValue, oldValue) {
-      var wrapper = this.$.contentWrapper;
+      var wrapper = this.$.atContainer;
       this.toggleClass('hidden', newValue, wrapper);
       if (this._isReady) {
         this.validate();
@@ -2377,19 +2352,19 @@
 
         var templates = {
           'optgroup': function(data) {
-            return '<div class="optgroup">' + data.html + '</div>';
+            return '<div class="optgroup" style-scope="at-form-lookup">' + data.html + '</div>';
           },
           'optgroup_header': function(data, escape) {
-            return '<div class="optgroup-header">' + escape(data[field_optgroup]) + '</div>';
+            return '<div class="optgroup-header" style-scope="at-form-lookup">' + escape(data[field_optgroup]) + '</div>';
           },
           'option': function(data, escape) {
-            return '<div class="option">' + escape(data[field_label]) + '</div>';
+            return '<div class="option" style-scope="at-form-lookup">' + escape(data[field_label]) + '</div>';
           },
           'item': function(data, escape) {
-            return '<div class="item">' + escape(data[field_label]) + '</div>';
+            return '<div class="item" style-scope="at-form-lookup">' + escape(data[field_label]) + '</div>';
           },
           'option_create': function(data, escape) {
-            return '<div class="create">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
+            return '<div class="create" style-scope="at-form-lookup">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
           }
         };
 
@@ -3472,7 +3447,11 @@
        * @returns {object}
        */
       namespace.getOption = function(value) {
-        return this.getElementWithValue(value, Polymer.dom(this.$dropdown_content).querySelectorAll('[data-selectable]'));
+        var dropdownContent = this.$dropdown_content;
+        var pddc = Polymer.dom(dropdownContent);
+        var dataSelectables = pddc.querySelectorAll('[data-selectable]');
+        var result = this.getElementWithValue(value, dataSelectables);
+        return result;
       };
 
       /**
@@ -4436,10 +4415,10 @@
       searchConjunction: 'and',
 
       mode: null,
-      wrapperClass: 'selectize-control',
-      inputClass: 'selectize-input',
-      dropdownClass: 'selectize-dropdown',
-      dropdownContentClass: 'selectize-dropdown-content',
+      wrapperClass: 'control',
+      inputClass: 'input',
+      dropdownClass: 'dropdown',
+      dropdownContentClass: 'dropdown-content',
 
       dropdownParent: null,
 
@@ -4701,10 +4680,10 @@
 
       options = extend({
         title: 'Untitled',
-        headerClass: 'selectize-dropdown-header',
-        titleRowClass: 'selectize-dropdown-header-title',
-        labelClass: 'selectize-dropdown-header-label',
-        closeClass: 'selectize-dropdown-header-close',
+        headerClass: 'dropdown-header',
+        titleRowClass: 'dropdown-header-title',
+        labelClass: 'dropdown-header-label',
+        closeClass: 'dropdown-header-close',
 
         html: function(data) {
           return (

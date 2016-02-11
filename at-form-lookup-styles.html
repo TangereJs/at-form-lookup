@@ -1,0 +1,489 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../at-theme/at-theme.html">
+
+<dom-module id="at-form-lookup-styles">
+  <template>
+    <style>
+      .control.plugin-drag_drop.multi > .input > div.ui-sortable-placeholder {
+        background: #f2f2f2 !important;
+        background: rgba(0, 0, 0, 0.06) !important;
+        @apply(--at-form-lookup-border-none);
+        -webkit-box-shadow: inset 0 0 12px 4px #ffffff;
+        box-shadow: inset 0 0 12px 4px #ffffff;
+      }
+
+      .control.plugin-drag_drop .ui-sortable-helper {
+        -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .dropdown-header {
+        border-bottom: 1px solid #d0d0d0;
+        background: #f8f8f8;
+        @apply(--at-form-border-radius2200);
+      }
+
+      .dropdown-header-close {
+        color: #333333;
+        opacity: 0.4;
+        font-size: 20px !important;
+      }
+
+      .dropdown-header-close:hover {
+        color: #000000;
+      }
+
+      .dropdown.plugin-optgroup_columns .optgroup {
+        border-right: 1px solid #f2f2f2;
+        border-top: 0 none;
+        @apply(--at-form-box-sizing);
+      }
+
+      .dropdown.plugin-optgroup_columns .optgroup:last-child {
+        border-right: 0 none;
+      }
+
+      .dropdown.plugin-optgroup_columns .optgroup-header {
+        border-top: 0 none;
+      }
+
+      .control.plugin-remove_button [data-value] .remove {
+        font-weight: bold;
+        font-size: 12px;
+        color: inherit;
+        text-decoration: none;
+        border-left: 1px solid rgba(0, 0, 0, 0);
+        @apply(--at-form-border-radius0220);
+        @apply(--at-form-box-sizing);
+      }
+
+      .control.plugin-remove_button [data-value] .remove:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .control.plugin-remove_button [data-value].active .remove {
+        border-left-color: rgba(0, 0, 0, 0);
+      }
+
+      .control.plugin-remove_button .disabled [data-value] .remove:hover {
+        background: none;
+      }
+
+      .control.plugin-remove_button .disabled [data-value] .remove {
+        border-left-color: rgba(77, 77, 77, 0);
+      }
+
+      .dropdown,
+      .input,
+      .input input {
+        color: #333333;
+        line-height: 1.2142em;
+        -webkit-font-smoothing: inherit;
+      }
+
+      .input,
+      .control.single .input.input-active {
+        background: #ffffff;
+        cursor: text;
+      }
+
+      .input {
+        @apply(--at-form-lookup-border-1);
+        @apply(--at-form-box-sizing);
+        -webkit-box-shadow: none;
+        box-shadow: none;
+        @apply(--at-form-border-radius2222);
+        min-height: 1em;
+      }
+
+      .input.full {
+        background-color: #ffffff;
+      }
+
+      .input.disabled,
+      .input.disabled * {
+        cursor: default !important;
+      }
+
+      .input.focus {
+        -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+      }
+
+      .input.dropdown-active {
+        @apply(--at-form-border-radius2200);
+      }
+      /*.control{*/
+      /*height: 37px;*/
+      /*}*/
+
+      .control.multi .input > div {
+        cursor: pointer;
+        color: #333333;
+        background: #cfd8dc;
+        @apply(--at-form-lookup-border-0);
+      }
+
+      .control.multi .input > div.active {
+        @apply(--at-form-active-item);
+        @apply(--at-form-lookup-border-0);
+      }
+
+      .control.multi .input.disabled > div,
+      .control.multi .input.disabled > div.active {
+        color: #808080;
+        background: #ffffff;
+        @apply(--at-form-lookup-border-0);
+      }
+
+      .input > input {
+        @apply(--at-form-lookup-border-none);
+        background: none !important;
+        -webkit-box-shadow: none !important;
+        box-shadow: none !important;
+      }
+
+      .input.dropdown-active::before {
+        background: #ffffff;
+      }
+
+      .dropdown [data-selectable] .highlight {
+        @apply(--at-form-active-item);
+        @apply(--at-form-border-radius1111);
+      }
+
+      .dropdown .optgroup:first-child .optgroup-header {
+        border-top: 0 none;
+      }
+
+      .dropdown .optgroup-header {
+        color: #777777;
+        background: #ffffff;
+      }
+
+      .dropdown .active {
+        @apply(--at-form-active-item);
+      }
+
+      .dropdown .active.create {
+        color: rgba(0, 0, 0, 0.87);
+      }
+
+      .dropdown .create {
+        color: rgba(51, 51, 51, 0.5);
+      }
+
+      .control.single .input,
+      .control.single .input input {
+        cursor: pointer;
+      }
+
+      .control.single .input.input-active,
+      .control.single .input.input-active input {
+        cursor: text;
+      }
+
+      .control.single .input:after {
+        border-style: solid;
+        border-width: 5px 5px 0 5px;
+        border-color: #333333 transparent transparent transparent;
+      }
+
+      .control.single .input.dropdown-active:after {
+        border-width: 0 5px 5px 5px;
+        border-color: transparent transparent #333333 transparent;
+      }
+
+      .control .input.disabled {
+        opacity: 0.5;
+        background-color: #ffffff;
+      }
+
+      .dropdown {
+        @apply(--at-form-lookup-border-0);
+        background: #ffffff;
+        border-top: 0 none;
+        @apply(--at-form-box-sizing);
+        -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        @apply(--at-form-border-radius0022);
+      }
+
+      .dropdown.form-control {
+        background: #ffffff;
+        @apply(--at-form-lookup-border-0);
+        @apply(--at-form-border-radius2222);
+        -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+      }
+
+      .dropdown .optgroup-header {
+        font-size: 12px;
+      }
+
+      .dropdown .optgroup:before {
+        background-color: #e5e5e5;
+      }
+
+      .input.focus {
+        border-color: #66afe9;
+        outline: 0;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+      }
+
+      .control.multi .input > div {
+        @apply(--at-form-border-radius2222);
+      }
+
+      .form-control.control {
+        border: none;
+        background: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+        @apply(--at-form-border-radius0000);
+      }
+
+      .control.plugin-drag_drop.multi > .input > div.ui-sortable-placeholder {
+        visibility: visible !important;
+        border: 0 none !important;
+      }
+
+      .control.plugin-drag_drop .ui-sortable-placeholder::after {
+        content: '!';
+        visibility: hidden;
+      }
+
+      .dropdown-header {
+        position: relative;
+        padding: 3px 12px;
+      }
+
+      .dropdown-header-close {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        margin-top: -12px;
+        line-height: 20px;
+      }
+
+      .dropdown.plugin-optgroup_columns .optgroup {
+        float: left;
+      }
+
+      .dropdown.plugin-optgroup_columns .optgroup:before {
+        display: none;
+      }
+
+      .control.plugin-remove_button [data-value] {
+        position: relative;
+        padding-right: 18px !important;
+      }
+
+      .control.plugin-remove_button [data-value] .remove {
+        z-index: 1;
+        /* fixes ie bug (see #392) */
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 16px;
+        text-align: center;
+        text-decoration: none;
+        vertical-align: middle;
+        display: inline-block;
+      }
+
+      .control {
+        position: relative;
+      }
+
+      .control input {
+        font-size: inherit;
+        font-family: inherit;
+      }
+
+      .input,
+      .control.single .input.input-active {
+        display: inline-block;
+      }
+      /*.input {
+      padding: 0.67861em 1em;
+      display: inline-block;
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }*/
+
+      .control.multi .input.has-items {
+        @apply(--at-form-input-padding);
+      }
+
+      .input > * {
+        vertical-align: baseline;
+        display: -moz-inline-stack;
+        display: inline-block;
+        zoom: 1;
+        display: inline;
+      }
+
+      .control.multi .input > div {
+        cursor: pointer;
+        margin: 0 3px 0 0;
+        padding: 1px 3px 1px 8px;
+        vertical-align: text-top;
+      }
+
+      .input > input {
+        display: inline-block !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        text-indent: 0 !important;
+        line-height: inherit !important;
+        -webkit-user-select: auto !important;
+      }
+
+      .input > input::-ms-clear {
+        display: none;
+      }
+
+      .input > input:focus {
+        outline: none !important;
+      }
+
+      .input::after {
+        content: ' ';
+        display: block;
+        clear: left;
+      }
+
+      .input.dropdown-active::before {
+        content: ' ';
+        display: block;
+        position: absolute;
+        height: 1px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+
+      .dropdown {
+        position: absolute;
+        z-index: 10;
+        margin: -1px 0 0 0;
+      }
+
+      .dropdown [data-selectable] {
+        cursor: pointer;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding: 10px 12px;
+      }
+
+      .dropdown .optgroup-header {
+        padding: 3px 12px;
+      }
+
+      .dropdown .optgroup-header {
+        cursor: default;
+      }
+
+      .dropdown-content {
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: 200px;
+      }
+
+      .control.single .input:after {
+        content: ' ';
+        display: block;
+        position: absolute;
+        top: 50%;
+        right: 17px;
+        margin-top: -3px;
+        width: 0;
+        height: 0;
+      }
+
+      .control.single .input.dropdown-active:after {
+        margin-top: -4px;
+      }
+
+      .control.rtl.single .input:after {
+        left: 17px;
+        right: auto;
+      }
+
+      .control.rtl .input > input {
+        margin: 0 4px 0 -2px !important;
+      }
+
+      .dropdown,
+      .dropdown.form-control {
+        height: auto;
+        padding: 0;
+        margin: 2px 0 0 0;
+        z-index: 1000;
+      }
+
+      .dropdown .optgroup-header {
+        line-height: 1.42857143;
+      }
+
+      .dropdown .optgroup:first-child:before {
+        display: none;
+      }
+
+      .dropdown .optgroup:before {
+        background-color: #e5e5e5;
+      }
+
+      .dropdown-content {
+        padding: 0 12px;
+      }
+
+      .dropdown-header {
+        padding: 6px 12px;
+      }
+
+      .input {
+        min-height: 1em;
+      }
+
+      .input.dropdown-active::before {
+        display: none;
+      }
+
+      .control.multi .input.has-items {
+        padding-left: 9px;
+        padding-right: 9px;
+      }
+
+      .control::before {
+        -moz-transition: opacity 0.2s;
+        -webkit-transition: opacity 0.2s;
+        transition: opacity 0.2s;
+        content: ' ';
+        z-index: 2;
+        position: absolute;
+        display: block;
+        top: 12px;
+        right: 34px;
+        width: 16px;
+        height: 16px;
+        background: url(loading.gif);
+        background-size: 16px 16px;
+        opacity: 0;
+      }
+
+      .control.loading::before {
+        opacity: 0.4;
+      }
+    </style>
+  </template>
+</dom-module>
