@@ -119,14 +119,13 @@
 
       .control.multi .input > div {
         cursor: pointer;
-        background: #cfd8dc;
         color: #333333;
+        background: #cfd8dc;
         @apply(--at-form-lookup-border-0);
       }
 
       .control.multi .input > div.active {
-        background: #428bca;
-        color: #ffffff;
+        @apply(--at-form-active-item);
         @apply(--at-form-lookup-border-0);
       }
 
@@ -149,7 +148,7 @@
       }
 
       .dropdown [data-selectable] .highlight {
-        @apply(--at-form-lookup-dropdown-item);
+        @apply(--at-form-active-item);
         @apply(--at-form-border-radius1111);
       }
 
@@ -163,8 +162,7 @@
       }
 
       .dropdown .active {
-        background-color: #cfd8dc;
-        color: rgba(0, 0, 0, 0.87);
+        @apply(--at-form-active-item);
       }
 
       .dropdown .active.create {
