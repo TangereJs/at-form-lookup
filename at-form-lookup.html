@@ -178,7 +178,6 @@
       value: {
         type: String,
         value: '',
-        notify: true,
         observer: 'valueChanged'
       },
       label: {
@@ -615,14 +614,13 @@
 
     selectizeChange: function(newValue) {
       this._selectizeUpdate = true;
-
       if (isArray(newValue)) {
         this.value = newValue.join(',');
       } else {
         this.value = newValue;
       }
-
       this._selectizeUpdate = false;
+      this.fire('value-changed', { value: this.value });
     },
 
     initialize: function() {
