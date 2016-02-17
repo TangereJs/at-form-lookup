@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../at-theme/at-theme.html">
+<link rel="import" href="../paper-styles/shadow.html">
 
 <dom-module id="at-form-lookup-styles">
   <template>
@@ -92,7 +93,6 @@
         @apply(--at-form-box-sizing);
         -webkit-box-shadow: none;
         box-shadow: none;
-        @apply(--at-form-border-radius2222);
         min-height: 1em;
       }
 
@@ -109,13 +109,6 @@
         -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
       }
-
-      .input.dropdown-active {
-        @apply(--at-form-border-radius2200);
-      }
-      /*.control{*/
-      /*height: 37px;*/
-      /*}*/
 
       .control.multi .input > div {
         cursor: pointer;
@@ -200,19 +193,17 @@
       }
 
       .dropdown {
-        @apply(--at-form-lookup-border-0);
+        @apply(--shadow-elevation-2dp);
         background: #ffffff;
         border-top: 0 none;
         @apply(--at-form-box-sizing);
         -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        @apply(--at-form-border-radius0022);
       }
 
       .dropdown.form-control {
+        @apply(--shadow-elevation-2dp);
         background: #ffffff;
-        @apply(--at-form-lookup-border-0);
-        @apply(--at-form-border-radius2222);
         -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
       }
