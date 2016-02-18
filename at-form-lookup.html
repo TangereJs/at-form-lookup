@@ -433,6 +433,7 @@
     ready: function() {
       this.initialize();
       this._validationFunctions.push(this._isValueValidForXValueList.bind(this));
+      this._attachFocusBlurEvents();
     },
 
     _isValueValidForXValueList: function(value) {
@@ -478,8 +479,6 @@
       this.toggleClass('error', !isValid, label);
       var contentContainer = this.$.contentContainer;
       this.toggleClass('error', !isValid, contentContainer);
-      var hint = this.$.hint;
-      this.toggleClass('error', !isValid, hint);
     },
 
     requiredChanged: function(newValue, oldValue) {
@@ -666,6 +665,15 @@
       if (this._selectizeInstance) {
         this._selectizeInstance.focus();
       }
+    },
+    // this function is part of the hint/validation API
+    // hint should be displayed when element gains focus
+    // behavior can not know when element gained focus
+    // but if gived focusable element it can attach to its focus event
+    // it should return focusable element if available or null if focusable element doesn't exist
+    _getFocusableElement: function () {
+      var focusable = this.$$('.control input');
+      return focusable;
     }
   });
 
