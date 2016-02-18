@@ -7,7 +7,7 @@
 <link rel="import" href="at-form-lookup-styles.html">
 <link rel="import" href="../iron-label/iron-label.html">
 
-<script type="text/javascript">
+  <script type="text/javascript">
   var SelectBoxUtils = {
     breakBinding: function(func, marker) {
       marker = marker || "dontBind";
@@ -27,8 +27,8 @@
 
 <dom-module id="at-form-lookup">
   <template>
-    <style include="at-form-lookup-styles"></style>
     <style include="at-form-common"></style>
+    <style include="at-form-lookup-styles"></style>
     <style>
       :host * {
         box-sizing: border-box;
@@ -246,7 +246,6 @@
       type: "string",
       xtype: "lookup"
     }],
-    _scopeCssViaAttr: true,
     maxItemsChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance) {
         try {
@@ -256,6 +255,7 @@
           var mode = valueToSet === 1 ? 'single' : 'multi';
           var prevMode = settings.mode;
           settings.mode = mode;
+          settings.hideSelected = mode === 'multi';
           var wrapper = this._selectizeInstance.$wrapper;
           Polymer.dom(wrapper).classList.remove(prevMode);
           Polymer.dom(wrapper).classList.add(mode);
@@ -2358,19 +2358,19 @@
 
         var templates = {
           'optgroup': function(data) {
-            return '<div class="optgroup" style-scope="at-form-lookup">' + data.html + '</div>';
+            return '<div class="optgroup">' + data.html + '</div>';
           },
           'optgroup_header': function(data, escape) {
-            return '<div class="optgroup-header" style-scope="at-form-lookup">' + escape(data[field_optgroup]) + '</div>';
+            return '<div class="optgroup-header">' + escape(data[field_optgroup]) + '</div>';
           },
           'option': function(data, escape) {
-            return '<div class="option" style-scope="at-form-lookup">' + escape(data[field_label]) + '</div>';
+            return '<div class="option">' + escape(data[field_label]) + '</div>';
           },
           'item': function(data, escape) {
-            return '<div class="item" style-scope="at-form-lookup">' + escape(data[field_label]) + '</div>';
+            return '<div class="item">' + escape(data[field_label]) + '</div>';
           },
           'option_create': function(data, escape) {
-            return '<div class="create" style-scope="at-form-lookup">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
+            return '<div class="create">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
           }
         };
 
@@ -3230,7 +3230,7 @@
           }
         }
 
-        $dropdown_content.innerHTML = html.join('');
+        Polymer.dom($dropdown_content).innerHTML = html.join('');
 
         // highlight matching terms inline
         if (self.settings.highlight && results.query.length && results.tokens.length) {
@@ -3253,8 +3253,8 @@
           var newNode = self.render('option_create', {
             input: query
           });
-          tmp.innerHTML = newNode;
-          $dropdown_content.insertBefore(tmp.childNodes[0], $dropdown_content.childNodes[0]);
+          Polymer.dom(tmp).innerHTML = newNode;
+          Polymer.dom($dropdown_content).insertBefore(tmp.childNodes[0], $dropdown_content.childNodes[0]);
           $create = $dropdown_content.childNodes[0];
         }
 
@@ -3837,7 +3837,7 @@
           if (!options.length && !this.$input.getAttribute('multiple')) {
             options.push('<option value="" selected="selected"></option>');
           }
-          self.$input.innerHTML = options.join('');
+          Polymer.dom(self.$input).innerHTML = options.join('');
         } else {
           var value = self.getValue();
           if (isArray(value)) {
@@ -3983,15 +3983,15 @@
        */
       namespace.insertAtCaret = function($el) {
         var dummyDiv = document.createElement('div');
-        dummyDiv.innerHTML = $el;
+        Polymer.dom(dummyDiv).innerHTML = $el;
         var $elAsChild = dummyDiv.childNodes[0];
 
         var caret = Math.min(this.caretPos, this.items.length);
         if (caret === 0) {
-          this.$control.insertBefore($elAsChild, this.$control_input);
+          Polymer.dom(this.$control).insertBefore($elAsChild, this.$control_input);
         } else {
           var refElement = this.$control.childNodes[caret];
-          this.$control.insertBefore($elAsChild, refElement);
+          Polymer.dom(this.$control).insertBefore($elAsChild, refElement);
         }
         this.setCaret(caret + 1);
 
@@ -4193,9 +4193,9 @@
           for (j = 0, n = $children.length; j < n; j += 1) {
             $child = self.$control.removeChild($children[j]);
             if (j < i) {
-              self.$control.insertBefore($child, $inputElement);
+              Polymer.dom(self.$control).insertBefore($child, $inputElement);
             } else {
-              self.$control.appendChild($child);
+              Polymer.dom(self.$control).appendChild($child);
             }
           }
         }
@@ -4265,9 +4265,9 @@
         self.$wrapper.remove();
         self.$dropdown.remove();
 
-        self.$input.innerHTML = '';
+        Polymer.dom(self.$input).innerHTML = '';
         for (i = 0; i < revertSettings.length; i += 1) {
-          self.$input.appendChild(revertSettings.$children[i]);
+          Polymer.dom(self.$input).appendChild(revertSettings.$children[i]);
         }
         self.$input.removeAttribute('tabindex');
         self.$input.classList.remove('selectized');
