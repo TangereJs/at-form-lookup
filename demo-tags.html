@@ -20,6 +20,7 @@
     <p>Dropdown demo:</p>
     <p>Current value: <span id="ddLookupValue"></span>
     </p>
+    <p>Current selected items: <span id="ddLookupSelectedItems"></span></p>
     <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" create value="neat,mika" max-items="3"></at-form-lookup>
   </div>
 
@@ -39,6 +40,10 @@
         ddLookupValueChanged(e.detail.value);
       });
 
+      ddLookupSelectedItemsChanged(ddLookup.selectedItems);
+      ddLookup.addEventListener('selected-items-changed', function(event) {
+        ddLookupSelectedItemsChanged(event.detail.value);
+      });
     });
 
     function tagsValueChanged(newValue) {
@@ -49,6 +54,11 @@
     function ddLookupValueChanged(newValue) {
       var ddLookupValue = document.getElementById('ddLookupValue');
       ddLookupValue.innerHTML = newValue;
+    }
+
+    function ddLookupSelectedItemsChanged(newValue) {
+      var ddLookupSelectedItems = document.getElementById('ddLookupSelectedItems');
+      ddLookupSelectedItems.innerHTML = JSON.stringify(newValue);
     }
   </script>
 </body>

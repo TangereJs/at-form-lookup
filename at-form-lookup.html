@@ -98,7 +98,7 @@
   Polymer({
     is: 'at-form-lookup',
     behaviors: [AtFormBehaviors.AtFormBehaviorsValidation],
-    _selectizeLoadCallback: function() {},
+    _selectizeLoadCallback: false,
     _selectizeInstance: {},
     _isUpdating: false,
     _isReady: false,
@@ -180,6 +180,11 @@
         value: '',
         observer: 'valueChanged'
       },
+      selectedItems: {
+        type: String,
+        value: '',
+        readOnly: true
+      },
       label: {
         type: String,
         value: ''
@@ -246,6 +251,7 @@
       type: "string",
       xtype: "lookup"
     }],
+    set selectedItems(newValue) {},
     maxItemsChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance) {
         try {
@@ -618,8 +624,20 @@
       } else {
         this.value = newValue;
       }
+
+      var selectedItemsIds = this._selectizeInstance.items;
+      var allItems = this._selectizeInstance.options;
+      var result = [];
+
+      selectedItemsIds.forEach(function (id, index) {
+        var item = allItems[id];
+        result.push(item);
+      });
+      this._setSelectedItems(result);
+
       this._selectizeUpdate = false;
       this.fire('value-changed', { value: this.value });
+      this.fire('selected-items-changed', { value: this.selectedItems });
     },
 
     initialize: function() {
