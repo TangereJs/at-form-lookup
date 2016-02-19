@@ -181,8 +181,11 @@
         observer: 'valueChanged'
       },
       selectedItems: {
-        type: String,
-        value: '',
+        type: Array,
+        value: function () {
+          return [];
+        },
+        xtype: 'json',
         readOnly: true
       },
       label: {
@@ -652,8 +655,7 @@
         maxItems: this.maxItems,
         load: this.selectizeOnLoad.bind(this),
         onChange: this.selectizeChange.bind(this),
-        render: this.render,
-        openOnFocus: false
+        render: this.render
       });
 
       // NOT NEEDED clear options and items from from instance
@@ -682,7 +684,7 @@
     },
     focus: function() {
       if (this._selectizeInstance) {
-        this._selectizeInstance.focus();
+        this._selectizeInstance.focus(true);
       }
     },
     // this function is part of the hint/validation API
@@ -3063,7 +3065,7 @@
        *
        * @param {boolean} trigger
        */
-      namespace.focus = function() {
+      namespace.focus = function(isProgrammaticFocus) {
         var self = this;
         if (self.isDisabled) {
           return;
@@ -3075,8 +3077,10 @@
         self.$control_input.dispatchEvent(focusEvent);
         window.setTimeout(function() {
           self.ignoreFocus = false;
+          self.isProgrammaticFocus = !!isProgrammaticFocus;
           self.onFocus();
-        }, 0);
+          self.isProgrammaticFocus = false;
+        }, 100);
       };
 
       /**
@@ -3298,7 +3302,7 @@
             $active = $create;
           }
           self.setActiveOption($active);
-          if (triggerDropdown && !self.isOpen) {
+          if (triggerDropdown && !self.isOpen && !self.isProgrammaticFocus) {
             self.open();
           }
         } else {
