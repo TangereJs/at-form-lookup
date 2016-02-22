@@ -361,6 +361,10 @@
             instance.addOption(newOption);
           }
         }
+
+        if (instance.options.hasOwnProperty(this.value)) {
+          instance.addItem(this.value);
+        }
       }
     },
 
