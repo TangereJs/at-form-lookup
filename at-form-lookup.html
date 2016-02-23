@@ -638,7 +638,9 @@
 
       selectedItemsIds.forEach(function (id, index) {
         var item = allItems[id];
-        result.push(item);
+        if (item.title !== "" && item.value !== "") {
+          result.push(item);
+        }
       });
       this._setSelectedItems(result);
 
