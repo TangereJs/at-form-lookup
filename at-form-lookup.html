@@ -331,7 +331,7 @@
         // *ij* this setting prevents unnecessary change event
         // which clears the current valid at-form-lookup value
         instance.isInitializing = true;
-        instance.clearOptions();
+        instance.clearOptions(true);
         instance.isInitializing = false;
 
         if (isArray(newValue)) {
@@ -362,7 +362,7 @@
           }
         }
 
-        if (instance.options.hasOwnProperty(this.value)) {
+        if (this.value !== "" && instance.options.hasOwnProperty(this.value)) {
           instance.addItem(this.value);
         }
       }
@@ -3462,7 +3462,7 @@
       /**
        * Clears all options.
        */
-      namespace.clearOptions = function() {
+      namespace.clearOptions = function(doNotClearItems) {
         var self = this;
 
         self.loadedSearches = {};
@@ -3471,7 +3471,9 @@
         self.options = self.sifter.items = {};
         self.lastQuery = null;
         self.trigger('option_clear');
-        self.clear();
+        if (!doNotClearItems) {
+          self.clear();
+        }
       };
 
       /**
