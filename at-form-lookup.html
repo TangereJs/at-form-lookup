@@ -258,19 +258,54 @@
     maxItemsChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance) {
         try {
+          // ok what is happening here?
+          // 1. we calculate what is value to set is by using Number constructor function
           var valueToSet = Number(newValue);
+          // 2. we need to update selectize settings
           var settings = this._selectizeInstance.settings;
+          // 3. we need to update maxItems
           settings.maxItems = valueToSet;
+          // we need to set mode; I found out that I need to do this by inspecting and debuggin selectize code
           var mode = valueToSet === 1 ? 'single' : 'multi';
+          // we also need to remember current value for mode
           var prevMode = settings.mode;
+          // we set the new mode value
           settings.mode = mode;
+          // we also need to set this setting when mode is multi
           settings.hideSelected = mode === 'multi';
+          // we need to set classes on $wrapper and $dropdown; I found out that I need to do this by inspecting and debuggin selectize code
           var wrapper = this._selectizeInstance.$wrapper;
           Polymer.dom(wrapper).classList.remove(prevMode);
           Polymer.dom(wrapper).classList.add(mode);
           var dropdown = this._selectizeInstance.$dropdown;
           Polymer.dom(dropdown).classList.remove(prevMode);
           Polymer.dom(dropdown).classList.add(mode);
+          // now we update the view
+          var instance = this._selectizeInstance;
+          // we need to clear the cache; this is clearing the rencer cache; we need to do this because after mode change the way items are rendered changes
+          // so cache needs to be updated
+          instance.clearCache();
+          // we run setup plugins; remove_button plugin behaves differently based on mode; its disabled in single and enabled in multi
+          // since mode is updated plugins need to update themselves
+          instance.setupPlugins();
+          // finally we update selected items
+          var oldItems = instance.items;
+          instance.clear();
+          var itemsLength = oldItems.length;
+          var i;
+          // if maxItems < length of currently selected items we need to trim
+          if (valueToSet < itemsLength) {
+            for (i = 0; i < valueToSet; i++) {
+              var oldItem = oldItems[i];
+              instance.addItem(oldItem);
+            }
+          } else {
+          // else maxItems >= length so we do not trim
+            for (i = 0; i < itemsLength; i++) {
+              var oldItem = oldItems[i];
+              instance.addItem(oldItem);
+            }
+          }
         } catch (e) {
           console.log(e);
         }
@@ -865,6 +900,18 @@
         }
       };
 
+      Interface.prototype.setupPlugins = function () {
+        var self = this;
+        var plugins = self.plugins;
+        var loaded = plugins.loaded;
+        var loadedNames = Object.keys(loaded);
+
+        loadedNames.forEach(function (name) {
+          var plugin = loaded[name];
+          plugin.setup();
+        });
+      };
+
       Interface.prototype.loadPlugin = function(name) {
         var self = this;
         var plugins = self.plugins;
@@ -875,7 +922,8 @@
         }
 
         plugins.requested[name] = true;
-        plugins.loaded[name] = plugin.fn.apply(self, [self.plugins.settings[name] || {}]);
+        var pluginObj = plugin.fn.apply(self, [self.plugins.settings[name] || {}]);
+        plugins.loaded[name] = pluginObj;
         plugins.names.push(name);
       };
 
@@ -2100,6 +2148,7 @@
       self.setupCallbacks();
       self.setupTemplates();
       self.setup();
+      self.setupPlugins();
     };
 
     // mixins
@@ -2915,9 +2964,17 @@
         // clear the active selection
         //if (!$item.length) {
         if (!$item) {
-          for (aiIndex = 0; i < self.$activeItems.length; aiIndex += 1) {
-            self.$activeItems[aiIndex].classList.remove('active');
+          if (self.$activeItems.length === 0) {
+            var control = self.$control;
+            var activeItems = Polymer.dom(control).querySelectorAll('.active');
+            self.$activeItems = activeItems;
           }
+
+          for (aiIndex = 0; aiIndex < self.$activeItems.length; aiIndex += 1) {
+            var activeItem = self.$activeItems[aiIndex];
+            Polymer.dom(activeItem).classList.remove('active');
+          }
+
           self.$activeItems = [];
           if (self.isFocused) {
             self.showInput();
@@ -3564,12 +3621,6 @@
         }
       };
 
-      namespace.updatePolymerElementValue = function() {
-        //        if (this.settings && this.settings.polymerElement && this.settings.polymerElement._isReady) {
-        //          this.settings.polymerElement.value = this.getValue();
-        //        }
-      };
-
       /**
        * "Selects" an item. Adds it to the list
        * at the current caret position.
@@ -3634,7 +3685,6 @@
             self.trigger('item_add', value, $item);
             self.updateOriginalInput();
           }
-          self.updatePolymerElementValue();
         });
       };
 
@@ -3775,7 +3825,7 @@
 
         if (this.isSetup) {
           for (i = 0; i < this.items.length; i += 1) {
-            this.addItem(this.items);
+            this.addItem(this.items[i]);
           }
         }
 
@@ -4846,9 +4896,6 @@
     }); // ------- end of optgroup_columns
 
     Selectize.define('remove_button', function(options) {
-      if (this.settings.mode === 'single') {
-        return;
-      }
 
       options = extend({
         label: '&times;',
@@ -4859,6 +4906,7 @@
 
       var self = this;
       var html = '<a href="javascript:void(0)" class="' + options.className + '" tabindex="-1" title="' + escape_html(options.title) + '">' + options.label + '</a>';
+      var original_render_item = false;
 
       /**
        * Appends an element as a child (with raw HTML).
@@ -4872,51 +4920,69 @@
         return html_container.substring(0, pos) + html_element + html_container.substring(pos);
       };
 
-      this.setup = (function() {
-        var original = self.setup;
+      var enable = function () {
+        // override the item rendering method to add the button to each
+        if (options.append) {
+          if (!original_render_item) {
+            original_render_item = self.settings.render.item;
+          }
+          self.settings.render.item = function(data) {
+            var result = append(original_render_item.apply(this, arguments), html);
+            return result;
+          };
+        }
+
+        // add event listener to existing items
         var i;
-        return function() {
-          // override the item rendering method to add the button to each
-          //debugger;
-          if (options.append) {
-            var render_item = self.settings.render.item;
-            self.settings.render.item = function(data) {
-              var result = append(render_item.apply(this, arguments), html);
-              return result;
-            };
+        var removeItems = Polymer.dom(self.$control).querySelectorAll('.' + options.className);
+        for (i = 0; i < removeItems.length; i += 1) {
+          removeItems[i].addEventListener('click', function(e) {
+            e.preventDefault();
+            if (self.isLocked) {
+              return;
+            }
+
+            var $item = e.currentTarget.parentElement;
+            self.setActiveItem($item);
+            if (self.deleteSelection()) {
+              self.setCaret(self.items.length);
+            }
+          });
+          removeItems[i].addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            if (self.isLocked) {
+              return;
+            }
+
+            var $item = e.currentTarget.parentElement;
+            self.setActiveItem($item);
+            if (self.deleteSelection()) {
+              self.setCaret(self.items.length);
+            }
+          });
+        }
+
+      };
+
+      var disable = function () {
+        // restore the original rendering function
+        if (original_render_item) {
+          self.settings.render.item = original_render_item;          
+        }
+        // there is no need to check for existing items because items will be re-rendered after this plugin is disabled
+        // also, dynamic plugin loading / unloading is not supported in playground for that to make sense
+      };
+
+      return {
+        setup: function () {
+          if (self.settings.mode === 'multi') {
+            enable();
+          } else
+          {
+            disable();
           }
-          original.apply(this, arguments);
-
-          // add event listener
-          var removeItems = this.$control.querySelectorAll('.' + options.className);
-          for (i = 0; i < removeItems.length; i += 1) {
-            removeItems[i].addEventListener('click', function(e) {
-              e.preventDefault();
-              if (self.isLocked) {
-                return;
-              }
-
-              var $item = e.currentTarget.parentElement;
-              self.setActiveItem($item);
-              if (self.deleteSelection()) {
-                self.setCaret(self.items.length);
-              }
-            });
-            removeItems[i].addEventListener('touchstart', function(e) {
-              e.preventDefault();
-              if (self.isLocked) {
-                return;
-              }
-
-              var $item = e.currentTarget.parentElement;
-              self.setActiveItem($item);
-              if (self.deleteSelection()) {
-                self.setCaret(self.items.length);
-              }
-            });
-          }
-        };
-      }());
+        }
+      };
     }); // ----- end of remove button
 
     Selectize.define('restore_on_backspace', function(options) {
