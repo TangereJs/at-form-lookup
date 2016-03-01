@@ -1,4 +1,5 @@
-<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../tangere/Tangere.html">
+<link rel="import" href="../at-i18n/at-i18n-behavior.html">
 <link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
@@ -97,7 +98,7 @@
 
   Polymer({
     is: 'at-form-lookup',
-    behaviors: [AtFormBehaviors.AtFormBehaviorsValidation],
+    behaviors: [ Tangere.behaviors.formValidation, Tangere.behaviors.i18n ],
     _selectizeLoadCallback: false,
     _selectizeInstance: {},
     _isUpdating: false,
@@ -4967,7 +4968,7 @@
       var disable = function () {
         // restore the original rendering function
         if (original_render_item) {
-          self.settings.render.item = original_render_item;          
+          self.settings.render.item = original_render_item;
         }
         // there is no need to check for existing items because items will be re-rendered after this plugin is disabled
         // also, dynamic plugin loading / unloading is not supported in playground for that to make sense
