@@ -108,12 +108,14 @@
       disabled: {
         type: Boolean,
         value: false,
-        observer: 'disabledChanged'
+        observer: 'disabledChanged',
+        title: 'Field value can not be changed'
       },
       required: {
         type: Boolean,
         value: false,
-        observer: 'requiredChanged'
+        observer: 'requiredChanged',
+        title: 'Input requred'
       },
       /**
        * the list of items that should initially be present for selection
@@ -151,7 +153,8 @@
             }
           }
         },
-        layout: 'horizontal'
+        layout: 'horizontal',
+        title: 'Value List'
       },
       // ------------------------------------------------------------
       // "Why is enum here?" - you ask.
@@ -179,7 +182,8 @@
       value: {
         type: String,
         value: '',
-        observer: 'valueChanged'
+        observer: 'valueChanged',
+        title: 'Value'
       },
       selectedItems: {
         type: Array,
@@ -191,7 +195,8 @@
       },
       label: {
         type: String,
-        value: ''
+        value: '',
+        title: 'Label'
       },
       noCredentials: {
         type: Boolean,
@@ -243,7 +248,8 @@
       hide: {
         type: Boolean,
         value: false,
-        observer: 'hideChanged'
+        observer: 'hideChanged',
+        title: 'Field is invisible'
       }
     },
     $meta: [{
