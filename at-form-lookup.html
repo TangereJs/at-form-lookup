@@ -177,7 +177,8 @@
             }
           }
         },
-        layout: 'horizontal'
+        layout: 'horizontal',
+        title: 'Values'
       },
       value: {
         type: String,
@@ -208,7 +209,8 @@
       allowNewItems: {
         type: Boolean,
         value: false,
-        observer: 'allowNewItemsChanged'
+        observer: 'allowNewItemsChanged',
+        title: 'Allow new entries'
       },
       noPreload: {
         type: Boolean,
@@ -217,7 +219,8 @@
       url: {
         type: String,
         value: '',
-        observer: 'urlChanged'
+        observer: 'urlChanged',
+        title: 'Url'
       },
       xurl: {
         type: String,
@@ -232,7 +235,8 @@
       maxItems: {
         type: Number,
         value: 1,
-        observer: 'maxItemsChanged'
+        observer: 'maxItemsChanged',
+        title: 'Maximum number of selectable items'
       },
       hideLabel: {
         type: Boolean,
@@ -1616,7 +1620,7 @@
             var endbit = middlebit.splitText(match[0].length);
             var middleclone = middlebit.cloneNode(true);
             Polymer.dom(spannode).appendChild(middleclone);
-            var parent = Polymer.dom(middlebit.parentElement);            
+            var parent = Polymer.dom(middlebit.parentElement);
             parent.replaceChild(spannode, middlebit);
             skip = 1;
           }
