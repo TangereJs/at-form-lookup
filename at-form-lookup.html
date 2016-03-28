@@ -3,7 +3,6 @@
 <link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
-<link rel="import" href="../paper-shadow/paper-shadow.html" />
 <link rel="import" href="../at-form-behaviors/at-form-behaviors-validation.html">
 <link rel="import" href="at-form-lookup-styles.html">
 <link rel="import" href="../iron-label/iron-label.html">
@@ -2233,10 +2232,6 @@
         $dropdown.classList.add(inputMode);
         $dropdown.style.display = "none";
         Polymer.dom($dropdown_parent).appendChild($dropdown);
-
-        var paperShadow = document.createElement('paper-shadow');
-        paperShadow.z = 2;
-        Polymer.dom($dropdown).appendChild(paperShadow);
 
         $dropdown_content = document.createElement('div');
         $dropdown_content.classList.add(settings.dropdownContentClass);
