@@ -225,7 +225,7 @@
       xurl: {
         type: String,
         value: '',
-        observer: 'xurlChanged'
+        observer: 'urlChanged'
       },
       params: {
         type: String,
@@ -346,25 +346,24 @@
       }
     },
 
-    xurlChanged: function(newValue) {
-      // xurl is now mapped to url
-      if (newValue != this.url) {
-        this.url = newValue;
-      }
-    },
-
     urlChanged: function(newValue, oldValue) {
       if (this._isReady) {
         this.noPreload = true;
-        if (this.url !== '') {
+        if (this.xurl && this.xurl !== ""){
+          this._internalUrl = this.xurl;
+        } else if (this.url && this.url !== "") {
+          this._internalUrl = this.url;
+        }
+
+        if (this._internalUrl && this._internalUrl !== '') {
           this.noPreload = false;
         }
 
         this.requestParamsChanged();
         // AT-32 when value is set before url, that value needs to be displayed
         this.valueChanged(this.value, this.value);
+        this.xurl = this.url; // update legacy xurl parameter
       }
-      this.xurl = this.url; // update legacy xurl parameter
     },
     // this function is here to improve compatibility with form designer
     xvaluelistChanged: function(newValue, oldValue) {
@@ -449,7 +448,7 @@
             if (sInstance.options.hasOwnProperty(currentItem)) {
               sInstance.addItem(currentItem);
             } else {
-              if (this.url !== "" && currentItem !== "") {
+              if (this._internalUrl && this._internalUrl !== "" && currentItem !== "") {
                 // *ij* this here is request by *ma*
                 // at-form-lookup should work in orchard without any additional configuration
                 // code bellow makes that possible
@@ -458,7 +457,7 @@
                 // an disabled overlay is "displayed"
                 Polymer.dom(this.$.disabledOverlay).setAttribute('disabled', true);
                 // a correct url is constructed
-                var urlParts = this.url.split('?');
+                var urlParts = this._internalUrl.split('?');
                 var baseUrl = urlParts[0];
                 var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
                 var coreActivity = document.createElement('at-core-activity');
@@ -617,11 +616,11 @@
     selectizeOnLoad: function(query, callback) {
       // this here is selectize object
       // polymer element upon which selectize is constructed is passed into selectize settings and can be accessed here
-      if (this.url !== '') {
+      if (this._internalUrl && this._internalUrl !== '') {
 
         this.$.coreAjax.params = {};
 
-        var urlParts = this.url.split('?');
+        var urlParts = this._internalUrl.split('?');
         var baseUrl = urlParts[0];
         var queryPart = urlParts.length > 1 ? urlParts[1] : '';
 
