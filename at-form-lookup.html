@@ -721,6 +721,9 @@
 
       this._isReady = true;
 
+      // reinitialize url
+      this.urlChanged();
+
       // set available options
       this.availableChanged(this.available, []);
 
