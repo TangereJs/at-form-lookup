@@ -1099,13 +1099,13 @@
 
       for (i = 0, n = words.length; i < n; i += 1) {
         regex = escape_regex(words[i]);
-        if (this.settings.diacritics) {
-          for (letter in DIACRITICS) {
-            if (DIACRITICS.hasOwnProperty(letter)) {
-              regex = regex.replace(new RegExp(letter, 'g'), DIACRITICS[letter]);
-            }
-          }
-        }
+        // if (this.settings.diacritics) {
+        //   for (letter in DIACRITICS) {
+        //     if (DIACRITICS.hasOwnProperty(letter)) {
+        //       regex = regex.replace(new RegExp(letter, 'g'), DIACRITICS[letter]);
+        //     }
+        //   }
+        // }
         tokens.push({
           string: words[i],
           regex: new RegExp(regex, 'i')
