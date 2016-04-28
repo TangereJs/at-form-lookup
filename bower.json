@@ -1,7 +1,7 @@
 {
   "name": "at-form-lookup",
   "private": true,
-  "version": "1.0.0.81",
+  "version": "1.0.0.82",
   "dependencies": {
     "polymer": "Polymer/polymer#0.8-preview",
     "at-core-activity": "TangereJs/at-core-activity#0.8-preview",
