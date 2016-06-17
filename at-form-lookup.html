@@ -102,7 +102,6 @@
     _selectizeLoadCallback: false,
     _selectizeInstance: {},
     _isUpdating: false,
-    _isReady: false,
     render: {},
     properties: {
       disabled: {
@@ -717,10 +716,11 @@
 
       // set disabled state
       if (this.disabled) {
+        var atContainer = this.$.atContainer;
+        this.toggleClass('disabled', true, atContainer);
         instance.disable();
       }
 
-      this._isReady = true;
 
       // reinitialize url
       this.urlChanged();
@@ -730,6 +730,22 @@
 
       // set items selected by default
       this.valueChanged(this.value, []);
+
+      // *ij* 17.06.2016 (dd.mm.yyyy)
+      // there is a requirement for 'required' at-form-*elements that they initially be displayed
+      // as valid event when they are initially invalid;
+      // on first focus/blur sequence they should be displayed as invalid
+      // code bellow provides for display as invalid on first focus/blur sequence
+      // this was discovered with unit testing
+      var self = this;
+      var focusable = this._getFocusableElement();
+      if (focusable) {
+        focusable.addEventListener('blur', function(event) {
+          self.validate();
+        });
+      }
+
+      this._isReady = true;
     },
     allowNewItemsChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance) {
@@ -2755,7 +2771,7 @@
        * @param {object} e (optional)
        * @returns {boolean}
        */
-      namespace.onFocus = function(e) {
+       namespace.onFocus = function(e) {
         var self = this;
 
         self.isFocused = true;

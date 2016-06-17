@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+<head>
+
+  <title>at-form-lookup tests</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../at-form-lookup.html">
+
+</head>
+<body>
+
+  <test-fixture id="basic">
+    <template>
+      <at-form-lookup></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="required">
+    <template>
+      <at-form-lookup required></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="disabled">
+    <template>
+      <at-form-lookup disabled></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="hidden">
+    <template>
+      <at-form-lookup hide></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="requiredAndDisabled">
+    <template>
+      <at-form-lookup required disabled></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="requiredAndHidden">
+    <template>
+      <at-form-lookup required hide></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="errorMessageValidFalse">
+    <template>
+      <at-form-lookup error-message="demo error message"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="isHintDisplayed">
+    <template>
+      <at-form-lookup hint="This is demo hint"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="isLabelHidden">
+    <template>
+      <at-form-lookup label="Lorem ipsum" hide-label="true"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <script>
+
+    suite('basic', function() {
+
+      test('setting value sets the input value', function() {
+        var input = fixture('basic');
+        input.xvaluelist = [{ title: "Item 1", value: "item1"},{ title: "Item 2", value: "item2"},{ title: "Item 3", value: "item3"}]
+        input.value = 'item2';
+        var focusable = input._getFocusableElement();
+        var prevElemSibling = Polymer.dom(focusable).previousElementSibling;
+        var dataValueAttr = prevElemSibling.getAttribute('data-value');
+        assert.equal(input.value, "item2", 'element value is not set correctly');
+        assert.equal(dataValueAttr, "item2", 'item is not added to selected items list');
+      });
+
+      test('required sets validation message', function() {
+        var input = fixture('required');
+        var focusable = input._getFocusableElement();
+        assert.equal(input.required, true, 'required property is true');
+        assert.equal(input._errorMessage, '', 'error message is not initially empty');
+        MockInteractions.focus(focusable);
+        MockInteractions.blur(focusable);
+        assert.equal(input._errorMessage, input.T('This field is required.'), 'Required error message not set correctly');
+      });
+
+      test('disabled sets css classes', function() {
+        var input = fixture('disabled');
+        assert.equal(input.disabled, true, 'disabled property is true');
+        var inputElement = input._getFocusableElement();
+        var focusableParent = inputElement.parentElement;
+        assert.equal(focusableParent.classList.contains('disabled'), true, 'input element disabled attribute not set');
+        assert.equal(focusableParent.classList.contains('locked'), true, 'input element disabled attribute not set');
+        assert.equal(input.$.atContainer.classList.contains('disabled'), true, 'container has disabled class');
+      });
+
+      test('hidden sets css classes', function() {
+        var input = fixture('hidden');
+        assert.equal(input.hide, true, 'hide property is true');
+        assert.equal(input.$.atContainer.classList.contains('hidden'), true, 'container has hidden class');
+      });
+
+      test('required and disabled => valid = true', function() {
+        var input = fixture('requiredAndDisabled');
+        assert.equal(input.required, true, 'required property is true');
+        assert.equal(input.disabled, true, 'disabled property is true');
+        assert.equal(input.valid, true, 'input is valid');
+      });
+
+      test('required and hidden => valid = true', function() {
+        var input = fixture('requiredAndHidden');
+        assert.equal(input.required, true, 'required property is true');
+        assert.equal(input.hide, true, 'hide property is true');
+        assert.equal(input.valid, true, 'input is valid');
+      });
+
+      test('errorMessage => valid = false', function() {
+        var input = fixture('errorMessageValidFalse');
+        assert.equal(input.errorMessage, 'demo error message', 'error message is correctly set');
+        assert.equal(input.valid, true, 'input is valid because error message is set as attribute');
+        input.errorMessage = 'Another version of demo error message';
+        assert.equal(input.errorMessage, 'Another version of demo error message', 'error message is correctly set');
+        assert.equal(input.valid, false, 'input is invalid because error message is set as property');
+      });
+
+      test('is hint displayed', function(done) {
+        var input = fixture('isHintDisplayed');
+        assert.equal(input.hint, "This is demo hint", 'input.hint property is not set');
+        var inputElement = input._getFocusableElement();
+        MockInteractions.focus(inputElement);
+
+        flush(function () {
+          assert.equal(input.$.hint.innerHTML, "This is demo hint", 'input.hint text is incorrect');
+          done();
+        });
+      });
+
+      test('is label hidden', function() {
+        var input = fixture('isLabelHidden');
+        assert.equal(input.label, "Lorem ipsum", 'Label value not set');
+        assert.equal(input.$.label.classList.contains('hidden'), true, 'label doesn\'t have hidden css class');
+        input.hideLabel = false;
+        assert.equal(input.label, "Lorem ipsum", 'Label value not set');
+        assert.equal(input.$.label.classList.contains('hidden'), false, 'label should not have hidden css class');
+      });
+
+    });
+
+  </script>
+
+</body>
+</html>
