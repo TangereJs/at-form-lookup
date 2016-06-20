@@ -722,15 +722,6 @@
       }
 
 
-      // reinitialize url
-      this.urlChanged();
-
-      // set available options
-      this.availableChanged(this.available, []);
-
-      // set items selected by default
-      this.valueChanged(this.value, []);
-
       // *ij* 17.06.2016 (dd.mm.yyyy)
       // there is a requirement for 'required' at-form-*elements that they initially be displayed
       // as valid event when they are initially invalid;
@@ -746,6 +737,15 @@
       }
 
       this._isReady = true;
+
+      // reinitialize url
+      this.urlChanged();
+
+      // set available options
+      this.availableChanged(this.available, []);
+
+      // set items selected by default
+      this.valueChanged(this.value, []);
     },
     allowNewItemsChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance) {
