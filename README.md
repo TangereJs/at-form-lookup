@@ -17,7 +17,7 @@ As it stands right now it will be very difficult for at-form-lookup to pass unit
 6. switching between modes of operation must work
 
 #### Modes of operation
-At its creation `at-form-lookup` was intended to work with both local data and remove data. Thus this analysis recognizes that `at-form-lookup` has two modes of operation
+At its creation `at-form-lookup` was intended to work with both local data and remote data. Thus this analysis recognizes that `at-form-lookup` has two modes of operation
   - LOCAL_DATA
   - REMOTE_DATA
 
@@ -32,7 +32,7 @@ Properties that govern how `LOCAL_DATA` mode of operation works are as follows
   - enum - which items are available for selection as array of strings `["value1", "value2", ..., "valueN"]`
   - xvaluelist - which items are available for selection as array of title, value pairs `[{ title: "Item 1", vlaue: "value1"}, { title: "Item 2", value: "value2"}, ... , { title: "Item N", value: "valueN"}]`
 
-Properties that govern `REMOTE_DATA` mode of operation are ignored, witch the exception of `URL` property which switches modes.
+Properties that govern `REMOTE_DATA` mode of operation are ignored, with the exception of `URL` property which switches modes.
 
 ##### Mode `REMOTE_DATA`
 Properties that govern how `REMOTE_DATA` mode of operation works are as follows
