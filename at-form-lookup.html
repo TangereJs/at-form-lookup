@@ -7,7 +7,9 @@
 <link rel="import" href="at-form-lookup-styles.html">
 <link rel="import" href="../iron-label/iron-label.html">
 
-  <script type="text/javascript">
+<script src="scripts/at-js-utils.js" charset="utf-8"></script>
+
+<script type="text/javascript">
   var SelectBoxUtils = {
     breakBinding: function(func, marker) {
       marker = marker || "dontBind";
@@ -44,7 +46,8 @@
       }
 
       #contentContainer {
-        position: relative;;
+        position: relative;
+        ;
       }
 
       #contentContainer.error .input {
@@ -88,41 +91,101 @@
 <script>
   'use strict';
 
-  function isArray(obj) {
-    return Object.prototype.toString.call(obj) === Object.prototype.toString.call([]);
-  }
-
-  function isCommaSeparated(obj) {
-    return obj !== undefined && obj.indexOf !== undefined && obj.indexOf(',') !== -1;
-  }
-
   Polymer({
     is: 'at-form-lookup',
-    behaviors: [ Tangere.behaviors.formValidation, Tangere.behaviors.i18n ],
+    behaviors: [Tangere.behaviors.formValidation, Tangere.behaviors.i18n],
     _selectizeLoadCallback: false,
     _selectizeInstance: {},
     _isUpdating: false,
-    render: {},
     properties: {
+      /**
+       * Element's label
+       * @property String
+       * @type String
+       * @default ""
+       */
+      label: {
+        type: String,
+        value: '',
+        title: 'Label'
+      },
+      /**
+       * Hides the element's label
+       * @property hideLabel
+       * @type Boolean
+       * @default false
+       */
+      hideLabel: {
+        type: Boolean,
+        value: false,
+        observer: '_hideLabelChanged',
+        title: 'Do not show the label'
+      },
+      /**
+       * Disables the element.
+       * @property disabled
+       * @type Boolean
+       * @default false
+       */
       disabled: {
         type: Boolean,
         value: false,
-        observer: 'disabledChanged',
+        observer: '_disabledChanged',
         title: 'Field value can not be changed'
       },
+      /**
+       * Makes element input required.
+       * @property required
+       * @type Boolean
+       * @default false
+       */
       required: {
         type: Boolean,
         value: false,
-        observer: 'requiredChanged',
+        observer: '_requiredChanged',
         title: 'Input required'
+      },
+      /**
+       * Hides the element. When hidden nothing is displayed for the element
+       * @property hide
+       * @type Boolean
+       * @default false
+       */
+      hide: {
+        type: Boolean,
+        value: false,
+        observer: '_hideChanged',
+        title: 'Field is invisible'
       },
       /**
        * the list of items that should initially be present for selection
        */
       available: {
         type: String,
-        value: '',
-        observer: 'availableChanged'
+        value: ''
+      },
+      // ------------------------------------------------------------
+      // "Why is enum here?" - you ask.
+      // "We already have available and xvaluelist just above" - you say.
+      // read explanation for xvaluelist, enum is here for the same reason
+      // ------------------------------------------------------------
+      enum: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+        schema: {
+          items: {
+            type: "string",
+            properties: {
+              value: {
+                type: "string"
+              }
+            }
+          }
+        },
+        layout: 'horizontal',
+        title: 'Values'
       },
       // ------------------------------------------------------------
       // "Why is xvaluelist here?" - you ask.
@@ -138,7 +201,6 @@
         value: function() {
           return [];
         },
-        observer: 'availableChanged',
         schema: {
           items: {
             type: "object",
@@ -155,107 +217,77 @@
         layout: 'horizontal',
         title: 'Value List'
       },
-      // ------------------------------------------------------------
-      // "Why is enum here?" - you ask.
-      // "We already have available and xvaluelist just above" - you say.
-      // read explanation for xvaluelist, enum is here for the same reason
-      // ------------------------------------------------------------
-      enum: {
-        type: Array,
-        value: function() {
-          return [];
-        },
-        observer: 'availableChanged',
-        schema: {
-          items: {
-            type: "string",
-            properties: {
-              value: {
-                type: "string"
-              }
-            }
-          }
-        },
-        layout: 'horizontal',
-        title: 'Values'
-      },
+
       value: {
         type: String,
         value: '',
-        observer: 'valueChanged',
+        observer: '_valueChanged',
         title: 'Value'
       },
+
       selectedItems: {
         type: Array,
-        value: function () {
+        value: function() {
           return [];
         },
         xtype: 'json',
         readOnly: true
       },
-      label: {
+
+      url: {
         type: String,
         value: '',
-        title: 'Label'
+        observer: '_urlChanged',
+        title: 'Url'
       },
+
+      xurl: {
+        type: String,
+        value: '',
+        observer: '_urlChanged'
+      },
+
       noCredentials: {
         type: Boolean,
         value: false
       },
+
+      noPreload: {
+        type: Boolean,
+        value: false
+      },
+
+      params: {
+        type: String,
+        value: '',
+        observer: '_paramsChanged'
+      },
+
       /**
        * allows to create new entries when no matching record is found
        */
       allowNewItems: {
         type: Boolean,
         value: false,
-        observer: 'allowNewItemsChanged',
+        observer: '_allowNewItemsChanged',
         title: 'Allow new entries'
       },
-      noPreload: {
-        type: Boolean,
-        value: false
-      },
-      url: {
-        type: String,
-        value: '',
-        observer: 'urlChanged',
-        title: 'Url'
-      },
-      xurl: {
-        type: String,
-        value: '',
-        observer: 'urlChanged'
-      },
-      params: {
-        type: String,
-        value: '',
-        observer: 'paramsChanged'
-      },
+
       maxItems: {
         type: Number,
         value: 1,
-        observer: 'maxItemsChanged',
+        observer: '_maxItemsChanged',
         title: 'Maximum number of selectable items'
-      },
-      hideLabel: {
-        type: Boolean,
-        value: false,
-        observer: 'hideLabelChanged',
-        title: 'Do not show the label'
-      },
-      /**
-       * Hides the element. When hidden nothing is displayed for the element
-       * @property hide
-       * @type Boolean
-       * @default false
-       */
-      hide: {
-        type: Boolean,
-        value: false,
-        observer: 'hideChanged',
-        title: 'Field is invisible'
       }
     },
+
+    render: {},
+
+    observers: [
+      '_urlChanged(url, xurl)',
+      '_availableChanged(available, enum, xvaluelist.*)'
+    ],
+
     $meta: [{
       title: "Enum",
       type: "string",
@@ -265,8 +297,313 @@
       type: "string",
       xtype: "lookup"
     }],
+
+    /**
+     * Show/hide the label based on hideLabel property
+     */
+    _hideLabelChanged: function(newValue, oldValue) {
+      this.toggleClass("hidden", newValue, this.$.label);
+    },
+
+    /**
+     * Enable/Disable the component based on disabled property
+     */
+    _disabledChanged: function(newValue, oldValue) {
+      if (this._isReady) {
+        // this.isReady is set in ready function when components is completely initialized
+        this._handleDisabled(newValue);
+      }
+    },
+    // disabled state is handled with same code from ready function and _disabledChanged
+    // so that code is extracted into a function
+    _handleDisabled: function(value) {
+      var atContainer = this.$.atContainer;
+      this.toggleClass('disabled', value, atContainer);
+
+      if (value) {
+        this._selectizeInstance.disable();
+      } else {
+        this._selectizeInstance.enable();
+      }
+
+      this.validate();
+    },
+
+    /**
+     * When required state of the component changes, component should be (re)validated
+     */
+    _requiredChanged: function(newValue, oldValue) {
+      if (this._isReady) {
+        this.validate();
+      }
+    },
+
+    /**
+     * Show/Hide the component based on hide property
+     */
+    _hideChanged: function(newValue, oldValue) {
+      var wrapper = this.$.atContainer;
+      this.toggleClass('hidden', newValue, wrapper);
+      if (this._isReady) {
+        this.validate();
+      }
+    },
+
+    // temporary fixes for at-core-propform
+    availableChanged: function() {},
+    xvaluelistChanged: function() {},
+
+    _availableChanged: function(available, enumParam, xvaluelist) {
+      /**
+       * if current mode of operation is REMOTE_DATA return immediately
+       * if component is not ready return immediately
+       */
+      if (!this._isReady || this._isModeRemoteData) {
+        return;
+      }
+
+      this._handleAvailableChanged(available, enumParam, xvaluelist);
+    },
+
+    // available items are handled with same code from ready function and _availableChanged
+    // so that code is extracted into a function
+    _handleAvailableChanged: function(available, enumParam, xvaluelistParam) {
+      /**
+        order of precedence for parameters is xvaluelist (highest), enumParam (medium), available (lowest)
+      */
+      var availableItems = [];
+      var i, item, clone, entry;
+      var xvaluelist = xvaluelistParam.value;
+      /**
+        xvaluelist is expected to be an array of objects where each object is a { title: "", value: ""} pair
+      */
+      if (atJsUtils.isArray(xvaluelist) && xvaluelist.length > 0) {
+        for (i = 0; i < xvaluelist.length; i++) {
+          item = xvaluelist[i];
+          // validate that item has title and value properties; if it doesn't its ignored
+          if (item.hasOwnProperty('title') && atJsUtils.isString(item.title) && item.hasOwnProperty('value') && atJsUtils.isString(item.value)) {
+            entry = {
+              title: item.title,
+              value: item.value
+            };
+            availableItems.push(entry);
+          }
+        }
+
+        /**
+          enumParam is expected to be an array of strings
+        */
+      } else if (atJsUtils.isArray(enumParam) && enumParam.length > 0) {
+        for (i = 0; i < enumParam.length; i++) {
+          item = enumParam[i];
+          // validate that item is a string
+          if (atJsUtils.isString(item)) {
+            clone = item.trim();
+            entry = {
+              title: atJsUtils.capitalizeFirstLetter(clone),
+              value: clone
+            };
+            availableItems.push(entry);
+          }
+        }
+
+        /**
+          available parameter is expected to be a CSV string
+          if available doesn't contain comma charater that means it has only one value and result of split(',') will be an array with just that one value
+          if available contains comma charater that means it has many values and result of split(',') will be array of those values
+        */
+      } else if (!atJsUtils.isEmptyString(available)) {
+        var parts = available.split(',');
+        for (i = 0; i < parts.length; i++) {
+          item = parts[i];
+          clone = item.trim();
+          entry = {
+            title: atJsUtils.capitalizeFirstLetter(clone),
+            value: clone
+          };
+          availableItems.push(entry);
+        }
+      }
+
+      // after this 'if else if' block availableItems is either an empty array, or pupulated with one of the properties
+
+      // available items is empty array return immediately
+      if (availableItems.length === 0) {
+        return;
+      }
+
+      var instance = this._selectizeInstance;
+      // *ij* this setting prevents unnecessary change event
+      // which clears the current valid at-form-lookup value
+      instance.isInitializing = true;
+      instance.clearOptions(true);
+      instance.isInitializing = false;
+
+      for (i = 0; i < availableItems.length; i++) {
+        item = availableItems[i];
+        instance.addOption(item);
+      }
+
+      /**
+        _availableChanged and _valueChanged can be called in any order
+        if value is set first _valueChanged is called first _availableChanged second
+        if _valueChanged is not called here, component will not display initial values
+      */
+      this._valueChanged(this.value);
+    },
+
+    _valueChanged: function(newValue, oldValue) {
+      if (!this._isReady) {
+        return;
+      }
+
+      this._handleValueChanged(newValue);
+    },
+    // value changes are handled with same code from ready function and _valueChanged
+    // so that code is extracted into a function
+    _handleValueChanged: function(value) {
+
+      // if value updating is in progress return
+      if (this._selectizeUpdate) {
+        return;
+      }
+
+      // handling is different based on mode of operation
+      if (this._isModeRemoteData) {
+        // mode of operation is REMOTE_DATA
+
+        if (!this._isUpdating) {
+          this._isUpdating = true;
+
+          // do the update
+          var sInstance = this._selectizeInstance;
+
+
+          for (var i = 0; i < itemsToAdd.length; i++) {
+            var currentItem = itemsToAdd[i];
+
+            if (sInstance.options.hasOwnProperty(currentItem)) {
+              sInstance.addItem(currentItem);
+            } else {
+              if (this._internalUrl && this._internalUrl !== "" && currentItem !== "") {
+                // *ij* this here is request by *ma*
+                // at-form-lookup should work in orchard without any additional configuration
+                // code bellow makes that possible
+                // component is first disabled so user can't input
+                this._selectizeInstance.disable();
+                // an disabled overlay is "displayed"
+                Polymer.dom(this.$.disabledOverlay).setAttribute('disabled', true);
+                // a correct url is constructed
+                var urlParts = this._internalUrl.split('?');
+                var baseUrl = urlParts[0];
+                var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
+                var coreActivity = document.createElement('at-core-activity');
+                coreActivity.handleAs = 'json';
+                var finalUrl = baseUrl + '/' + currentItem + queryPart;
+                coreActivity.url = finalUrl;
+                // noCredentials parameter is set on the ajax component
+                coreActivity.noCredentials = this.noCredentials;
+                // add listener for response event
+                coreActivity.addEventListener('response', this.loadDefaultOnResponse.bind(this));
+                // request is made
+                coreActivity.generateRequest();
+              }
+            }
+          }
+
+          this._isUpdating = false;
+        }
+
+      } else {
+        // mode of operation is LOCAL_DATA
+        var valueItems = [];
+        var parts, i, item, clone, entry;
+        // value is a CSV string with 0..n comma separated values
+        if (!atJsUtils.isEmptyString(value)) {
+          parts = value.split(',');
+          for (i = 0; i < parts.length; i++) {
+            item = parts[i];
+            clone = item.trim();
+            entry = {
+              title: atJsUtils.capitalizeFirstLetter(clone),
+              value: clone
+            };
+            valueItems.push(entry);
+          }
+        }
+
+        var instance = this._selectizeInstance;
+        var selectedItems = instance.items;
+
+        var arrIntersection = arrayIntersect(valueItems, selectedItems);
+        var itemsToAdd = arraySubtract(valueItems, arrIntersection);
+        var itemsToRemove = arraySubtract(selectedItems, arrIntersection);
+
+        for (i = 0; i < itemsToRemove.length; i++) {
+          instance.removeItem(itemsToRemove[i]);
+        }
+
+        for (i = 0; i < itemsToAdd.length; i++) {
+          var currentItem = itemsToAdd[i];
+          if (instance.options.hasOwnProperty(currentItem.value)) {
+            instance.addItem(currentItem);
+          }
+        }
+      }
+
+      // this.validate();
+    },
+
     set selectedItems(newValue) {},
-    maxItemsChanged: function(newValue, oldValue) {
+
+    _urlChanged: function(url, xurl) {
+      this._isModeRemoteData = !atJsUtils.isEmptyString(xurl) || !atJsUtils.isEmptyString(url);
+
+      if (this._isReady) {
+        this.noPreload = true;
+        if (this.xurl && this.xurl !== "") {
+          this._internalUrl = this.xurl;
+        } else if (this.url && this.url !== "") {
+          this._internalUrl = this.url;
+        }
+
+        if (this._internalUrl && this._internalUrl !== '') {
+          this.noPreload = false;
+        }
+
+        this._requestParamsChanged();
+        // AT-32 when value is set before url, that value needs to be displayed
+        this._valueChanged(this.value, this.value);
+        this.xurl = this.url; // update legacy xurl parameter
+      }
+    },
+
+    _paramsChanged: function() {
+      if (this._isReady) {
+        this.noPreload = true;
+        if (this.params !== '') {
+          this.noPreload = false;
+        }
+        this._requestParamsChanged();
+      }
+    },
+
+    _requestParamsChanged: function() {
+      if (this._selectizeInstance.clear && this._selectizeInstance.clearOptions) {
+        this._selectizeInstance.clear();
+        this._selectizeInstance.clearOptions();
+        this._selectizeInstance.onSearchChange('');
+      }
+    },
+
+    _allowNewItemsChanged: function(newValue, oldValue) {
+      if (this._isReady && this._selectizeInstance) {
+        var valueToSet = Boolean(newValue);
+        this._selectizeInstance.settings.create = valueToSet;
+      }
+    },
+
+    _maxItemsChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance) {
         try {
           // ok what is happening here?
@@ -311,7 +648,7 @@
               instance.addItem(oldItem);
             }
           } else {
-          // else maxItems >= length so we do not trim
+            // else maxItems >= length so we do not trim
             for (i = 0; i < itemsLength; i++) {
               var oldItem = oldItems[i];
               instance.addItem(oldItem);
@@ -322,176 +659,83 @@
         }
       }
     },
-    hideLabelChanged: function(newValue, oldValue) {
-      this.toggleClass("hidden", newValue, this.$.label);
-    },
+
+    // TODO: This needs to be tested on how it works
     renderChanged: function(newValue, oldValue) {
       if (this._selectizeInstance !== undefined) {
         this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, newValue);
       }
     },
 
-    labelChanged: function(newValue, oldValue) {
-      this.$.label.textContent = newValue;
-    },
-
-    paramsChanged: function() {
-      if (this._isReady) {
-        this.noPreload = true;
-        if (this.params !== '') {
-          this.noPreload = false;
-        }
-        this.requestParamsChanged();
-      }
-    },
-
-    urlChanged: function(newValue, oldValue) {
-      if (this._isReady) {
-        this.noPreload = true;
-        if (this.xurl && this.xurl !== ""){
-          this._internalUrl = this.xurl;
-        } else if (this.url && this.url !== "") {
-          this._internalUrl = this.url;
-        }
-
-        if (this._internalUrl && this._internalUrl !== '') {
-          this.noPreload = false;
-        }
-
-        this.requestParamsChanged();
-        // AT-32 when value is set before url, that value needs to be displayed
-        this.valueChanged(this.value, this.value);
-        this.xurl = this.url; // update legacy xurl parameter
-      }
-    },
-    // this function is here to improve compatibility with form designer
-    xvaluelistChanged: function(newValue, oldValue) {
-      this.availableChanged(newValue, oldValue);
-    },
-    availableChanged: function(newValue, oldValue) {
-      var i;
-
-      if (this._isReady) {
-        var instance = this._selectizeInstance;
-        // *ij* this setting prevents unnecessary change event
-        // which clears the current valid at-form-lookup value
-        instance.isInitializing = true;
-        instance.clearOptions(true);
-        instance.isInitializing = false;
-
-        if (isArray(newValue)) {
-          for (i = 0; i < newValue.length; i += 1) {
-            var option = newValue[i];
-            if (isString(option)) {
-              option = option.trim();
-              instance.addOption({
-                value: option,
-                title: option
-              });
-            } else if (!option.title) {
-              option.title = option.value;
-              instance.addOption(option);
-            } else {
-              instance.addOption(option);
-            }
-          }
-          instance.addOption(newValue);
-        } else if (isCommaSeparated(newValue)) {
-          var items = newValue.split(',');
-          for (i = 0; i < items.length; i += 1) {
-            var newOption = {
-              value: items[i].trim(),
-              title: items[i].trim()
-            };
-            instance.addOption(newOption);
-          }
-        }
-
-        if (this.value !== "" && instance.options.hasOwnProperty(this.value)) {
-          instance.addItem(this.value);
-        }
-      }
-    },
-
-    valueChanged: function(newValue, oldValue) {
-      if (this._isReady) {
-        if (!this._isUpdating && !this._selectizeUpdate) {
-          this._isUpdating = true;
-
-          // do the update
-          var sInstance = this._selectizeInstance;
-
-          var newValues = this.value;
-          if (!isArray(this.value)) {
-
-            if (this.value.length <= 0) {
-              newValues = new Array();
-            } else {
-              newValues = this.value.split(',');
-            }
-          }
-
-          var selectedItems = sInstance.items;
-
-          var arrIntersection = arrayIntersect(newValues, selectedItems);
-          var itemsToAdd = arraySubtract(newValues, arrIntersection);
-          var itemsToRemove = arraySubtract(selectedItems, arrIntersection);
-
-          for (var i = 0; i < itemsToRemove.length; i++) {
-            sInstance.removeItem(itemsToRemove[i]);
-          }
-
-          for (var i = 0; i < itemsToAdd.length; i++) {
-            var currentItem = itemsToAdd[i];
-
-            if (sInstance.options.hasOwnProperty(currentItem)) {
-              sInstance.addItem(currentItem);
-            } else {
-              if (this._internalUrl && this._internalUrl !== "" && currentItem !== "") {
-                // *ij* this here is request by *ma*
-                // at-form-lookup should work in orchard without any additional configuration
-                // code bellow makes that possible
-                // component is first disabled so user can't input
-                this._selectizeInstance.disable();
-                // an disabled overlay is "displayed"
-                Polymer.dom(this.$.disabledOverlay).setAttribute('disabled', true);
-                // a correct url is constructed
-                var urlParts = this._internalUrl.split('?');
-                var baseUrl = urlParts[0];
-                var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
-                var coreActivity = document.createElement('at-core-activity');
-                coreActivity.handleAs = 'json';
-                var finalUrl = baseUrl + '/' + currentItem + queryPart;
-                coreActivity.url = finalUrl;
-                // noCredentials parameter is set on the ajax component
-                coreActivity.noCredentials = this.noCredentials;
-                // add listener for response event
-                coreActivity.addEventListener('response', this.loadDefaultOnResponse.bind(this));
-                // request is made
-                coreActivity.generateRequest();
-              }
-            }
-          }
-
-          this._isUpdating = false;
-          this._selectizeUpdate = false;
-        }
-        this.validate();
-      }
-    },
-
-    requestParamsChanged: function() {
-      if (this._selectizeInstance.clear && this._selectizeInstance.clearOptions) {
-        this._selectizeInstance.clear();
-        this._selectizeInstance.clearOptions();
-        this._selectizeInstance.onSearchChange('');
-      }
-    },
-
     ready: function() {
-      this.initialize();
+      /**
+        we need allowNewItems, noPreload, maxItems, render properties to create selectize instance
+        these properties are not available before ready event
+        it would be cool if any of these options could be set as they become available,
+        but selectize doesn't have an explicit API for setting options at runtime;
+       */
+
+      // create the selectize instance
+      var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
+        plugins: ['remove_button'],
+        create: this.allowNewItems,
+        selectOnTab: true,
+        preload: !this.noPreload,
+        allowEmpty: false,
+        maxItems: this.maxItems,
+        load: this.selectizeOnLoad.bind(this),
+        onChange: this.selectizeChange.bind(this),
+        render: this.render
+      });
+
+      // at-form-behaviors-validation and hint API
       this._validationFunctions.push(this._isValueValidForXValueList.bind(this));
       this._attachFocusBlurEvents();
+
+      // now to initialize component correctly with all properties set as attributes
+      // we need to manually process all properties here in ready function
+
+      // set mode of operation
+      // _urlChanged function is called before ready function is called so mode
+      // of operation is already set
+
+      // handle disabled state
+      this._handleDisabled();
+      /**
+        handle required state;
+         _handleDisabled will validate the component so there is no reason to call _requiredChanged to validate again
+         because if required is set as attribute its already available when _handleDisabled is called from ready function
+        */
+      // this._requiredChanged();
+      /**
+        handle hide state
+        _handleDisabled will validate the component so there is no reason to call _hideChanged to validate again
+        because if hide is set as attribute its already available when _handleDisabled is called from ready function
+        and component is hidden/shown independently of this._isReady flag
+       */
+      // this._hideChanged();
+
+      // initialize available items
+      this._handleAvailableChanged(this.available, this.enum, this.xvaluelist);
+
+      // set initially set items
+      this._handleValueChanged(this.value);
+
+      // *ij* 17.06.2016 (dd.mm.yyyy)
+      // there is a requirement for 'required' at-form-*elements that they initially be displayed
+      // as valid event when they are initially invalid;
+      // on first focus/blur sequence they should be displayed as invalid
+      // code bellow provides for display as invalid on first focus/blur sequence
+      // this was discovered with unit testing
+      var self = this;
+      var focusable = this._getFocusableElement();
+      if (focusable) {
+        focusable.addEventListener('blur', function(event) {
+          self.validate();
+        });
+      }
+
+      this._isReady = true;
     },
 
     _isValueValidForXValueList: function(value) {
@@ -528,44 +772,6 @@
       }
 
       return result;
-    },
-
-    set valid(newValue) {},
-
-    _updateUIValidState: function(isValid) {
-      var label = this.$.label;
-      this.toggleClass('error', !isValid, label);
-      var contentContainer = this.$.contentContainer;
-      this.toggleClass('error', !isValid, contentContainer);
-    },
-
-    requiredChanged: function(newValue, oldValue) {
-      if (this._isReady) {
-        this.validate();
-      }
-    },
-
-    disabledChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance !== undefined) {
-        var atContainer = this.$.atContainer;
-        this.toggleClass('disabled', newValue, atContainer);
-
-        if (newValue) {
-          this._selectizeInstance.disable();
-        } else {
-          this._selectizeInstance.enable();
-        }
-
-        this.validate();
-      }
-    },
-
-    hideChanged: function(newValue, oldValue) {
-      var wrapper = this.$.atContainer;
-      this.toggleClass('hidden', newValue, wrapper);
-      if (this._isReady) {
-        this.validate();
-      }
     },
 
     destroyExisting: function() {
@@ -681,7 +887,7 @@
       var allItems = this._selectizeInstance.options;
       var result = [];
 
-      selectedItemsIds.forEach(function (id, index) {
+      selectedItemsIds.forEach(function(id, index) {
         var item = allItems[id];
         if (item.title !== "" && item.value !== "") {
           result.push(item);
@@ -690,80 +896,36 @@
       this._setSelectedItems(result);
 
       this._selectizeUpdate = false;
-      this.fire('value-changed', { value: this.value });
-      this.fire('selected-items-changed', { value: this.selectedItems });
-    },
-
-    initialize: function() {
-
-      // create the selectize instance
-      var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
-        plugins: ['remove_button'],
-        create: this.allowNewItems,
-        selectOnTab: true,
-        preload: !this.noPreload,
-        allowEmpty: this.allowEmpty,
-        maxItems: this.maxItems,
-        load: this.selectizeOnLoad.bind(this),
-        onChange: this.selectizeChange.bind(this),
-        render: this.render
+      this.fire('value-changed', {
+        value: this.value
       });
-
-      // NOT NEEDED clear options and items from from instance
-
-      // initialzie the component
-      // maxItems = 1 => show dropdown icon; maxItems > 1 do not show dropdown icon
-
-      // set disabled state
-      if (this.disabled) {
-        var atContainer = this.$.atContainer;
-        this.toggleClass('disabled', true, atContainer);
-        instance.disable();
-      }
-
-
-      // *ij* 17.06.2016 (dd.mm.yyyy)
-      // there is a requirement for 'required' at-form-*elements that they initially be displayed
-      // as valid event when they are initially invalid;
-      // on first focus/blur sequence they should be displayed as invalid
-      // code bellow provides for display as invalid on first focus/blur sequence
-      // this was discovered with unit testing
-      var self = this;
-      var focusable = this._getFocusableElement();
-      if (focusable) {
-        focusable.addEventListener('blur', function(event) {
-          self.validate();
-        });
-      }
-
-      this._isReady = true;
-
-      // reinitialize url
-      this.urlChanged();
-
-      // set available options
-      this.availableChanged(this.available, []);
-
-      // set items selected by default
-      this.valueChanged(this.value, []);
+      this.fire('selected-items-changed', {
+        value: this.selectedItems
+      });
     },
-    allowNewItemsChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance) {
-        var valueToSet = Boolean(newValue);
-        this._selectizeInstance.settings.create = valueToSet;
-      }
-    },
+
     focus: function() {
       if (this._selectizeInstance) {
         this._selectizeInstance.focus(true);
       }
     },
+
+    /********************************************************************************/
+    /* at-form-behaviors-validation API functions
+    /********************************************************************************/
+    _updateUIValidState: function(isValid) {
+      var label = this.$.label;
+      this.toggleClass('error', !isValid, label);
+      var contentContainer = this.$.contentContainer;
+      this.toggleClass('error', !isValid, contentContainer);
+    },
+
     // this function is part of the hint/validation API
     // hint should be displayed when element gains focus
     // behavior can not know when element gained focus
     // but if gived focusable element it can attach to its focus event
     // it should return focusable element if available or null if focusable element doesn't exist
-    _getFocusableElement: function () {
+    _getFocusableElement: function() {
       var focusable = this.$$('.control input');
       return focusable;
     }
@@ -930,13 +1092,13 @@
         }
       };
 
-      Interface.prototype.setupPlugins = function () {
+      Interface.prototype.setupPlugins = function() {
         var self = this;
         var plugins = self.plugins;
         var loaded = plugins.loaded;
         var loadedNames = Object.keys(loaded);
 
-        loadedNames.forEach(function (name) {
+        loadedNames.forEach(function(name) {
           var plugin = loaded[name];
           plugin.setup();
         });
@@ -2771,7 +2933,7 @@
        * @param {object} e (optional)
        * @returns {boolean}
        */
-       namespace.onFocus = function(e) {
+      namespace.onFocus = function(e) {
         var self = this;
 
         self.isFocused = true;
@@ -3500,7 +3662,6 @@
 
         // update the item if it's selected
         if (self.items.indexOf(value_new) !== -1) {
-          //debugger;
           $item = self.getItem(value);
           $item_new = self.render('item', data);
           if ($item.hasClass('active')) {
@@ -4947,7 +5108,7 @@
         return html_container.substring(0, pos) + html_element + html_container.substring(pos);
       };
 
-      var enable = function () {
+      var enable = function() {
         // override the item rendering method to add the button to each
         if (options.append) {
           if (!original_render_item) {
@@ -4991,7 +5152,7 @@
 
       };
 
-      var disable = function () {
+      var disable = function() {
         // restore the original rendering function
         if (original_render_item) {
           self.settings.render.item = original_render_item;
@@ -5001,11 +5162,10 @@
       };
 
       return {
-        setup: function () {
+        setup: function() {
           if (self.settings.mode === 'multi') {
             enable();
-          } else
-          {
+          } else {
             disable();
           }
         }
