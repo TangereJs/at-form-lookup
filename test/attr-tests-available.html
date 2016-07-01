@@ -1,0 +1,594 @@
+<!doctype html>
+<html>
+<head>
+
+  <title>at-form-lookup tests</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../at-form-lookup.html">
+
+</head>
+<body>
+
+  <!-- we need tests where available has invalid values -->
+
+  <test-fixture id="attrAvailable">
+    <template>
+      <at-form-lookup available=""></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableUndefined">
+    <template>
+      <at-form-lookup available="undefined"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableNull">
+    <template>
+      <at-form-lookup available="null"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableTrue">
+    <template>
+      <at-form-lookup available="true"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableFalse">
+    <template>
+      <at-form-lookup available="false"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailable{}">
+    <template>
+      <at-form-lookup available="{}"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailable[]">
+    <template>
+      <at-form-lookup available="[]"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailable424242">
+    <template>
+      <at-form-lookup available="424242"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailable3.14159">
+    <template>
+      <at-form-lookup available="3.14159"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableLoremIpsum">
+    <template>
+      <at-form-lookup available="LoremIpsum"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <!-- tests where available has invalid availble and a value -->
+
+  <test-fixture id="attrAvailableValue">
+    <template>
+      <at-form-lookup available="" value=""></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableUndefinedValue">
+    <template>
+      <at-form-lookup available="undefined" value="undefined"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableNullValue">
+    <template>
+      <at-form-lookup available="null" value="null"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableTrueValue">
+    <template>
+      <at-form-lookup available="true" value="true"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableFalseValue">
+    <template>
+      <at-form-lookup available="false" value="false"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailable{}Value">
+    <template>
+      <at-form-lookup available="{}" value="{}"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailable[]Value">
+    <template>
+      <at-form-lookup available="[]" value="[]"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailable424242Value">
+    <template>
+      <at-form-lookup available="424242" value="424242"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailable3.14159Value">
+    <template>
+      <at-form-lookup available="3.14159" value="3.14159"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableLoremIpsumValue">
+    <template>
+      <at-form-lookup available="LoremIpsum" value="LoremIpsum"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <!-- tests where available is valid and invalid value is set -->
+
+  <test-fixture id="attrAvailableValidValueUndefined">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="undefined"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidValueNull">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="null"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidValueTrue">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="true"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidValueFalse">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="false"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidValue{}">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="{}"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidValue[]">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="[]"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidValue424242">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="424242"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidValue3.14159">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="3.14159"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <!-- tests where available is valid and valid value is set -->
+
+  <test-fixture id="attrAvailableValidV1">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidV2">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item2"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidV3">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item3"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrAvailableValidValueChangedAtRuntime">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <!-- Tests for maxItems invalid values -->
+
+  <test-fixture id="attrMaxItems">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items=""></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItemsUndefined">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="undefined"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItemsNull">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="null"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItemsTrue">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="true"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItemsFalse">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="false"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItems{}">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="{}"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItems[]">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="[]"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItemsLoremIpsum">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="LoremIpsum"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItems-424242">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="-424242"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItems-3.14159">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="-3.14159"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItems2">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="2"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="attrMaxItems3">
+    <template>
+      <at-form-lookup available="item1, item2, item3" value="item1,item2" max-items="3"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+
+  <!-- Tests for maxItems valid values -->
+
+
+
+  <script>
+    suite('mode of operation: LOCAL_DATA, tests where properties are set as attributes', function() {
+
+      test('available has invalid values, value is not set', function () {
+        var selectorPrefix = 'attrAvailable';
+        var selectorSuffixes = [ "Undefined", "Null", "True", "False", "{}", "[]", "424242", "3.14159", "LoremIpsum"];
+        var expectedValues = [ "undefined", "null", "true", "false", "{}", "[]", "424242", "3.14159", "LoremIpsum"];
+
+        // test for suffix "" and available = ""
+        var selector = selectorPrefix;
+        var element = fixture(selector);
+
+        assert.equal(element.available, "", "available not set correctly");
+        assert.equal(element.value, "", "value not set correctly");
+        var instance = element._selectizeInstance;
+        var options = instance.options;
+        assert.equal(Object.keys(options).length, 0, "instance options should be empty");
+        var selectedItems = instance.items;
+        assert.equal(selectedItems.length, 0, "selected items array is not empty");
+
+        // the rest
+        selectorSuffixes.forEach(function (suffix, index) {
+          var selector = selectorPrefix + suffix;
+          var element = fixture(selector);
+          var expectedValue = expectedValues[index];
+
+          assert.equal(element.available, expectedValue, "available not set correctly");
+          assert.equal(element.value, "", "value not set correctly");
+          var instance = element._selectizeInstance;
+          var options = instance.options;
+          assert.equal(Object.keys(options).length, 1, "available items not added to instance options");
+          assert.isTrue(options.hasOwnProperty(expectedValue), "instance options doesn't contain " + expectedValue + " option");
+          var selectedItems = instance.items;
+          assert.equal(selectedItems.length, 0, "selected items array is not empty");
+        });
+
+      });
+
+      test('available has invalid values, value is set', function () {
+        var selectorPrefix = 'attrAvailable{0}Value';
+        var selectorSuffixes = [ "Undefined", "Null", "True", "False", "{}", "[]", "424242", "3.14159", "LoremIpsum"];
+        var expectedValues = [ "undefined", "null", "true", "false", "{}", "[]", "424242", "3.14159", "LoremIpsum"];
+
+        // test for suffix "" and available = ""
+        var selector = atJsUtils.formatString(selectorPrefix, "");
+        var element = fixture(selector);
+
+        assert.equal(element.available, "", "available not set correctly");
+        assert.equal(element.value, "", "value not set correctly");
+        var instance = element._selectizeInstance;
+        var options = instance.options;
+        assert.equal(Object.keys(options).length, 0, "instance options should be empty");
+
+        selectorSuffixes.forEach(function (suffix, index) {
+          var selector = atJsUtils.formatString(selectorPrefix, suffix);
+          var element = fixture(selector);
+          var expectedValue = expectedValues[index];
+
+          assert.equal(element.available, expectedValue, "available not set correctly");
+          assert.equal(element.value, expectedValue, "value not set correctly");
+          var instance = element._selectizeInstance;
+          var options = instance.options;
+          assert.equal(Object.keys(options).length, 1, "available items not added to instance options");
+          assert.isTrue(options.hasOwnProperty(expectedValue), "instance options doesn't contain " + expectedValue + " option");
+          var selectedItems = instance.items;
+          assert.equal(selectedItems.length, 1, "selected items array length is not correct");
+          assert.equal(selectedItems[0], expectedValue, "selected item in selected items is not " + expectedValue);
+        });
+
+      });
+
+      test('available has valid values, value is set with invalid values ', function () {
+        var selectorPrefix = "attrAvailableValidValue";
+        var selectorSuffixes = [ "Undefined", "Null", "True", "False", "{}", "[]", "424242", "3.14159" ];
+        var expectedValues = [ "undefined", "null", "true", "false", "{}", "[]", "424242", "3.14159" ];
+
+        selectorSuffixes.forEach(function (suffix, index) {
+          var selector = selectorPrefix + suffix;
+          var element = fixture(selector);
+
+          assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+          assert.equal(element.value, expectedValues[index], "value not set correctly");
+
+          var instance = element._selectizeInstance;
+          var options = instance.options;
+          assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+          assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+          assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+          assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+          var selectedItems = instance.items;
+          assert.equal(selectedItems.length, 0, "selected items array length is not correct");
+        });
+
+      });
+
+      test('available has valid values, value is set with valid values of ["item1", "item2", "item3"] ', function () {
+        var selectorPrefix = "attrAvailableValid";
+        var selectorSuffixes = [ "V1", "V2", "V3" ];
+        var expectedValues = [ "item1", "item2", "item3" ];
+
+        selectorSuffixes.forEach(function (suffix, index) {
+          var selector = selectorPrefix + suffix;
+          var element = fixture(selector);
+
+          assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+          assert.equal(element.value, expectedValues[index], "value not set correctly");
+
+          var instance = element._selectizeInstance;
+          var options = instance.options;
+          assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+          assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+          assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+          assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+          var selectedItems = instance.items;
+          assert.equal(selectedItems.length, 1, "selected items array length is not correct");
+          assert.equal(selectedItems[0], expectedValues[index], "selected items array does not contain " + expectedValues[index]);
+        });
+
+      });
+
+      test('available has valid values, value is set with valid values of ["item1", "item2", "item3"] value changes at runtime', function () {
+        var selector = 'attrAvailableValidValueChangedAtRuntime';
+        var element = fixture(selector);
+
+        function assertState(element, expectedValue, selItemLen) {
+          assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+          assert.equal(element.value, expectedValue, "value not set correctly");
+
+          var instance = element._selectizeInstance;
+          var options = instance.options;
+          assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+          assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+          assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+          assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+          var selectedItems = instance.items;
+          assert.equal(selectedItems.length, selItemLen, "selected items array length is not correct");
+          if (selItemLen) {
+            assert.equal(selectedItems[0], expectedValue, "selected items array does not contain " + expectedValue);
+          }
+        }
+
+        assertState(element, "item1", 1);
+        element.value = "item2";
+        assertState(element, "item2", 1);
+        element.value = "item3";
+        assertState(element, "item3", 1);
+        element.value = "";
+        assertState(element, "", 0);
+        element.value = "item1";
+        assertState(element, "item1", 1);
+      });
+
+      test('available has valid values, value is a CSV string, max items invalid values', function () {
+        var selectorPrefix = "attrMaxItems";
+        var selectorSuffixes = [ "Undefined", "Null", "True", "False", "{}", "[]", "-424242", "-3.14159"];
+
+        var selector = selectorPrefix;
+        var element = fixture(selector);
+
+        assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+        assert.equal(element.value, "item2", "value not set correctly");
+
+        var instance = element._selectizeInstance;
+        var options = instance.options;
+        assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+        assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+        assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+        assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+        selectorSuffixes.forEach(function (suffix, index) {
+          var selector = selectorPrefix + suffix;
+          var element = fixture(selector);
+
+          assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+          assert.equal(element.value, "item2", "value not set correctly");
+
+          var instance = element._selectizeInstance;
+          var options = instance.options;
+          assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+          assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+          assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+          assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+          var selectedItems = instance.items;
+          assert.equal(selectedItems.length, 1, "selected items array length is not correct");
+        });
+
+      });
+
+      test('available has valid values, value is a CSV string, max items = 2', function () {
+
+        var selector = "attrMaxItems2";
+        var element = fixture(selector);
+
+        assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+        assert.equal(element.value, "item1,item2", "value not set correctly");
+
+        var instance = element._selectizeInstance;
+        var options = instance.options;
+        assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+        assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+        assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+        assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+        var selectedItems = instance.items;
+        assert.equal(selectedItems.length, 2, "selected items array length is not correct");
+        assert.equal(selectedItems[0], "item1", "selected items [0] is not correct");
+        assert.equal(selectedItems[1], "item2", "selected items [1] is not correct");
+
+        element.value = "item2";
+        assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+        assert.equal(element.value, "item2", "value not set correctly");
+
+        assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+        assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+        assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+        assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+        var selectedItems = instance.items;
+        assert.equal(selectedItems.length, 1, "selected items array length is not correct");
+        assert.equal(selectedItems[0], "item2", "selected items [0] is not correct");
+
+        element.value = "item1,item2,item3";
+        assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+        assert.equal(element.value, "item1,item2", "value not set correctly");
+
+        assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+        assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+        assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+        assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+        var selectedItems = instance.items;
+        assert.equal(selectedItems.length, 2, "selected items array length is not correct");
+        assert.equal(selectedItems[0], "item1", "selected items [0] is not correct");
+        assert.equal(selectedItems[1], "item2", "selected items [1] is not correct");
+      });
+
+      test('available has valid values, value is a CSV string, max items = 3', function () {
+
+        var selector = "attrMaxItems3";
+        var element = fixture(selector);
+
+        assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+        assert.equal(element.value, "item1,item2", "value not set correctly");
+
+        var instance = element._selectizeInstance;
+        var options = instance.options;
+        assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+        assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+        assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+        assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+        var selectedItems = instance.items;
+        assert.equal(selectedItems.length, 2, "selected items array length is not correct");
+        assert.equal(selectedItems[0], "item1", "selected items [0] is not correct");
+        assert.equal(selectedItems[1], "item2", "selected items [1] is not correct");
+
+        element.value = "item2";
+        assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+        assert.equal(element.value, "item2", "value not set correctly");
+
+        assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+        assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+        assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+        assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+        var selectedItems = instance.items;
+        assert.equal(selectedItems.length, 1, "selected items array length is not correct");
+        assert.equal(selectedItems[0], "item2", "selected items [0] is not correct");
+
+        element.value = "item1,item2,item3";
+        assert.equal(element.available, "item1, item2, item3", "available not set correctly");
+        assert.equal(element.value, "item1,item2,item3", "value not set correctly");
+
+        assert.equal(Object.keys(options).length, 3, "available items not added to instance options");
+        assert.isTrue(options.hasOwnProperty("item1"), "instance options doesn't contain item1 option");
+        assert.isTrue(options.hasOwnProperty("item2"), "instance options doesn't contain item2 option");
+        assert.isTrue(options.hasOwnProperty("item3"), "instance options doesn't contain item3 option");
+
+        var selectedItems = instance.items;
+        assert.equal(selectedItems.length, 3, "selected items array length is not correct");
+        assert.equal(selectedItems[0], "item1", "selected items [0] is not correct");
+        assert.equal(selectedItems[1], "item2", "selected items [1] is not correct");
+        assert.equal(selectedItems[2], "item3", "selected items [2] is not correct");
+      });
+
+    });
+  </script>
+
+</body>
+</html>

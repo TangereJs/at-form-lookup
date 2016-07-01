@@ -35,4 +35,15 @@
   }
   namespace.isObject = isObject;
 
+  function formatString(string, args) {
+    args = isArray(args) ? args : [args];
+
+    var result = string.replace(/{(\d+)}/g, function (match, index) {
+      return typeof args[index] != 'undefined' ? args[index] : match;
+    });
+
+    return result;
+  }
+  namespace.formatString = formatString;
+
 }(window.atJsUtils = window.atJsUtils || {}));

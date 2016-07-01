@@ -312,6 +312,8 @@
       if (this._isReady) {
         // this.isReady is set in ready function when components is completely initialized
         this._handleDisabled(newValue);
+
+        this.validate();
       }
     },
     // disabled state is handled with same code from ready function and _disabledChanged
@@ -325,8 +327,6 @@
       } else {
         this._selectizeInstance.enable();
       }
-
-      this.validate();
     },
 
     /**
@@ -435,9 +435,9 @@
       var instance = this._selectizeInstance;
       // *ij* this setting prevents unnecessary change event
       // which clears the current valid at-form-lookup value
-      instance.isInitializing = true;
+      // instance.isInitializing = true;
       instance.clearOptions(true);
-      instance.isInitializing = false;
+      // instance.isInitializing = false;
 
       for (i = 0; i < availableItems.length; i++) {
         item = availableItems[i];
@@ -458,13 +458,14 @@
       }
 
       this._handleValueChanged(newValue);
+      this.validate();
     },
     // value changes are handled with same code from ready function and _valueChanged
     // so that code is extracted into a function
     _handleValueChanged: function(value) {
 
-      // if value updating is in progress return
-      if (this._selectizeUpdate) {
+      // if value is being updated by selecting it from the dropdown return
+      if (this._isInternalValueUpdate) {
         return;
       }
 
@@ -517,41 +518,20 @@
       } else {
         // mode of operation is LOCAL_DATA
         var valueItems = [];
-        var parts, i, item, clone, entry;
+        var parts, i, item, clone;
         // value is a CSV string with 0..n comma separated values
         if (!atJsUtils.isEmptyString(value)) {
           parts = value.split(',');
           for (i = 0; i < parts.length; i++) {
             item = parts[i];
             clone = item.trim();
-            entry = {
-              title: atJsUtils.capitalizeFirstLetter(clone),
-              value: clone
-            };
-            valueItems.push(entry);
+            valueItems.push(clone);
           }
         }
 
         var instance = this._selectizeInstance;
-        var selectedItems = instance.items;
-
-        var arrIntersection = arrayIntersect(valueItems, selectedItems);
-        var itemsToAdd = arraySubtract(valueItems, arrIntersection);
-        var itemsToRemove = arraySubtract(selectedItems, arrIntersection);
-
-        for (i = 0; i < itemsToRemove.length; i++) {
-          instance.removeItem(itemsToRemove[i]);
-        }
-
-        for (i = 0; i < itemsToAdd.length; i++) {
-          var currentItem = itemsToAdd[i];
-          if (instance.options.hasOwnProperty(currentItem.value)) {
-            instance.addItem(currentItem);
-          }
-        }
+        instance.setValue(valueItems, true);
       }
-
-      // this.validate();
     },
 
     set selectedItems(newValue) {},
@@ -603,60 +583,76 @@
       }
     },
 
-    _maxItemsChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance) {
-        try {
-          // ok what is happening here?
-          // 1. we calculate what is value to set is by using Number constructor function
-          var valueToSet = Number(newValue);
-          // 2. we need to update selectize settings
-          var settings = this._selectizeInstance.settings;
-          // 3. we need to update maxItems
-          settings.maxItems = valueToSet;
-          // we need to set mode; I found out that I need to do this by inspecting and debuggin selectize code
-          var mode = valueToSet === 1 ? 'single' : 'multi';
-          // we also need to remember current value for mode
-          var prevMode = settings.mode;
-          // we set the new mode value
-          settings.mode = mode;
-          // we also need to set this setting when mode is multi
-          settings.hideSelected = mode === 'multi';
-          // we need to set classes on $wrapper and $dropdown; I found out that I need to do this by inspecting and debuggin selectize code
-          var wrapper = this._selectizeInstance.$wrapper;
-          Polymer.dom(wrapper).classList.remove(prevMode);
-          Polymer.dom(wrapper).classList.add(mode);
-          var dropdown = this._selectizeInstance.$dropdown;
-          Polymer.dom(dropdown).classList.remove(prevMode);
-          Polymer.dom(dropdown).classList.add(mode);
-          // now we update the view
-          var instance = this._selectizeInstance;
-          // we need to clear the cache; this is clearing the rencer cache; we need to do this because after mode change the way items are rendered changes
-          // so cache needs to be updated
-          instance.clearCache();
-          // we run setup plugins; remove_button plugin behaves differently based on mode; its disabled in single and enabled in multi
-          // since mode is updated plugins need to update themselves
-          instance.setupPlugins();
-          // finally we update selected items
-          var oldItems = instance.items;
-          instance.clear();
-          var itemsLength = oldItems.length;
-          var i;
-          // if maxItems < length of currently selected items we need to trim
-          if (valueToSet < itemsLength) {
-            for (i = 0; i < valueToSet; i++) {
-              var oldItem = oldItems[i];
-              instance.addItem(oldItem);
-            }
-          } else {
-            // else maxItems >= length so we do not trim
-            for (i = 0; i < itemsLength; i++) {
-              var oldItem = oldItems[i];
-              instance.addItem(oldItem);
-            }
-          }
-        } catch (e) {
-          console.log(e);
+    _getInitialMaxItemsValue: function (newValue) {
+      var result = 1;
+
+      try {
+        var result = Number(newValue);
+        if (result < 1 || isNaN(result)) {
+          result = 1;
         }
+      } catch (e) {
+        result = 1;
+      }
+
+      return result;
+    },
+
+    _maxItemsChanged: function(newValue, oldValue) {
+      if (!this._isReady) { return; }
+
+      try {
+        // ok what is happening here?
+        // 1. we calculate what is value to set is by using Number constructor function
+        var valueToSet = this._getInitialMaxItemsValue(newValue);
+
+        // 2. we need to update selectize settings
+        var settings = this._selectizeInstance.settings;
+        // 3. we need to update maxItems
+        settings.maxItems = valueToSet;
+        // we need to set mode; I found out that I need to do this by inspecting and debuggin selectize code
+        var mode = valueToSet === 1 ? 'single' : 'multi';
+        // we also need to remember current value for mode
+        var prevMode = settings.mode;
+        // we set the new mode value
+        settings.mode = mode;
+        // we also need to set this setting when mode is multi
+        settings.hideSelected = mode === 'multi';
+        // we need to set classes on $wrapper and $dropdown; I found out that I need to do this by inspecting and debuggin selectize code
+        var wrapper = this._selectizeInstance.$wrapper;
+        Polymer.dom(wrapper).classList.remove(prevMode);
+        Polymer.dom(wrapper).classList.add(mode);
+        var dropdown = this._selectizeInstance.$dropdown;
+        Polymer.dom(dropdown).classList.remove(prevMode);
+        Polymer.dom(dropdown).classList.add(mode);
+        // now we update the view
+        var instance = this._selectizeInstance;
+        // we need to clear the cache; this is clearing the rencer cache; we need to do this because after mode change the way items are rendered changes
+        // so cache needs to be updated
+        instance.clearCache();
+        // we run setup plugins; remove_button plugin behaves differently based on mode; its disabled in single and enabled in multi
+        // since mode is updated plugins need to update themselves
+        instance.setupPlugins();
+        // finally we update selected items
+        var oldItems = instance.items;
+        instance.clear();
+        var itemsLength = oldItems.length;
+        var i;
+        // if maxItems < length of currently selected items we need to trim
+        if (valueToSet < itemsLength) {
+          for (i = 0; i < valueToSet; i++) {
+            var oldItem = oldItems[i];
+            instance.addItem(oldItem);
+          }
+        } else {
+          // else maxItems >= length so we do not trim
+          for (i = 0; i < itemsLength; i++) {
+            var oldItem = oldItems[i];
+            instance.addItem(oldItem);
+          }
+        }
+      } catch (e) {
+        console.log(e);
       }
     },
 
@@ -675,6 +671,8 @@
         but selectize doesn't have an explicit API for setting options at runtime;
        */
 
+      var maxItems = this._getInitialMaxItemsValue(this.maxItems);
+
       // create the selectize instance
       var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
         plugins: ['remove_button'],
@@ -682,9 +680,9 @@
         selectOnTab: true,
         preload: !this.noPreload,
         allowEmpty: false,
-        maxItems: this.maxItems,
+        maxItems: maxItems,
         load: this.selectizeOnLoad.bind(this),
-        onChange: this.selectizeChange.bind(this),
+        onChange: this._selectize_onValueChanged.bind(this),
         render: this.render
       });
 
@@ -700,7 +698,7 @@
       // of operation is already set
 
       // handle disabled state
-      this._handleDisabled();
+      this._handleDisabled(this.disabled);
       /**
         handle required state;
          _handleDisabled will validate the component so there is no reason to call _requiredChanged to validate again
@@ -736,6 +734,7 @@
       }
 
       this._isReady = true;
+      this._maxItemsChanged(this.maxItems);
     },
 
     _isValueValidForXValueList: function(value) {
@@ -875,13 +874,16 @@
       });
     },
 
-    selectizeChange: function(newValue) {
-      this._selectizeUpdate = true;
-      if (isArray(newValue)) {
+    _selectize_onValueChanged: function(newValue) {
+      this._isInternalValueUpdate = true;
+
+      if (atJsUtils.isArray(newValue)) {
         this.value = newValue.join(',');
       } else {
         this.value = newValue;
       }
+
+      this.validate();
 
       var selectedItemsIds = this._selectizeInstance.items;
       var allItems = this._selectizeInstance.options;
@@ -895,7 +897,7 @@
       });
       this._setSelectedItems(result);
 
-      this._selectizeUpdate = false;
+      this._isInternalValueUpdate = false;
       this.fire('value-changed', {
         value: this.value
       });
@@ -3125,11 +3127,16 @@
        *
        * @param {mixed} value
        */
-      namespace.setValue = function(value) {
-        debounce_events(this, ['change'], function() {
-          this.clear();
-          this.addItems(value);
-        });
+      namespace.setValue = function(value, isNotTriggerChangeEvent) {
+        if (isNotTriggerChangeEvent) {
+          this.clear(isNotTriggerChangeEvent);
+          this.addItems(value, isNotTriggerChangeEvent);
+        } else {
+          debounce_events(this, ['change'], function() {
+            this.clear();
+            this.addItems(value, isNotTriggerChangeEvent);
+          });
+        }
       };
 
       /**
@@ -3707,7 +3714,7 @@
       /**
        * Clears all options.
        */
-      namespace.clearOptions = function(doNotClearItems) {
+      namespace.clearOptions = function(isNotClearItems, isNotTriggerChangeEvent) {
         var self = this;
 
         self.loadedSearches = {};
@@ -3716,8 +3723,8 @@
         self.options = self.sifter.items = {};
         self.lastQuery = null;
         self.trigger('option_clear');
-        if (!doNotClearItems) {
-          self.clear();
+        if (!isNotClearItems) {
+          self.clear(isNotTriggerChangeEvent);
         }
       };
 
@@ -3800,12 +3807,12 @@
        *
        * @param {string} value
        */
-      namespace.addItems = function(values) {
+      namespace.addItems = function(values, isNotTriggerChangeEvent) {
         var items = isArray(values) ? values : [values];
         var i, n;
         for (i = 0, n = items.length; i < n; i += 1) {
           this.isPending = (i < n - 1);
-          this.addItem(items[i]);
+          this.addItem(items[i], isNotTriggerChangeEvent);
         }
       };
 
@@ -3815,8 +3822,9 @@
        *
        * @param {string} value
        */
-      namespace.addItem = function(value) {
-        debounce_events(this, ['change'], function() {
+      namespace.addItem = function(value, isNotTriggerChangeEvent) {
+
+        var callback = function() {
           var $item, $option, $options;
           var self = this;
           var inputMode = self.settings.mode;
@@ -3870,10 +3878,18 @@
             }
 
             self.updatePlaceholder();
-            self.trigger('item_add', value, $item);
+            if (!isNotTriggerChangeEvent) {
+              self.trigger('item_add', value, $item);
+            }
             self.updateOriginalInput();
           }
-        });
+        };
+
+        if (isNotTriggerChangeEvent) {
+          callback.apply(this);
+        } else {
+          debounce_events(this, ['change'], callback);
+        }
       };
 
       namespace.reattachRemoveLinkClickEventListener = function(insertedNode) {
@@ -3913,7 +3929,7 @@
        *
        * @param {string} value
        */
-      namespace.removeItem = function(value) {
+      namespace.removeItem = function(value, isNotTriggerChangeEvent) {
         var self = this;
         var $item, i, idx;
 
@@ -3942,9 +3958,11 @@
 
           self.refreshState();
           self.updatePlaceholder();
-          self.updateOriginalInput();
+          self.updateOriginalInput(isNotTriggerChangeEvent);
           self.positionDropdown();
-          self.trigger('item_remove', value);
+          if (!isNotTriggerChangeEvent) {
+            self.trigger('item_remove', value);
+          }
         }
       };
 
@@ -4095,7 +4113,7 @@
        * Refreshes the original <select> or <input>
        * element to reflect the current state.
        */
-      namespace.updateOriginalInput = function() {
+      namespace.updateOriginalInput = function(isNotTriggerChangeEvent) {
         var i, n, options, self = this;
 
         if (self.tagType === TAG_SELECT) {
@@ -4117,8 +4135,7 @@
         }
 
         if (self.isSetup) {
-          var isInitializing = Boolean(self.isInitializing);
-          if (!isInitializing) {
+          if (!isNotTriggerChangeEvent) {
             self.trigger('change', self.get$InputValue());
           }
         }
@@ -4220,7 +4237,7 @@
        * Resets / clears all selected items
        * from the control.
        */
-      namespace.clear = function() {
+      namespace.clear = function(isNotTriggerChangeEvent) {
         var self = this,
           i;
 
@@ -4238,10 +4255,12 @@
         self.setCaret(0);
         self.setActiveItem(null);
         self.updatePlaceholder();
-        self.updateOriginalInput();
+        self.updateOriginalInput(isNotTriggerChangeEvent);
         self.refreshState();
         self.showInput();
-        self.trigger('clear');
+        if (!isNotTriggerChangeEvent) {
+          self.trigger('clear');
+        }
       };
 
       /**
