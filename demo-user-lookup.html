@@ -11,18 +11,24 @@
     <h2>at-form-lookup multiline options demo</h2>
   </div>
   <div>
-    Orchard users using at-form-lookup:
-    <at-form-lookup id="orchardTags" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/user" />
+    Orchard users using at-form-lookup custom render:
+    <at-form-lookup id="orchardTags" value="2" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/user"></at-form-lookup>
+    <br />
+    Orchard users using at-form-lookup default:
+    <at-form-lookup id="userselect" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/user"></at-form-lookup>
   </div>
 
   <script>
-    document.addEventListener('polymer-ready', function () {
+    document.addEventListener('WebComponentsReady', function () {
       orchardTags = document.getElementById('orchardTags');
       orchardTags.render = {
         option: function (option, escape) {
-          return '<div class="option"><div>'+ escape(option.DisplayName) + '</div><div>'+ escape(option.Email) + '</div></div>';
+          return '<div class="option"><div>' + escape(option.DisplayName) + '</div><div>' + escape(option.Email) + '</div></div>';
         }
       };
+
+      document.getElementById('userselect').value = "2";
+
     });
   </script>
 </body>
