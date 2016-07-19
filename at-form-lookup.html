@@ -76,7 +76,7 @@
       <div id="contentContainer" class="at-content-container">
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
-        <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-complete="coreAjaxOnComplete"></at-core-activity>
+        <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-error="_handle_coreAjax_onError"></at-core-activity>
         <div id="disabledOverlay">
           <div id="disabledText">Loading...</div>
         </div>
@@ -579,7 +579,7 @@
       }
     },
 
-    coreAjaxOnComplete: function(event) {
+    _handle_coreAjax_onError: function(event) {
       this.$.disabledOverlay.removeAttribute('disabled');
       this._selectizeInstance.enable();
     },
