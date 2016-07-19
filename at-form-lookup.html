@@ -467,6 +467,7 @@
                 coreActivity.noCredentials = this.noCredentials;
                 // add listener for response event
                 coreActivity.addEventListener('response', this.loadDefaultOnResponse.bind(this));
+                coreActivity.addEventListener('error', this.loadDefaultOnError.bind(this));
                 // request is made
                 coreActivity.generateRequest();
               }
@@ -667,6 +668,11 @@
       this.fire('at-form-lookup-initialized', {
         data: item
       });
+    },
+
+    loadDefaultOnError: function (event) {
+      this.$.disabledOverlay.removeAttribute('disabled');
+      this._selectizeInstance.enable();
     },
 
     selectizeChange: function(newValue) {
