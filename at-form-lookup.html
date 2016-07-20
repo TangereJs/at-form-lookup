@@ -422,12 +422,15 @@
           var sInstance = this._selectizeInstance;
 
           var newValues = this.value;
-          if (!isArray(this.value)) {
-
-            if (this.value.length <= 0) {
+          if (!isArray(newValues)) {
+            // newValue can be string, array or number; if its number we convert it to string
+            if (!isString(newValues)) {
+              newValues = String(newValues);
+            }
+            if (newValues.length <= 0) {
               newValues = new Array();
             } else {
-              newValues = this.value.split(',');
+              newValues = newValues.split(',');
             }
           }
 
