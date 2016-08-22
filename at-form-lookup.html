@@ -7,24 +7,6 @@
 <link rel="import" href="at-form-lookup-styles.html">
 <link rel="import" href="../iron-label/iron-label.html">
 
-  <script type="text/javascript">
-  var SelectBoxUtils = {
-    breakBinding: function(func, marker) {
-      marker = marker || "dontBind";
-      return function() {
-        if (!this[marker]) {
-          this[marker] = true;
-          func.apply(this, arguments);
-          Platform.flush();
-          this.async(function() {
-            this[marker] = false;
-          });
-        }
-      }
-    }
-  };
-</script>
-
 <dom-module id="at-form-lookup">
   <template>
     <style include="at-form-common"></style>
@@ -76,7 +58,7 @@
       <div id="contentContainer" class="at-content-container">
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
-        <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="coreAjaxOnResponse" on-error="_handle_coreAjax_onError"></at-core-activity>
+        <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="_coreAjaxOnResponse" on-error="_handle_coreAjax_onError"></at-core-activity>
         <div id="disabledOverlay">
           <div id="disabledText">Loading...</div>
         </div>
@@ -88,14 +70,6 @@
 <script>
   'use strict';
 
-  function isArray(obj) {
-    return Object.prototype.toString.call(obj) === Object.prototype.toString.call([]);
-  }
-
-  function isCommaSeparated(obj) {
-    return obj !== undefined && obj.indexOf !== undefined && obj.indexOf(',') !== -1;
-  }
-
   Polymer({
     is: 'at-form-lookup',
     behaviors: [ Tangere.behaviors.formValidation, Tangere.behaviors.i18n ],
@@ -104,25 +78,81 @@
     _isUpdating: false,
     render: {},
     properties: {
+      /**
+       * Element's label for element display purposes
+       * @property label
+       * @type String
+       * @default ""
+       */
+      label: {
+        type: String,
+        value: '',
+        title: 'Label'
+      },
+
+      /**
+       * Hides label when true
+       * @property hideLabel
+       * @type Boolean
+       * @default false
+       */
+      hideLabel: {
+        type: Boolean,
+        value: false,
+        observer: '_hideLabelChanged',
+        title: 'Do not show the label'
+      },
+
+      /**
+       * Element's disabled state
+       * @property disabled
+       * @type Boolean
+       * @default false
+       */
       disabled: {
         type: Boolean,
         value: false,
-        observer: 'disabledChanged',
+        observer: '_disabledChanged',
         title: 'Field value can not be changed'
       },
+
+      /**
+       * Hides the element. When hidden nothing is displayed for the element
+       * @property hide
+       * @type Boolean
+       * @default false
+       */
+      hide: {
+        type: Boolean,
+        value: false,
+        observer: '_hideChanged',
+        title: 'Field is invisible'
+      },
+
+      /**
+       * Element's required state for element validation purposes
+       * @property required
+       * @type Boolean
+       * @default false
+       */
       required: {
         type: Boolean,
         value: false,
-        observer: 'requiredChanged',
+        observer: '_requiredChanged',
         title: 'Input required'
       },
+
       /**
-       * the list of items that should initially be present for selection
+       * The list of items that should initially be present for selection
+       * value should be provided as a comma separated values (CSV) string
+       * @property available
+       * @type String
+       * @default ""
        */
       available: {
         type: String,
         value: '',
-        observer: 'availableChanged'
+        observer: '_availableChanged'
       },
       // ------------------------------------------------------------
       // "Why is xvaluelist here?" - you ask.
@@ -133,12 +163,19 @@
       // xvaluelist exists in json schema and when property name is valuelist, xvaluelist should be copied
       // so we introduce xvaluelist property in at-form-radio to remove if statement that would detect this situation
       // ------------------------------------------------------------
+      /**
+       * The list of items that should initially be present for selection
+       * value should be provided as an array of title, value objects
+       * @property xvaluelist
+       * @type Array
+       * @default []
+       */
       xvaluelist: {
         type: Array,
         value: function() {
           return [];
         },
-        observer: 'availableChanged',
+        observer: '_availableChanged',
         schema: {
           items: {
             type: "object",
@@ -160,12 +197,19 @@
       // "We already have available and xvaluelist just above" - you say.
       // read explanation for xvaluelist, enum is here for the same reason
       // ------------------------------------------------------------
+      /**
+       * The list of items that should initially be present for selection
+       * value should be provided as an array of strings
+       * @property enum
+       * @type Array
+       * @default []
+       */
       enum: {
         type: Array,
         value: function() {
           return [];
         },
-        observer: 'availableChanged',
+        observer: '_availableChanged',
         schema: {
           items: {
             type: "string",
@@ -179,12 +223,26 @@
         layout: 'horizontal',
         title: 'Values'
       },
+
+      /**
+       * Elements value. Value is a CSV string
+       * @property value
+       * @type String
+       * @default empty string
+       */
       value: {
         type: String,
         value: '',
-        observer: 'valueChanged',
+        observer: '_valueChanged',
         title: 'Value'
       },
+
+      /**
+       * Elements value as an array of selected objects
+       * @property selectedItems
+       * @type Array
+       * @default []
+       */
       selectedItems: {
         type: Array,
         value: function () {
@@ -193,67 +251,90 @@
         xtype: 'json',
         readOnly: true
       },
-      label: {
-        type: String,
-        value: '',
-        title: 'Label'
-      },
+
+      /**
+       * When true no authentication is sent to the server
+       * @property noCredentials
+       * @type Boolean
+       * @default false
+       */
       noCredentials: {
         type: Boolean,
         value: false
       },
+
       /**
-       * allows to create new entries when no matching record is found
+       * When true initial request to popluate the available items is not set
+       * @property noPreload
+       * @type Boolean
+       * @default false
        */
-      allowNewItems: {
-        type: Boolean,
-        value: false,
-        observer: 'allowNewItemsChanged',
-        title: 'Allow new entries'
-      },
       noPreload: {
         type: Boolean,
         value: false
       },
+
+      /**
+       * Remote url from where to get items from
+       * @property url
+       * @type String
+       * @default ""
+       */
       url: {
         type: String,
         value: '',
-        observer: 'urlChanged',
+        observer: '_urlChanged',
         title: 'Url'
       },
+
+      /**
+       * Remote url from where to get items from
+       * @property xurl
+       * @type String
+       * @default ""
+       */
       xurl: {
         type: String,
         value: '',
-        observer: 'urlChanged'
+        observer: '_urlChanged'
       },
+
+      /**
+       * Additional params to send with each request
+       * @property params
+       * @type String
+       * @default ""
+       */
       params: {
         type: String,
         value: '',
-        observer: 'paramsChanged'
+        observer: '_paramsChanged'
       },
-      maxItems: {
-        type: Number,
-        value: 1,
-        observer: 'maxItemsChanged',
-        title: 'Maximum number of selectable items'
-      },
-      hideLabel: {
-        type: Boolean,
-        value: false,
-        observer: 'hideLabelChanged',
-        title: 'Do not show the label'
-      },
+
       /**
-       * Hides the element. When hidden nothing is displayed for the element
-       * @property hide
+       * When true new entries are created when no matching record is found
+       * @property allowNewItems
        * @type Boolean
        * @default false
        */
-      hide: {
+      allowNewItems: {
         type: Boolean,
         value: false,
-        observer: 'hideChanged',
-        title: 'Field is invisible'
+        observer: '_allowNewItemsChanged',
+        title: 'Allow new entries'
+      },
+
+      /**
+       * Maximum count of items that can be selected
+       * @property maxItems
+       * @type Number
+       * @default 1
+       */
+      maxItems: {
+        type: Number,
+        value: 1,
+        observer: '_maxItemsChanged',
+        title: 'Maximum number of selectable items'
       }
     },
     $meta: [{
@@ -265,110 +346,108 @@
       type: "string",
       xtype: "lookup"
     }],
-    set selectedItems(newValue) {},
-    maxItemsChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance) {
-        try {
-          // ok what is happening here?
-          // 1. we calculate what is value to set is by using Number constructor function
-          var valueToSet = Number(newValue);
-          // 2. we need to update selectize settings
-          var settings = this._selectizeInstance.settings;
-          // 3. we need to update maxItems
-          settings.maxItems = valueToSet;
-          // we need to set mode; I found out that I need to do this by inspecting and debuggin selectize code
-          var mode = valueToSet === 1 ? 'single' : 'multi';
-          // we also need to remember current value for mode
-          var prevMode = settings.mode;
-          // we set the new mode value
-          settings.mode = mode;
-          // we also need to set this setting when mode is multi
-          settings.hideSelected = mode === 'multi';
-          // we need to set classes on $wrapper and $dropdown; I found out that I need to do this by inspecting and debuggin selectize code
-          var wrapper = this._selectizeInstance.$wrapper;
-          Polymer.dom(wrapper).classList.remove(prevMode);
-          Polymer.dom(wrapper).classList.add(mode);
-          var dropdown = this._selectizeInstance.$dropdown;
-          Polymer.dom(dropdown).classList.remove(prevMode);
-          Polymer.dom(dropdown).classList.add(mode);
-          // now we update the view
-          var instance = this._selectizeInstance;
-          // we need to clear the cache; this is clearing the rencer cache; we need to do this because after mode change the way items are rendered changes
-          // so cache needs to be updated
-          instance.clearCache();
-          // we run setup plugins; remove_button plugin behaves differently based on mode; its disabled in single and enabled in multi
-          // since mode is updated plugins need to update themselves
-          instance.setupPlugins();
-          // finally we update selected items
-          var oldItems = instance.items;
-          instance.clear();
-          var itemsLength = oldItems.length;
-          var i;
-          // if maxItems < length of currently selected items we need to trim
-          if (valueToSet < itemsLength) {
-            for (i = 0; i < valueToSet; i++) {
-              var oldItem = oldItems[i];
-              instance.addItem(oldItem);
-            }
-          } else {
-          // else maxItems >= length so we do not trim
-            for (i = 0; i < itemsLength; i++) {
-              var oldItem = oldItems[i];
-              instance.addItem(oldItem);
-            }
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      }
-    },
-    hideLabelChanged: function(newValue, oldValue) {
+
+    _hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hidden", newValue, this.$.label);
     },
-    renderChanged: function(newValue, oldValue) {
-      if (this._selectizeInstance !== undefined) {
-        this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, newValue);
+
+    ready: function() {
+      this._initializeLookup();
+      this._validationFunctions.push(this._isValueValidForXValueList.bind(this));
+      this._attachFocusBlurEvents();
+    },
+
+    _initializeLookup: function() {
+
+      // create the selectize instance
+      var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
+        plugins: ['remove_button'],
+        create: this.allowNewItems,
+        selectOnTab: true,
+        preload: !this.noPreload,
+        allowEmpty: this.allowEmpty,
+        maxItems: this.maxItems,
+        load: this._selectizeOnLoad.bind(this),
+        onChange: this._selectizeChange.bind(this),
+        render: this.render
+      });
+
+      // NOT NEEDED clear options and items from from instance
+
+      // initialzie the component
+      // maxItems = 1 => show dropdown icon; maxItems > 1 do not show dropdown icon
+
+      // set disabled state
+      if (this.disabled) {
+        var atContainer = this.$.atContainer;
+        this.toggleClass('disabled', true, atContainer);
+        instance.disable();
+      }
+
+
+      // *ij* 17.06.2016 (dd.mm.yyyy)
+      // there is a requirement for 'required' at-form-*elements that they initially be displayed
+      // as valid event when they are initially invalid;
+      // on first focus/blur sequence they should be displayed as invalid
+      // code bellow provides for display as invalid on first focus/blur sequence
+      // this was discovered with unit testing
+      var self = this;
+      var focusable = this._getFocusableElement();
+      if (focusable) {
+        focusable.addEventListener('blur', function(event) {
+          self.validate();
+        });
+      }
+
+      this._isReady = true;
+
+      // reinitialize url
+      this._urlChanged();
+
+      // set available options
+      this._availableChanged(this.available, []);
+
+      // set items selected by default
+      this._valueChanged(this.value, []);
+    },
+
+    _disabledChanged: function(newValue, oldValue) {
+      if (this._isReady && this._selectizeInstance !== undefined) {
+        var atContainer = this.$.atContainer;
+        this.toggleClass('disabled', newValue, atContainer);
+
+        if (newValue) {
+          this._selectizeInstance.disable();
+        } else {
+          this._selectizeInstance.enable();
+        }
+
+        this.validate();
       }
     },
 
-    labelChanged: function(newValue, oldValue) {
-      this.$.label.textContent = newValue;
-    },
-
-    paramsChanged: function() {
+    _hideChanged: function(newValue, oldValue) {
+      var wrapper = this.$.atContainer;
+      this.toggleClass('hidden', newValue, wrapper);
       if (this._isReady) {
-        this.noPreload = true;
-        if (this.params !== '') {
-          this.noPreload = false;
-        }
-        this.requestParamsChanged();
+        this.validate();
       }
     },
 
-    urlChanged: function(newValue, oldValue) {
+    _requiredChanged: function(newValue, oldValue) {
       if (this._isReady) {
-        this.noPreload = true;
-        if (this.xurl && this.xurl !== ""){
-          this._internalUrl = this.xurl;
-        } else if (this.url && this.url !== "") {
-          this._internalUrl = this.url;
-        }
-
-        if (this._internalUrl && this._internalUrl !== '') {
-          this.noPreload = false;
-        }
-
-        this.requestParamsChanged();
-        // AT-32 when value is set before url, that value needs to be displayed
-        this.valueChanged(this.value, this.value);
-        this.xurl = this.url; // update legacy xurl parameter
+        this.validate();
       }
     },
-    // this function is here to improve compatibility with form designer
-    xvaluelistChanged: function(newValue, oldValue) {
-      this.availableChanged(newValue, oldValue);
+
+    _updateUIValidState: function(isValid) {
+      var label = this.$.label;
+      this.toggleClass('error', !isValid, label);
+      var contentContainer = this.$.contentContainer;
+      this.toggleClass('error', !isValid, contentContainer);
     },
-    availableChanged: function(newValue, oldValue) {
+
+    _availableChanged: function(newValue, oldValue) {
       var i;
 
       if (this._isReady) {
@@ -413,7 +492,12 @@
       }
     },
 
-    valueChanged: function(newValue, oldValue) {
+    // this function is here to improve compatibility with form designer
+    xvaluelistChanged: function(newValue, oldValue) {
+      this._availableChanged(newValue, oldValue);
+    },
+
+    _valueChanged: function(newValue, oldValue) {
       if (this._isReady) {
         if (!this._isUpdating && !this._selectizeUpdate) {
           this._isUpdating = true;
@@ -469,8 +553,8 @@
                 // noCredentials parameter is set on the ajax component
                 coreActivity.noCredentials = this.noCredentials;
                 // add listener for response event
-                coreActivity.addEventListener('response', this.loadDefaultOnResponse.bind(this));
-                coreActivity.addEventListener('error', this.loadDefaultOnError.bind(this));
+                coreActivity.addEventListener('response', this._loadDefaultOnResponse.bind(this));
+                coreActivity.addEventListener('error', this._loadDefaultOnError.bind(this));
                 // request is made
                 coreActivity.generateRequest();
               }
@@ -484,7 +568,39 @@
       }
     },
 
-    requestParamsChanged: function() {
+    set selectedItems(newValue) {},
+
+    _urlChanged: function(newValue, oldValue) {
+      if (this._isReady) {
+        this.noPreload = true;
+        if (this.xurl && this.xurl !== ""){
+          this._internalUrl = this.xurl;
+        } else if (this.url && this.url !== "") {
+          this._internalUrl = this.url;
+        }
+
+        if (this._internalUrl && this._internalUrl !== '') {
+          this.noPreload = false;
+        }
+
+        this._request_paramsChanged();
+        // AT-32 when value is set before url, that value needs to be displayed
+        this._valueChanged(this.value, this.value);
+        this.xurl = this.url; // update legacy xurl parameter
+      }
+    },
+
+    _paramsChanged: function() {
+      if (this._isReady) {
+        this.noPreload = true;
+        if (this.params !== '') {
+          this.noPreload = false;
+        }
+        this._request_paramsChanged();
+      }
+    },
+
+    _request_paramsChanged: function() {
       if (this._selectizeInstance.clear && this._selectizeInstance.clearOptions) {
         this._selectizeInstance.clear();
         this._selectizeInstance.clearOptions();
@@ -492,10 +608,74 @@
       }
     },
 
-    ready: function() {
-      this.initialize();
-      this._validationFunctions.push(this._isValueValidForXValueList.bind(this));
-      this._attachFocusBlurEvents();
+    _allowNewItemsChanged: function(newValue, oldValue) {
+      if (this._isReady && this._selectizeInstance) {
+        var valueToSet = Boolean(newValue);
+        this._selectizeInstance.settings.create = valueToSet;
+      }
+    },
+
+    _maxItemsChanged: function(newValue, oldValue) {
+      if (this._isReady && this._selectizeInstance) {
+        try {
+          // ok what is happening here?
+          // 1. we calculate what is value to set is by using Number constructor function
+          var valueToSet = Number(newValue);
+          // 2. we need to update selectize settings
+          var settings = this._selectizeInstance.settings;
+          // 3. we need to update maxItems
+          settings.maxItems = valueToSet;
+          // we need to set mode; I found out that I need to do this by inspecting and debuggin selectize code
+          var mode = valueToSet === 1 ? 'single' : 'multi';
+          // we also need to remember current value for mode
+          var prevMode = settings.mode;
+          // we set the new mode value
+          settings.mode = mode;
+          // we also need to set this setting when mode is multi
+          settings.hideSelected = mode === 'multi';
+          // we need to set classes on $wrapper and $dropdown; I found out that I need to do this by inspecting and debuggin selectize code
+          var wrapper = this._selectizeInstance.$wrapper;
+          Polymer.dom(wrapper).classList.remove(prevMode);
+          Polymer.dom(wrapper).classList.add(mode);
+          var dropdown = this._selectizeInstance.$dropdown;
+          Polymer.dom(dropdown).classList.remove(prevMode);
+          Polymer.dom(dropdown).classList.add(mode);
+          // now we update the view
+          var instance = this._selectizeInstance;
+          // we need to clear the cache; this is clearing the rencer cache; we need to do this because after mode change the way items are rendered changes
+          // so cache needs to be updated
+          instance.clearCache();
+          // we run setup plugins; remove_button plugin behaves differently based on mode; its disabled in single and enabled in multi
+          // since mode is updated plugins need to update themselves
+          instance.setupPlugins();
+          // finally we update selected items
+          var oldItems = instance.items;
+          instance.clear();
+          var itemsLength = oldItems.length;
+          var i;
+          // if maxItems < length of currently selected items we need to trim
+          if (valueToSet < itemsLength) {
+            for (i = 0; i < valueToSet; i++) {
+              var oldItem = oldItems[i];
+              instance.addItem(oldItem);
+            }
+          } else {
+          // else maxItems >= length so we do not trim
+            for (i = 0; i < itemsLength; i++) {
+              var oldItem = oldItems[i];
+              instance.addItem(oldItem);
+            }
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    },
+
+    renderChanged: function(newValue, oldValue) {
+      if (this._selectizeInstance !== undefined) {
+        this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, newValue);
+      }
     },
 
     _isValueValidForXValueList: function(value) {
@@ -534,61 +714,12 @@
       return result;
     },
 
-    set valid(newValue) {},
-
-    _updateUIValidState: function(isValid) {
-      var label = this.$.label;
-      this.toggleClass('error', !isValid, label);
-      var contentContainer = this.$.contentContainer;
-      this.toggleClass('error', !isValid, contentContainer);
-    },
-
-    requiredChanged: function(newValue, oldValue) {
-      if (this._isReady) {
-        this.validate();
-      }
-    },
-
-    disabledChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance !== undefined) {
-        var atContainer = this.$.atContainer;
-        this.toggleClass('disabled', newValue, atContainer);
-
-        if (newValue) {
-          this._selectizeInstance.disable();
-        } else {
-          this._selectizeInstance.enable();
-        }
-
-        this.validate();
-      }
-    },
-
-    hideChanged: function(newValue, oldValue) {
-      var wrapper = this.$.atContainer;
-      this.toggleClass('hidden', newValue, wrapper);
-      if (this._isReady) {
-        this.validate();
-      }
-    },
-
-    destroyExisting: function() {
-      if (this.$.selectTags.selectize) {
-        this.$.selectTags.selectize.destroy();
-        this.$.selectTags.style.display = "none";
-      }
-      if (this.$.inputTags.selectize) {
-        this.$.inputTags.selectize.destroy();
-        this.$.inputTags.style.display = "none";
-      }
-    },
-
     _handle_coreAjax_onError: function(event) {
       this.$.disabledOverlay.removeAttribute('disabled');
       this._selectizeInstance.enable();
     },
 
-    coreAjaxOnResponse: function(event) {
+    _coreAjaxOnResponse: function(event) {
       // extract the data from the event
       var eventObject = {
         response: event.detail,
@@ -616,7 +747,7 @@
       };
     },
 
-    selectizeOnLoad: function(query, callback) {
+    _selectizeOnLoad: function(query, callback) {
       // this here is selectize object
       // polymer element upon which selectize is constructed is passed into selectize settings and can be accessed here
       if (this._internalUrl && this._internalUrl !== '') {
@@ -657,7 +788,7 @@
       }
     },
 
-    loadDefaultOnResponse: function(event) {
+    _loadDefaultOnResponse: function(event) {
       var item = event.detail.Data;
       this._selectizeInstance.addOption({
         "value": item.id,
@@ -673,12 +804,12 @@
       });
     },
 
-    loadDefaultOnError: function (event) {
+    _loadDefaultOnError: function (event) {
       this.$.disabledOverlay.removeAttribute('disabled');
       this._selectizeInstance.enable();
     },
 
-    selectizeChange: function(newValue) {
+    _selectizeChange: function(newValue) {
       this._selectizeUpdate = true;
       if (isArray(newValue)) {
         this.value = newValue.join(',');
@@ -703,65 +834,7 @@
       this.fire('selected-items-changed', { value: this.selectedItems });
     },
 
-    initialize: function() {
 
-      // create the selectize instance
-      var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
-        plugins: ['remove_button'],
-        create: this.allowNewItems,
-        selectOnTab: true,
-        preload: !this.noPreload,
-        allowEmpty: this.allowEmpty,
-        maxItems: this.maxItems,
-        load: this.selectizeOnLoad.bind(this),
-        onChange: this.selectizeChange.bind(this),
-        render: this.render
-      });
-
-      // NOT NEEDED clear options and items from from instance
-
-      // initialzie the component
-      // maxItems = 1 => show dropdown icon; maxItems > 1 do not show dropdown icon
-
-      // set disabled state
-      if (this.disabled) {
-        var atContainer = this.$.atContainer;
-        this.toggleClass('disabled', true, atContainer);
-        instance.disable();
-      }
-
-
-      // *ij* 17.06.2016 (dd.mm.yyyy)
-      // there is a requirement for 'required' at-form-*elements that they initially be displayed
-      // as valid event when they are initially invalid;
-      // on first focus/blur sequence they should be displayed as invalid
-      // code bellow provides for display as invalid on first focus/blur sequence
-      // this was discovered with unit testing
-      var self = this;
-      var focusable = this._getFocusableElement();
-      if (focusable) {
-        focusable.addEventListener('blur', function(event) {
-          self.validate();
-        });
-      }
-
-      this._isReady = true;
-
-      // reinitialize url
-      this.urlChanged();
-
-      // set available options
-      this.availableChanged(this.available, []);
-
-      // set items selected by default
-      this.valueChanged(this.value, []);
-    },
-    allowNewItemsChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance) {
-        var valueToSet = Boolean(newValue);
-        this._selectizeInstance.settings.create = valueToSet;
-      }
-    },
     focus: function() {
       if (this._selectizeInstance) {
         this._selectizeInstance.focus(true);
@@ -784,6 +857,10 @@
 
   function isString(obj) {
     return Object.prototype.toString.call(obj) === "[object String]";
+  }
+
+  function isCommaSeparated(obj) {
+    return isString(obj) && obj.indexOf(',') !== -1;
   }
 
   /**
