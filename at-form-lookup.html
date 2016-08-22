@@ -3,9 +3,10 @@
 <link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
-<link rel="import" href="../at-form-behaviors/at-form-behaviors-validation.html">
+<link rel="import" href="../at-form-behaviors/at-form-behaviors.html">
 <link rel="import" href="at-form-lookup-styles.html">
 <link rel="import" href="../iron-label/iron-label.html">
+<link rel="import" href="at-form-lookup-input-validation-behavior.html">
 
 <dom-module id="at-form-lookup">
   <template>
@@ -72,7 +73,7 @@
 
   Polymer({
     is: 'at-form-lookup',
-    behaviors: [ Tangere.behaviors.formValidation, Tangere.behaviors.i18n ],
+    behaviors: [ Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric, Tangere.behaviors.AtFormLookupInputValidation ],
     _selectizeLoadCallback: false,
     _selectizeInstance: {},
     _isUpdating: false,
@@ -138,7 +139,6 @@
       required: {
         type: Boolean,
         value: false,
-        observer: '_requiredChanged',
         title: 'Input required'
       },
 
@@ -347,17 +347,15 @@
       xtype: "lookup"
     }],
 
+    observers: [
+      '_internalValidStateUpdate(disabled, required)'
+    ],
+
     _hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hidden", newValue, this.$.label);
     },
 
     ready: function() {
-      this._initializeLookup();
-      this._validationFunctions.push(this._isValueValidForXValueList.bind(this));
-      this._attachFocusBlurEvents();
-    },
-
-    _initializeLookup: function() {
 
       // create the selectize instance
       var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
@@ -409,6 +407,10 @@
 
       // set items selected by default
       this._valueChanged(this.value, []);
+
+      this._disabledChanged(this.disabled, undefined);
+
+      this._attachFocusBlurEvents();
     },
 
     _disabledChanged: function(newValue, oldValue) {
@@ -421,23 +423,39 @@
         } else {
           this._selectizeInstance.enable();
         }
-
-        this.validate();
       }
     },
 
     _hideChanged: function(newValue, oldValue) {
       var wrapper = this.$.atContainer;
       this.toggleClass('hidden', newValue, wrapper);
+    },
+
+    _internalValidStateUpdate: function (disabled, required) {
       if (this._isReady) {
         this.validate();
       }
     },
 
-    _requiredChanged: function(newValue, oldValue) {
-      if (this._isReady) {
-        this.validate();
+    validate: function (showError) {
+      if (showError === undefined) { showError = this.autovalidate; }
+      this._clearUIValidState();
+
+      var inputValue = this.$.selectTags.value;
+      if ((this.value === null && inputValue !== "") || (this.value !== null && this.value !== inputValue)) {
+        this.value = inputValue;
       }
+
+      var validationResult = this._validateBaseData();
+      if(showError) this._handleValidationResult(validationResult);
+      if (validationResult.isFinal) {
+        return validationResult.isValid;
+      }
+
+      validationResult = this._validateData(this, this.value, this.T.bind(this));
+      if(showError) this._handleValidationResult(validationResult);
+
+      return validationResult.isValid;
     },
 
     _updateUIValidState: function(isValid) {
@@ -564,7 +582,7 @@
           this._isUpdating = false;
           this._selectizeUpdate = false;
         }
-        this.validate();
+        this._fireValueChangedEvent(newValue);
       }
     },
 
@@ -676,42 +694,6 @@
       if (this._selectizeInstance !== undefined) {
         this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, newValue);
       }
-    },
-
-    _isValueValidForXValueList: function(value) {
-      var valueList = this.xvaluelist;
-      var result = true;
-
-      if (typeof valuelist == "undefined" || valueList.length < 1) {
-        return true;
-      }
-      if (value === '') {
-        return true;
-      }
-
-      var valuesToCheck = value.split(',');
-
-      if (isString(valueList)) {
-        valueList = valueList.split(',');
-      }
-
-      valuesToCheck.forEach(function(valueToCheck, index) {
-        var localResult = false;
-        valueList.forEach(function(item, index) {
-          if (item.value) {
-            localResult = localResult || item.value === valueToCheck;
-          } else {
-            localResult = localResult || item === valueToCheck;
-          }
-        });
-        result = result && localResult;
-      });
-
-      if (!result) {
-        this._errorMessage = 'Value ' + value + ' is invalid.';
-      }
-
-      return result;
     },
 
     _handle_coreAjax_onError: function(event) {
@@ -830,7 +812,7 @@
       this._setSelectedItems(result);
 
       this._selectizeUpdate = false;
-      this.fire('value-changed', { value: this.value });
+      this._fireValueChangedEvent(this.value);
       this.fire('selected-items-changed', { value: this.selectedItems });
     },
 
