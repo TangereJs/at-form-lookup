@@ -94,23 +94,23 @@
           var element = fixture('valueUndefined');
           assert.equal("undefined", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("undefined", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
         test('value is null', function () {
           var element = fixture('valueNull');
           assert.equal("null", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("null", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
         test('value is empty string', function () {
           var element = fixture('valueEmptyString');
           assert.equal("", element.value, "value not set correctly");
 
-          var input = element.$.input;
+          var input = element._getFocusableElement();
           assert.equal("", input.value, "display value not set correctly");
         });
 
@@ -118,56 +118,56 @@
           var element = fixture('value42');
           assert.equal("42", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("42", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
         test('value is 3.14159', function () {
           var element = fixture('value314159');
           assert.equal("3.14159", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("3.14159", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
         test('value is true', function () {
           var element = fixture('valueTrue');
           assert.equal("true", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("true", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
         test('value is false', function () {
           var element = fixture('valueFalse');
           assert.equal("false", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("false", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
         test('value is []', function () {
           var element = fixture('value[]');
           assert.equal("[]", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("[]", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
         test('value is {}', function () {
           var element = fixture('value{}');
           assert.equal("{}", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("{}", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
         test('value is function', function () {
           var element = fixture('valueFunction');
           assert.equal("function () { return undefined; }", element.value, "value not set correctly");
 
-          var input = element.$.input;
-          assert.equal("function () { return undefined; }", input.value, "display value not set correctly");
+          var input = element._getFocusableElement();
+          assert.equal("", input.value, "display value not set correctly");
         });
 
       });
@@ -235,10 +235,10 @@
         test('value set in code', function () {
           var invalidNumberValues = [ undefined, null, "", "42", "3.14159", true, false, "true", "false", [], {}, "[]", "{}", function () { return undefined; }];
           var expectedValues = [ undefined, null, "", "42", "3.14159", true, false, "true", "false", [], {}, "[]", "{}", function () { return undefined; }];
-          var expectedDisplayValues = [ "", "", "", "42", "3.14159", "", "", "true", "false", "", "", "[]", "{}", ""];
+          var expectedDisplayValues = [ "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 
           var element = fixture('propertyTests');
-          var displayInput = element.$.input;
+          var displayInput = element._getFocusableElement();
 
           for (var i = 0; i < invalidNumberValues.length; i++) {
             var invalidValue = invalidNumberValues[i];

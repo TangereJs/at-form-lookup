@@ -40,7 +40,7 @@
 
       test('validate like blur, set input.value', function() {
         var input = fixture('validateLikeBlur');
-        var inputElement = input.$.input;
+        var inputElement = input._getFocusableElement();
 
         assert.equal(input.value, "", 'Input value is not correct');
         assert.equal(inputElement.value, "", 'Input element value is not correct');
@@ -56,19 +56,19 @@
         input.value = "lorem ipsum";
 
         assert.equal(input.value, "lorem ipsum", 'Input value is not correct');
-        assert.equal(inputElement.value, "lorem ipsum", 'Input element value is not correct');
+        assert.equal(inputElement.value, "", 'Input element value is not correct');
 
         input.validate();
 
         assert.equal(input.value, "lorem ipsum", 'Input value is not correct');
-        assert.equal(inputElement.value, "lorem ipsum", 'Input element value is not correct');
+        assert.equal(inputElement.value, "", 'Input element value is not correct');
 
         assert.equal(inputElement.id, activeElement.id, 'Input element has lost focus');
       });
 
       test('validate like blur, set inputElement.value', function() {
         var input = fixture('validateLikeBlur');
-        var inputElement = input.$.input;
+        var inputElement = input._getFocusableElement();
 
         assert.equal(input.value, "", 'Input value is not correct');
         assert.equal(inputElement.value, "", 'Input element value is not correct');
@@ -88,7 +88,7 @@
 
         input.validate();
 
-        assert.equal(input.value, "lorem ipsum", 'Input value is not correct');
+        assert.equal(input.value, "", 'Input value is not correct');
         assert.equal(inputElement.value, "lorem ipsum", 'Input element value is not correct');
 
         assert.equal(inputElement.id, activeElement.id, 'Input element has lost focus');

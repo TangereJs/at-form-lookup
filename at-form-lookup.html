@@ -441,11 +441,6 @@
       if (showError === undefined) { showError = this.autovalidate; }
       this._clearUIValidState();
 
-      var inputValue = this.$.selectTags.value;
-      if ((this.value === null && inputValue !== "") || (this.value !== null && this.value !== inputValue)) {
-        this.value = inputValue;
-      }
-
       var validationResult = this._validateBaseData();
       if(showError) this._handleValidationResult(validationResult);
       if (validationResult.isFinal) {

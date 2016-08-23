@@ -273,7 +273,7 @@
           eventCount += 1;
         });
 
-        var inputElement = input.$.input;
+        var inputElement = input._getFocusableElement();
 
         inputElement.value = "";
         TestHelpers.fireEvent('change', {}, inputElement);
@@ -300,13 +300,13 @@
           eventCount += 1;
         });
 
-        var inputElement = input.$.input;
+        var inputElement = input._getFocusableElement();
 
         inputElement.value = "4242";
         TestHelpers.fireEvent('change', {}, inputElement);
 
         flush(function() {
-          assert.equal(eventCount, 1);
+          assert.equal(eventCount, 0);
           done();
         });
       });
