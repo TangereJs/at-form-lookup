@@ -439,8 +439,7 @@
 
     validate: function (showError) {
       if (showError === undefined) { showError = this.autovalidate; }
-      this._clearUIValidState();
-
+      
       var validationResult = this._validateBaseData();
       if(showError) this._handleValidationResult(validationResult);
       if (validationResult.isFinal) {
