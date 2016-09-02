@@ -357,6 +357,12 @@
 
     ready: function() {
 
+      var maxItems = parseInt(this.maxItems);
+      if (isNaN(maxItems)) {
+        maxItems = 0;
+      }
+      maxItems = maxItems < 1 ? null : maxItems;
+
       // create the selectize instance
       var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
         plugins: ['remove_button'],
@@ -364,7 +370,7 @@
         selectOnTab: true,
         preload: !this.noPreload,
         allowEmpty: this.allowEmpty,
-        maxItems: this.maxItems,
+        maxItems: maxItems,
         load: this._selectizeOnLoad.bind(this),
         onChange: this._selectizeChange.bind(this),
         render: this.render
@@ -439,7 +445,7 @@
 
     validate: function (showError) {
       if (showError === undefined) { showError = this.autovalidate; }
-      
+
       var validationResult = this._validateBaseData();
       if(showError) this._handleValidationResult(validationResult);
       if (validationResult.isFinal) {
@@ -632,11 +638,14 @@
         try {
           // ok what is happening here?
           // 1. we calculate what is value to set is by using Number constructor function
-          var valueToSet = Number(newValue);
+          var valueToSet = parseInt(newValue);
+          if (isNaN(valueToSet)) {
+            valueToSet = 0;
+          }
           // 2. we need to update selectize settings
           var settings = this._selectizeInstance.settings;
           // 3. we need to update maxItems
-          settings.maxItems = valueToSet;
+          settings.maxItems = valueToSet < 1 ? null : valueToSet;
           // we need to set mode; I found out that I need to do this by inspecting and debuggin selectize code
           var mode = valueToSet === 1 ? 'single' : 'multi';
           // we also need to remember current value for mode
