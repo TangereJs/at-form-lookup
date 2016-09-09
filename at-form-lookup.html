@@ -417,6 +417,8 @@
       this._disabledChanged(this.disabled, undefined);
 
       this._attachFocusBlurEvents();
+
+      this._internalValidStateUpdate(this.disabled, this.required);
     },
 
     _disabledChanged: function(newValue, oldValue) {
