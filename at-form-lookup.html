@@ -348,7 +348,7 @@
     }],
 
     observers: [
-      '_internalValidStateUpdate(disabled, required)'
+      '_internalValidStateUpdate(required)'
     ],
 
     _hideLabelChanged: function(newValue, oldValue) {
@@ -418,7 +418,7 @@
 
       this._attachFocusBlurEvents();
 
-      this._internalValidStateUpdate(this.disabled, this.required);
+      this._internalValidStateUpdate(this.required);
     },
 
     _disabledChanged: function(newValue, oldValue) {
@@ -439,7 +439,7 @@
       this.toggleClass('hidden', newValue, wrapper);
     },
 
-    _internalValidStateUpdate: function (disabled, required) {
+    _internalValidStateUpdate: function (required) {
       if (this._isReady) {
         this.validate();
       }
@@ -450,7 +450,7 @@
 
       var validationResult = this._validateBaseData();
       if(showError) this._handleValidationResult(validationResult);
-      if (validationResult.isFinal) {
+      if (!validationResult.isValid) {
         return validationResult.isValid;
       }
 
