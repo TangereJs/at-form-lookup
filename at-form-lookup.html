@@ -449,7 +449,7 @@
       if (showError === undefined) { showError = this.autoValidate; }
 
       var validationResult = this._validateBaseData();
-      if(showError) this._handleValidationResult(validationResult);
+      this._handleValidationResult(validationResult);
       if (!validationResult.isValid) {
         return validationResult.isValid;
       }
@@ -584,6 +584,9 @@
           this._isUpdating = false;
           this._selectizeUpdate = false;
         }
+
+        if (this.autoValidate) { this.validate(); }
+
         this._fireValueChangedEvent(newValue);
       }
     },
