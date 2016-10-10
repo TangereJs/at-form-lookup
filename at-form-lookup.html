@@ -1,11 +1,12 @@
 <link rel="import" href="../tangere/tangere.html">
 <link rel="import" href="../at-i18n/at-i18n-behavior.html">
 <link rel="import" href="../at-theme/at-theme.html">
+<link rel="import" href="at-form-lookup-styles.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../at-form-behaviors/at-form-behaviors.html">
-<link rel="import" href="at-form-lookup-styles.html">
 <link rel="import" href="../iron-label/iron-label.html">
+<link rel="import" href="../at-core-view/at-core-view.html">
 <link rel="import" href="at-form-lookup-input-validation-behavior.html">
 
 <dom-module id="at-form-lookup">
@@ -77,7 +78,6 @@
     _selectizeLoadCallback: false,
     _selectizeInstance: {},
     _isUpdating: false,
-    render: {},
     properties: {
       /**
        * Element's label for element display purposes
@@ -335,6 +335,14 @@
         value: 1,
         observer: '_maxItemsChanged',
         title: 'Maximum number of selectable items'
+      },
+
+      itemView: {
+        type: String,
+        title: "Item view",
+        observer: "_itemViewChanged",
+        xtype: "code",
+        mode: "liquid"
       }
     },
     $meta: [{
@@ -372,8 +380,7 @@
         allowEmpty: this.allowEmpty,
         maxItems: maxItems,
         load: this._selectizeOnLoad.bind(this),
-        onChange: this._selectizeChange.bind(this),
-        render: this.render
+        onChange: this._selectizeChange.bind(this)
       });
 
       // NOT NEEDED clear options and items from from instance
@@ -698,9 +705,44 @@
       }
     },
 
-    renderChanged: function(newValue, oldValue) {
-      if (this._selectizeInstance !== undefined) {
-        this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, newValue);
+    _itemViewChanged: function(newValue, oldValue) {
+      if (this._isReady && this._selectizeInstance) {
+
+        if (!this._originalOptionRender) {
+          this._originalOptionRender = this._selectizeInstance.settings.render.item;
+        }
+
+        var render = {};
+
+        if (newValue && newValue !== "") {
+          render.option = function (data, escape) {
+              return '<at-core-view class="item" view="'+ newValue +'" value=\''+ JSON.stringify(data) +'\'></at-core-view>';
+            };
+          this._selectizeInstance.renderCache = {};
+        } else {
+          if (this._originalOptionRender) {
+            render.option = this._originalOptionRender;
+          }
+        }
+
+        var extend = function(a, b) {
+          var i, n, k, object;
+          for (i = 1, n = arguments.length; i < n; i += 1) {
+            object = arguments[i];
+            if (!object) {
+              continue;
+            }
+            for (k in object) {
+              if (object.hasOwnProperty(k)) {
+                a[k] = object[k];
+              }
+            }
+          }
+          return a;
+        };
+
+        this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, render);
+        this._selectizeInstance.refreshOptions(false);
       }
     },
 
