@@ -54,6 +54,10 @@
         align-self: center;
         flex: 1;
       }
+
+      at-core-view.item {
+        display: block;
+      }
     </style>
     <div id="atContainer" class="at-container">
       <iron-label id="label" for="selectTags" class="at-label">{{label}}</iron-label>
@@ -426,6 +430,8 @@
       this._attachFocusBlurEvents();
 
       this._internalValidStateUpdate(this.required);
+
+      this._itemViewChanged(this.itemView);
     },
 
     _disabledChanged: function(newValue, oldValue) {
