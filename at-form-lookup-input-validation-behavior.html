@@ -142,8 +142,10 @@
         var schemaTypeString = getTypeString(valueSchema.type());
         var nullTypeString = getTypeString(null);
         var valueObjTypeString = getTypeString(valueObj);
+        var arrayObjTypeString = getTypeString([]);
+        var numberObjTypeString = getTypeString(42);
 
-        validationResult.isValid = (schemaTypeString === valueObjTypeString) || (nullTypeString === valueObjTypeString);
+        validationResult.isValid = [schemaTypeString, arrayObjTypeString, numberObjTypeString, nullTypeString].indexOf(valueObjTypeString) !== -1;
         if (!validationResult.isValid) {
           validationResult.errorMessage = localizer("Type specified in schema doesn't match type of value object for property value. Expected {0} to match {1}", schemaTypeString, valueObjTypeString);
         }
