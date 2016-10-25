@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -12,16 +12,16 @@
   </div>
   <div>
     Orchard users using at-form-lookup custom render:
-    <at-form-lookup id="orchardTags" value="2" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/user"></at-form-lookup>
+    <at-form-lookup id="orchardTags" value="2" url="/Activity/adenin.GateKeeper.Content/user"></at-form-lookup>
     <br />
     Orchard users using at-form-lookup default:
-    <at-form-lookup id="userselect" url="http://localhost:2014/Activity/adenin.GateKeeper.Content/user"></at-form-lookup>
+    <at-form-lookup id="userselect" url="/Activity/adenin.GateKeeper.Content/user"></at-form-lookup>
   </div>
 
   <script>
     document.addEventListener('WebComponentsReady', function () {
       orchardTags = document.getElementById('orchardTags');
-      orchardTags.itemView = '<div><b>{{title}}</b> - <span>{{value}}</span></div>';
+      orchardTags.itemView = '<div><b>{{title}}</b><br><span>{{Email}}</span></div>';
 
       document.getElementById('userselect').value = "2";
 
