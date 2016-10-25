@@ -21,11 +21,7 @@
   <script>
     document.addEventListener('WebComponentsReady', function () {
       orchardTags = document.getElementById('orchardTags');
-      orchardTags.render = {
-        option: function (option, escape) {
-          return '<div class="option"><div>' + escape(option.DisplayName) + '</div><div>' + escape(option.Email) + '</div></div>';
-        }
-      };
+      orchardTags.itemView = '<div><b>{{title}}</b> - <span>{{value}}</span></div>';
 
       document.getElementById('userselect').value = "2";
 
