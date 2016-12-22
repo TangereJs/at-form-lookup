@@ -394,8 +394,7 @@
 
       // set disabled state
       if (this.disabled) {
-        var atContainer = this.$.atContainer;
-        this.toggleClass('disabled', true, atContainer);
+        this.toggleClass('disabled', true, this.$.label);
         instance.disable();
       }
 
@@ -436,8 +435,7 @@
 
     _disabledChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance !== undefined) {
-        var atContainer = this.$.atContainer;
-        this.toggleClass('disabled', newValue, atContainer);
+        this.toggleClass('disabled', newValue, this.$.label);
 
         if (newValue) {
           this._selectizeInstance.disable();
