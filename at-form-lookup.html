@@ -60,7 +60,15 @@
       }
     </style>
     <div id="atContainer" class="at-container">
-      <iron-label id="label" for="selectTags" class="at-label">{{label}}</iron-label>
+      <!--
+        Introduced label container as a workaround for a bug with opacity calculation in polymer-js
+        Right now, if opacity is changed via js by setting a disabled class on iron-label, iron-label is not styled correctly
+        And changing its text also doesn't work correctly when disabled class is set
+        In the workaround, disabled class is set on the container.
+      -->
+      <div id="labelContainer">
+        <iron-label id="label">{{label}}</iron-label>
+      </div>
       <div id="contentContainer" class="at-content-container">
         <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
@@ -435,7 +443,7 @@
 
     _disabledChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance !== undefined) {
-        this.toggleClass('disabled', newValue, this.$.label);
+        this.toggleClass('disabled', newValue, this.$.labelContainer);
 
         if (newValue) {
           this._selectizeInstance.disable();
