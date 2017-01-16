@@ -202,6 +202,7 @@
           }
         },
         layout: 'horizontal',
+        xgridcols: '12',
         title: 'Value List'
       },
       // ------------------------------------------------------------
@@ -247,6 +248,19 @@
         value: '',
         observer: '_valueChanged',
         title: 'Value'
+      },
+
+      /**
+       * initialSearchTerm - when set/changed the current values are cleared and it behaves like having typed that value
+       * @property initialSearchTerm
+       * @type String
+       * @default ""
+       */
+      initialSearchTerm: {
+        type: String,
+        value: "",
+        observer: '_initialSearchTermChanged',
+        title: 'Initial Search Term'
       },
 
       /**
@@ -608,6 +622,15 @@
 
         this._fireValueChangedEvent(newValue);
       }
+    },
+
+    _initialSearchTermChanged: function (newValue, oldValue) {
+      if (!this._isReady || !this._selectizeInstance) { return; }
+      var optionsLength = Object.keys(this._selectizeInstance.options);
+      if (!optionsLength) { return; }
+
+      this._selectizeInstance.$control_input.value = newValue;
+      this._selectizeInstance.onKeyUp();
     },
 
     set selectedItems(newValue) {},
@@ -2169,7 +2192,6 @@
         if (!options.force && $input.attributes.getNamedItem('data-grow') && $input.attributes.getNamedItem('data-grow').value === false) {
           return;
         }
-
         value = $input.value;
         if (e.type && e.type.toLowerCase() === 'keydown') {
           keyCode = e.keyCode;
@@ -3630,7 +3652,6 @@
 
         // update the item if it's selected
         if (self.items.indexOf(value_new) !== -1) {
-          //debugger;
           $item = self.getItem(value);
           $item_new = self.render('item', data);
           if ($item.hasClass('active')) {
