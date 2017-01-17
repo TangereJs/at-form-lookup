@@ -628,9 +628,11 @@
       if (!this._isReady || !this._selectizeInstance) { return; }
       var optionsLength = Object.keys(this._selectizeInstance.options);
       if (!optionsLength) { return; }
+      if (this._selectizeInstance.isFull()) { return; }
 
       this._selectizeInstance.$control_input.value = newValue;
-      this._selectizeInstance.onKeyUp();
+      var updateEvent = new CustomEvent('keyup', {});
+      this._selectizeInstance.$control_input.dispatchEvent(updateEvent);
     },
 
     set selectedItems(newValue) {},
