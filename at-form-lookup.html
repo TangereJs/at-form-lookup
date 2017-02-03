@@ -490,6 +490,26 @@
       validationResult = this._validateData(this, this.value, this.T.bind(this));
       if(showError) this._handleValidationResult(validationResult);
 
+      /*
+        if user typed text into text input but didn't select an item we
+        1) do not want text to be deleted
+        2) we want to display a validation error message if user typed but didn't select an item
+        * this._selectizeInstance.$control_input.value contains value that user typed
+        * this.value is empty if user didn't select an item
+       */
+      var userTypedText = this._selectizeInstance.$control_input.value;
+      if (
+        userTypedText.length && // if user typed text
+        !this.value.length // but didn't select a value
+      ) {
+        // report the error
+        validationResult.isValid = false;
+        validationResult.errorMessage = this.T("Please select a record");
+      } else {
+        validationResult.isValid = true;
+      }
+      if (showError) this._handleValidationResult(validationResult);
+
       return validationResult.isValid;
     },
 
@@ -2980,7 +3000,14 @@
         }
 
         self.close();
-        self.setTextboxValue('');
+
+        /*
+          if user typed text into text input but didn't select an item we
+          1) do not want text to be deleted
+          2) we want to display a validation error message if user typed but didn't select an item
+          * self.setTextboxValue is commented out because of 1)
+         */
+        // self.setTextboxValue('');
         self.setActiveItem(null);
         self.setActiveOption(null);
         self.setCaret(self.items.length);
@@ -3060,7 +3087,6 @@
        */
       namespace.load = function(fn) {
         var self = this;
-        var polyElem = this.settings.polymerElement;
 
         fn.apply(self, [function(results) {
           self.loading = Math.max(self.loading - 1, 0);
