@@ -653,6 +653,9 @@
       this._selectizeInstance.$control_input.value = newValue;
       var updateEvent = new CustomEvent('keyup', {});
       this._selectizeInstance.$control_input.dispatchEvent(updateEvent);
+
+      // we open the dropdown manually because 'keyup' event doesn't do it reliably
+      this._selectizeInstance.open();
     },
 
     set selectedItems(newValue) {},
@@ -2163,29 +2166,37 @@
         return 0;
       }
 
-      var body = document.getElementsByTagName('body');
-      body = body[0];
-      var test = document.createElement('test');
-      body.appendChild(test);
-      test.innerText = str;
+      /*
+        There is no need to hardcode font-size and font-family into ctx.font (see bellow)
+        Instead, we can get these from $parent's computed style
+      */
+      var computedStyle = window.getComputedStyle($parent);
+      var fontSize = computedStyle.getPropertyValue('font-size');
+      var fontFamily = computedStyle.getPropertyValue('font-family');
 
-      test.style.position = 'absolute';
-      test.style.top = -99999;
-      test.style.left = -99999;
-      test.style.width = 'auto';
-      test.style.padding = 0;
-      test.style.whiteSpace = 'pre';
+      if (fontSize === "0px" && fontFamily === "") {
+        /*
+          If $parent is hidden, or any parentElement of $parent is hidden font-size and font-family do not exist
+          As a fallback we get font-size and font-family from document.body instead
+        */
+        computedStyle = window.getComputedStyle(document.body);
+        fontSize = computedStyle.getPropertyValue('font-size');
+        fontFamily = computedStyle.getPropertyValue('font-family');
+      }
 
-      transferStyles($parent, test, [
-        'letterSpacing',
-        'fontSize',
-        'fontFamily',
-        'fontWeight',
-        'textTransform'
-      ]);
+      /*
+        replaced ofscreen div based rendering with canvas based one because div based rendering doesn't work
+        when form-lookup doens't have dimensions
 
-      var width = test.clientWidth;
-      test.parentElement.removeChild(test);
+        @Note ctx.font is hardcoded because there is no way to set it otherwise
+        values are taken from paper-styles/typography.html --paper-font-common-base for font-family
+        and for font-size from Developer Tools computed styles for dropdown item
+      */
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext("2d");
+
+      ctx.font = fontSize + ' ' + fontFamily;
+      var width = ctx.measureText(str).width;
 
       return width;
     };
@@ -4228,8 +4239,16 @@
           left: $control.offsetLeft
         };
         offset.top += completeOuterHeight($control);
+        if (offset.top === 0) {
+          // 32 is a magic number which adds support for a use case where initialSearchTerm is set on at-form-lookup
+          // before at-form-lookup is attached / rendered on screen
+          // when initialSearchTerm is set, dropdown should be open but at that time lookup is not yet rendered so
+          // offset dimensions are all incorrect
+          // when lookup renders regulary offset top is 32; so we hardcode this value for correctness
+          offset.top = 32;
+        }
 
-        this.$dropdown.style.width = '100%'; //$control.clientWidth + 'px';
+        this.$dropdown.style.width = '100%';
         this.$dropdown.style.top = offset.top + 'px';
         this.$dropdown.style.left = offset.left + 'px';
       };
