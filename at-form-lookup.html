@@ -489,7 +489,9 @@
 
       validationResult = this._validateData(this, this.value, this.T.bind(this));
       if(showError) this._handleValidationResult(validationResult);
-
+      if (!validationResult.isValid) {
+        return validationResult.isValid;
+      }
       /*
         if user typed text into text input but didn't select an item we
         1) do not want text to be deleted
@@ -601,6 +603,9 @@
             sInstance.removeItem(itemsToRemove[i]);
           }
 
+          var coreActivityQueue = [];
+          this._issuedRequestsQueue = [];
+
           for (var i = 0; i < itemsToAdd.length; i++) {
             var currentItem = itemsToAdd[i];
 
@@ -628,11 +633,23 @@
                 // add listener for response event
                 coreActivity.addEventListener('response', this._loadDefaultOnResponse.bind(this));
                 coreActivity.addEventListener('error', this._loadDefaultOnError.bind(this));
-                // request is made
-                coreActivity.generateRequest();
+
+                // put current request in a queue
+                coreActivityQueue.push(coreActivity);
+                // create an entry in issued requests queue
+                this._issuedRequestsQueue.push({
+                  requestItemId: parseInt(currentItem),
+                  isCompleted: false
+                });
               }
             }
           }
+
+          // generate requests for each core activity
+          coreActivityQueue.forEach(function (coreActivity, index) {
+            // request is made
+            coreActivity.generateRequest();
+          });
 
           this._isUpdating = false;
           this._selectizeUpdate = false;
@@ -769,7 +786,7 @@
       if (this._isReady && this._selectizeInstance) {
 
         if (!this._originalOptionRender) {
-          this._originalOptionRender = this._selectizeInstance.settings.render.item;
+          this._originalOptionRender = this._selectizeInstance.settings.render.option;
         }
 
         var render = {};
@@ -882,11 +899,39 @@
 
     _loadDefaultOnResponse: function(event) {
       var item = event.detail.Data;
-      this._selectizeInstance.addOption({
-        "value": item.id,
-        "title": item.title
+
+      // find the issued request in the queue by id
+      var issuedRequest = this._issuedRequestsQueue.find(function (request) {
+        return request.requestItemId === item.id;
       });
-      this._selectizeInstance.addItem(item.id);
+      if (!issuedRequest) { return; }
+
+      // mark the request as completed and save the data from the server
+      issuedRequest.isCompleted = true;
+      issuedRequest.item = item;
+
+      // check if all requests are complete
+      var queueComplete = true;
+      this._issuedRequestsQueue.forEach(function (request) {
+        queueComplete = queueComplete && request.isCompleted;
+      });
+
+      if (!queueComplete) { return; }
+
+      // process queue data into selectize instance
+      var sInstance = this._selectizeInstance;
+      this._issuedRequestsQueue.forEach(function (request, index) {
+
+        sInstance.addOption({
+          value: request.item.id,
+          title: request.item.title
+        });
+
+        sInstance.addItem(request.item.id);
+      });
+
+      // clear the queue
+      this._issuedRequestsQueue = [];
 
       this.$.disabledOverlay.removeAttribute('disabled');
       this._selectizeInstance.enable();
@@ -2896,6 +2941,7 @@
             return;
           case KEY_BACKSPACE:
           case KEY_DELETE:
+            if (self.$control_input.value.length > 0) { return; }
             self.deleteSelection(e);
             return;
         }

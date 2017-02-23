@@ -112,7 +112,7 @@
         cursor: pointer;
         @apply(--at-text-selected);
         border: 0;
-        float: left;
+        /*float: left;*/
       }
 
       .control.multi .input > div.active {
@@ -374,6 +374,14 @@
         overflow-y: auto;
         overflow-x: hidden;
         max-height: 216px;
+      }
+
+      .dropdown-content > div.item {
+        @apply(--paper-font-body1);
+      }
+
+      .dropdown-content > div.option {
+        @apply(--paper-font-body1);
       }
 
       .control.single .input:after {

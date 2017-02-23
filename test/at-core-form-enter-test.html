@@ -34,7 +34,8 @@
         return {
           properties: {
             text1: {
-              type: 'string'
+              type: 'string',
+              xtype: 'enum'
             }
           }
         };
@@ -162,8 +163,8 @@
 
             // These asserts will pass because inputProvider value is updated by setting a new value to inputProvider.value property
             assert.equal(inputProviderValue, "lorem ipsum delta");
-            assert.equal(textInputValue, "lorem ipsum delta");
-            assert.equal(coreForm.data.text1, "lorem ipsum delta");
+            assert.equal(textInputValue, "lorem ipsum");
+            assert.equal(coreForm.data.text1, "lorem ipsum");
 
             var activeElement = document.activeElement;
             // get correct activeElement if shadow DOM is used

@@ -141,7 +141,7 @@
 
           var inputElement = input._getFocusableElement().parentElement;
           assert.equal(inputElement.classList.contains('disabled'), true, 'input element disabled attribute set');
-          assert.equal(input.$.atContainer.classList.contains('disabled'), true, 'container has disabled class');
+          assert.equal(input.$.labelContainer.classList.contains('disabled'), true, 'container has disabled class');
         });
 
         test('hidden sets css classes', function() {
@@ -252,7 +252,7 @@
 
           var inputElement = input._getFocusableElement().parentElement;
           assert.equal(inputElement.classList.contains('disabled'), true, 'input element disabled attribute set');
-          assert.equal(input.$.atContainer.classList.contains('disabled'), true, 'container has disabled class');
+          assert.equal(input.$.labelContainer.classList.contains('disabled'), true, 'container has disabled class');
         });
 
         test('hidden sets css classes', function() {

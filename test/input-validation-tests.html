@@ -182,7 +182,7 @@
         assert.equal(validationResult.isValid, false, 'schema.value is valid');
         assert.equal(validationResult.errorMessage, format("Type specified in schema doesn't match type of value object for property value. Expected {0} to match {1}", stringTypeString, undefinedTypeString), 'error message not set correctly');
 
-        var invalidValues = [ undefined, 42, 3.14159, true, false, [], {}, function () { return undefined; }];
+        var invalidValues = [ undefined, true, false, {}, function () { return undefined; }];
 
         function getTypeString(obj) {
           return  Object.prototype.toString.call(obj);
