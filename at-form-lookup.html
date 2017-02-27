@@ -638,7 +638,7 @@
                 coreActivityQueue.push(coreActivity);
                 // create an entry in issued requests queue
                 this._issuedRequestsQueue.push({
-                  requestItemId: parseInt(currentItem),
+                  requestItemId: currentItem,
                   isCompleted: false
                 });
               }
@@ -899,10 +899,10 @@
 
     _loadDefaultOnResponse: function(event) {
       var item = event.detail.Data;
-      var itemIdAsInt = parseInt(item.id);
+
       // find the issued request in the queue by id
       var issuedRequest = this._issuedRequestsQueue.find(function (request) {
-        return request.requestItemId === itemIdAsInt;
+        return request.requestItemId == item.id;
       });
       if (!issuedRequest) { return; }
 
