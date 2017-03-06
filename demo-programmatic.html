@@ -5,25 +5,28 @@
   <meta charset="UTF-8">
   <title>&lt;at-form-lookup&gt;</title>
   <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../at-theme/at-theme.html">
   <link rel="import" href="at-form-lookup.html">
 </head>
 
-<body>
-  <div>
-    Dropdown demo:
-    <at-form-lookup id="ddLookup" available="neat,awesome,peka,mika,zika" value="mika"></at-form-lookup>
+<body class="layout horizontal">
+  <div class="flex-3"></div>
+  <div class="layout vertical flex-6">
+    <div>
+      <at-form-lookup label="Dropdown demo:" id="ddLookup" available="neat,awesome,peka,mika,zika" value="mika"></at-form-lookup>
+    </div>
+    <div>
+      <at-form-lookup id="ddLookupProg" label="Dropdown demo (programatic initialization):"></at-form-lookup>
+    </div>
   </div>
-  <div>
-    Dropdown demo (programatic initialization):
-    <at-form-lookup id="ddLookupProg"></at-form-lookup>
-  </div>
+  <div class="flex-3"></div>
 
   <script>
     window.addEventListener('WebComponentsReady', function () {
       var demoLookup = document.getElementById("demoLookup");
 
       var ddLookupProg = document.getElementById("ddLookupProg");
-      ddLookupProg.available = "neat,awesome,peka,mika,zika";
+      ddLookupProg.available = "neat,awesome,peka,mika,zika,neat1,awesome1,peka1,mika1,zika1";
       ddLookupProg.value = "mika";
     });
   </script>
