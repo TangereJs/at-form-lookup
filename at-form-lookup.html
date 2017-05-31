@@ -836,26 +836,36 @@
       };
       this.fire('at-form-lookup-afterAjax', eventObject);
 
-      if (this._selectizeLoadCallback) {
-        if (eventObject.returnData.length > 0) {
-          this._selectizeLoadCallback(eventObject.returnData);
-        } else {
-          var data = [];
-          if (event.detail && (event.detail.Data !== undefined && event.detail.Data !== null) && (event.detail.Data.items !== undefined && event.detail.Data.items !== null)) {
-            data = event.detail.Data.items;
-          }
-          var dataArray = [];
-          for (var i = 0; i < data.length; i++) {
-            var entry = data[i];
-            entry.value = entry.id;
-            //dataArray.push({ value: entry.id, title: entry.title });
-            dataArray.push(entry);
-          }
-          this._selectizeLoadCallback(dataArray);
-          this.$.disabledOverlay.removeAttribute('disabled');
-          this._selectizeInstance.enable();
+      if (!this._selectizeLoadCallback) {
+        this.$.disabledOverlay.removeAttribute('disabled');
+        this._selectizeInstance.enable();
+        return;
+      }
+      
+      if (eventObject.returnData.length > 0) {
+        this._selectizeLoadCallback(eventObject.returnData);
+      } else {
+        var data = [];
+        // we check if property exists with hasOwnProperty check
+        // if property exists, we check if value not not false (so not false, 0, null, undefined or "")
+        if (event.hasOwnProperty('detail') && event.detail && 
+            event.detail.hasOwnProperty('Data') && event.detail.Data && 
+            event.detail.Data.hasOwnProperty('items') && event.detail.Data.items
+          ) {
+          data = event.detail.Data.items;
         }
-      };
+        var dataArray = [];
+        for (var i = 0; i < data.length; i++) {
+          var entry = data[i];
+          entry.value = entry.id;
+          //dataArray.push({ value: entry.id, title: entry.title });
+          dataArray.push(entry);
+        }
+        this._selectizeLoadCallback(dataArray);
+      }
+
+      this.$.disabledOverlay.removeAttribute('disabled');
+      this._selectizeInstance.enable();
     },
 
     _selectizeOnLoad: function(query, callback) {
