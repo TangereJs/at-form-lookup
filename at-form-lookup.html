@@ -852,6 +852,8 @@
             dataArray.push(entry);
           }
           this._selectizeLoadCallback(dataArray);
+          this.$.disabledOverlay.removeAttribute('disabled');
+          this._selectizeInstance.enable();
         }
       };
     },
