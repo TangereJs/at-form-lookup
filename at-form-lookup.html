@@ -838,7 +838,9 @@
 
       if (!this._selectizeLoadCallback) {
         this.$.disabledOverlay.removeAttribute('disabled');
-        this._selectizeInstance.enable();
+        if (!this.disabled) {
+          this._selectizeInstance.enable();          
+        }
         return;
       }
       
@@ -865,7 +867,9 @@
       }
 
       this.$.disabledOverlay.removeAttribute('disabled');
-      this._selectizeInstance.enable();
+      if (!this.disabled) {
+        this._selectizeInstance.enable();      
+      }
     },
 
     _selectizeOnLoad: function(query, callback) {
