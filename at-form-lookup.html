@@ -950,7 +950,9 @@
       this._issuedRequestsQueue = [];
 
       this.$.disabledOverlay.removeAttribute('disabled');
-      this._selectizeInstance.enable();
+      if (!this.disabled) {
+        this._selectizeInstance.enable();
+      }
 
       this.fire('at-form-lookup-initialized', {
         data: item
@@ -959,7 +961,9 @@
 
     _loadDefaultOnError: function (event) {
       this.$.disabledOverlay.removeAttribute('disabled');
-      this._selectizeInstance.enable();
+      if (!this.disabled) {
+        this._selectizeInstance.enable();
+      }
     },
 
     _selectizeChange: function(newValue) {
