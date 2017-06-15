@@ -14,13 +14,9 @@
     <style include="at-form-common"></style>
     <style include="at-form-lookup-styles"></style>
     <style>
-      :host * {
-        box-sizing: border-box;
-      }
-
       :host {
         @apply(--at-form-host);
-        min-width: 150px;
+        box-sizing: border-box;
       }
 
       .input {
@@ -406,7 +402,8 @@
         allowEmpty: this.allowEmpty,
         maxItems: maxItems,
         load: this._selectizeOnLoad.bind(this),
-        onChange: this._selectizeChange.bind(this)
+        onChange: this._selectizeChange.bind(this),
+        atFormLookup: this // we need this to compute value of display property each time dropdown is positioned 
       });
 
       // NOT NEEDED clear options and items from from instance
@@ -4313,8 +4310,15 @@
           // when lookup renders regulary offset top is 32; so we hardcode this value for correctness
           offset.top = 32;
         }
+        
+        // this is terrible programming but gets the job done
+        // we passed a reference to the instance of at-form-lookup as this.settings.atFormLookup
+        // so that we can compute value of display property
+        var displayValue = window.getComputedStyle(this.settings.atFormLookup).getPropertyValue('display');
+        if (displayValue === 'block') {
+          this.$dropdown.style.width = '100%';          
+        }
 
-        this.$dropdown.style.width = '100%';
         this.$dropdown.style.top = offset.top + 'px';
         this.$dropdown.style.left = offset.left + 'px';
       };
