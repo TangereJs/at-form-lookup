@@ -376,12 +376,9 @@
 
       .dropdown-content {
         overflow-y: auto;
-        overflow-x: hidden;
-        /* *ij* 200px is the correct solution because dropdown items are using --at-form-input-font mixin from at-theme/form.html
-         * in --at-form-input-font mixin font-size is fixed to 16px
-         * if font-size was not fixed then using relative units would be the correct solution
-         */
-        max-height: 200px;
+        overflow-x: hidden;        
+        font-size: var(at-form-input-font-size, 16px);
+        max-height: 12.5em;
       }
 
       .dropdown-content > div.item {
