@@ -394,10 +394,16 @@
         display: block;
         position: absolute;
         top: 50%;
-        right: 11px; /* value of 11px is determined by pixel counting in browser */
+        right: 4px;
         margin-top: 0;
         width: 0;
         height: 0;
+      }
+
+      .control.single.inline .input:after {
+        display: inline-block;
+        position: relative;
+        right: 2px;
       }
 
       .control.single .input.dropdown-active:after {

@@ -2479,6 +2479,20 @@
         }
         $wrapper.classList.add(inputMode);
 
+        /* terrible, bad programming, but gets the job done
+          .input:after has to be restyled for display: inline-block,  but when .setup is run element still has display 'none'. So interval is used to wait for display to become not 'none'. When that happens interval is cleared.
+        */ 
+        var updateWrapperClassListInterval = setInterval(function(){
+          var computedStyle = window.getComputedStyle(self.settings.atFormLookup);
+          var displayValue = computedStyle.getPropertyValue('display');
+          if (self.settings.mode === 'single' && displayValue === 'inline-block') {
+            self.$wrapper.classList.add('inline');
+          }
+          if (displayValue !=='none') { 
+            clearInterval(updateWrapperClassListInterval);
+          }
+        }, 150);
+
         $control = document.createElement('div');
         $control.classList.add(settings.inputClass);
         $control.classList.add('items');
