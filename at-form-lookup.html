@@ -4320,13 +4320,11 @@
           this.$dropdown.style.width = flClientRect.width + 'px';
         }
 
-        var topValue;
+        var topValue = flClientRect.top + flClientRect.height;
         var dropdownClientRect = this.$dropdown.getBoundingClientRect();
         var ddHeight = dropdownClientRect.height;
 
-        if (topValue + ddHeight < window.innerHeight) {
-          topValue = flClientRect.top + flClientRect.height;
-        } else {
+        if (topValue + ddHeight > window.innerHeight) {
           // open the dropdown up
           topValue = flClientRect.top - ddHeight;          
         }
