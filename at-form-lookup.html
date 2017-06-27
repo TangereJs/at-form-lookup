@@ -4310,31 +4310,15 @@
        * position of the dropdown.
        */
       namespace.positionDropdown = function() {
-        var $control = this.$control;
-        var offset = this.settings.dropdownParent === 'body' ? $control.getBoundingClientRect() : {
-          top: $control.offsetTop,
-          left: $control.offsetLeft
-        };
-        offset.top += completeOuterHeight($control);
-        if (offset.top === 0) {
-          // 32 is a magic number which adds support for a use case where initialSearchTerm is set on at-form-lookup
-          // before at-form-lookup is attached / rendered on screen
-          // when initialSearchTerm is set, dropdown should be open but at that time lookup is not yet rendered so
-          // offset dimensions are all incorrect
-          // when lookup renders regulary offset top is 32; so we hardcode this value for correctness
-          offset.top = 32;
-        }
-        
         // this is terrible programming but gets the job done
         // we passed a reference to the instance of at-form-lookup as this.settings.atFormLookup
         // so that we can compute value of display property
-        var displayValue = window.getComputedStyle(this.settings.atFormLookup).getPropertyValue('display');
+        var formLookup = this.settings.atFormLookup;
+        var displayValue = window.getComputedStyle(formLookup).getPropertyValue('display');
+        var flClientRect = formLookup.getBoundingClientRect();
         if (displayValue === 'block') {
-          this.$dropdown.style.width = '100%';          
+          this.$dropdown.style.width = flClientRect.width + 'px';
         }
-
-        this.$dropdown.style.top = offset.top + 'px';
-        this.$dropdown.style.left = offset.left + 'px';
       };
 
       /**
