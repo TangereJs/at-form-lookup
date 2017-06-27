@@ -4319,6 +4319,18 @@
         if (displayValue === 'block') {
           this.$dropdown.style.width = flClientRect.width + 'px';
         }
+
+        var topValue;
+        var dropdownClientRect = this.$dropdown.getBoundingClientRect();
+        var ddHeight = dropdownClientRect.height;
+
+        if (topValue + ddHeight < window.innerHeight) {
+          topValue = flClientRect.top + flClientRect.height;
+        } else {
+          // open the dropdown up
+          topValue = flClientRect.top - ddHeight;          
+        }
+        this.$dropdown.style.top = topValue + 'px';
       };
 
       /**
