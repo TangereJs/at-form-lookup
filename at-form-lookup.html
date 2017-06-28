@@ -983,6 +983,27 @@
     },
 
     _selectizeChange: function(newValue) {
+
+      /* at-form-lookup has display mode of block and display mode of inline
+        when display mode is inline lookup is about the size of its content 
+        but when value is empty there is almost no content to wrap around so size is very small
+        but very small lookup doesn't look like a lookup up at all and that you can select anything from it
+        so in this special case we give input field width of 100px; in other cases we give it its original width of 4px;
+        @see at-form-lookup-styles.html .inline-and-empty-width
+      */
+      (function(lookup, instance, value){
+        // if at-form-lookup has display:inline-* and newValue is empty
+        // give input field a special css class inline-and-empty-width
+        // else remove it
+        var displayValue = window.getComputedStyle(lookup).getPropertyValue('display');
+        var isInline = /^inline/gi.test(displayValue);
+        if (isInline && !value.length) {
+          instance.$control_input.classList.add('inline-and-empty-width');
+        } else {
+          instance.$control_input.classList.remove('inline-and-empty-width');
+        }
+      })(this, this._selectizeInstance, newValue);
+
       this._selectizeUpdate = true;
       if (isArray(newValue)) {
         this.value = newValue.join(',');
