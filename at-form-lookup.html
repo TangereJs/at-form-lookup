@@ -452,6 +452,25 @@
       this._itemViewChanged(this.itemView);
     },
 
+    attached: function() {
+      this._boundWidnowScrollEventHandler = this._handleWindowScrollEvent.bind(this);
+      // we want to close the dropdown on scroll or resize
+      window.addEventListener('scroll', this._boundWidnowScrollEventHandler);
+      window.addEventListener('resize', this._boundWidnowScrollEventHandler);
+    },
+
+    detached: function() {
+      // cleanup
+      window.removeEventListener('scroll', this._boundWidnowScrollEventHandler);
+      window.removeEventListener('resize', this._boundWidnowScrollEventHandler);
+    },
+
+    _handleWindowScrollEvent: function() {
+      if (!this._selectizeInstance) return;
+      // close the dropdown
+      this._selectizeInstance.close();
+    },
+
     _disabledChanged: function(newValue, oldValue) {
       if (this._isReady && this._selectizeInstance !== undefined) {
         this.toggleClass('disabled', newValue, this.$.labelContainer);
