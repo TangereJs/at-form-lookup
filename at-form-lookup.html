@@ -932,10 +932,17 @@
     _loadDefaultOnResponse: function(event) {
       var item = event.detail.Data;
 
+      var irIndex;
+      var irqLength = this._issuedRequestsQueue.length;
+      var issuedRequest = null;
+      
       // find the issued request in the queue by id
-      var issuedRequest = this._issuedRequestsQueue.find(function (request) {
-        return request.requestItemId == item.id;
-      });
+      for (irIndex = 0; irIndex < irqLength; irIndex++) {
+        issuedRequest = this._issuedRequestsQueue[irIndex];
+        if (issuedRequest.id === item.id) {
+          break;
+        }
+      }
       if (!issuedRequest) { return; }
 
       // mark the request as completed and save the data from the server
