@@ -882,9 +882,11 @@
         this._selectizeLoadCallback(dataArray);
       }
 
-      this.$.disabledOverlay.removeAttribute('disabled');
+      if (!this._issuedRequestsQueue.length) {
+        this.$.disabledOverlay.removeAttribute('disabled');
+      }
       if (!this.disabled) {
-        this._selectizeInstance.enable();      
+        this._selectizeInstance.enable();
       }
     },
 
