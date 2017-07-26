@@ -1927,7 +1927,7 @@
             var endbit = middlebit.splitText(match[0].length);
             var middleclone = middlebit.cloneNode(true);
             Polymer.dom(spannode).appendChild(middleclone);
-            var parent = Polymer.dom(middlebit.parentElement);
+            var parent = Polymer.dom(middlebit.parentNode);
             parent.replaceChild(spannode, middlebit);
             skip = 1;
           }
@@ -2296,18 +2296,27 @@
       }
 
       /*
-        replaced ofscreen div based rendering with canvas based one because div based rendering doesn't work
-        when form-lookup doens't have dimensions
-
-        @Note ctx.font is hardcoded because there is no way to set it otherwise
-        values are taken from paper-styles/typography.html --paper-font-common-base for font-family
-        and for font-size from Developer Tools computed styles for dropdown item
+        reverted to off-sreen div based text measurement 
+        because IE11 reports incorrect text width with canvas based measurements. 
+        THANK YOU Microsoft for IE11 bugs.
       */
-      var canvas = document.createElement('canvas');
-      var ctx = canvas.getContext("2d");
+      var measurementDiv = document.createElement('div');
+      measurementDiv.style.position = 'absolute';
+      measurementDiv.style.visibility = 'hidden';
+      measurementDiv.style.height = 'auto';
+      measurementDiv.style.width = 'auto';
+      measurementDiv.style.whiteSpace = 'nowrap';      
+      measurementDiv.style.fontFamily = fontFamily;
+      measurementDiv.style.fontSize = fontSize;
+      measurementDiv.style.left = '-1000px';
+      
+      measurementDiv.textContent = str;
 
-      ctx.font = fontSize + ' ' + fontFamily;
-      var width = ctx.measureText(str).width;
+      document.body.appendChild(measurementDiv);
+
+      var width = measurementDiv.getBoundingClientRect().width;
+
+      document.body.removeChild(measurementDiv);
 
       return width;
     };
