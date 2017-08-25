@@ -101,7 +101,7 @@
           assert.equal(Polymer.dom(label).classList.contains('hidden'), false, 'label has hidden class');
 
           var displayValue = label.getComputedStyleValue('display');
-          assert.equal(displayValue, 'block', "element's label is not visible");
+          assert.equal(displayValue, 'inline', "element's label is not visible");
         });
 
         test('is label hidden', function () {
@@ -209,7 +209,7 @@
           assert.equal(Polymer.dom(label).classList.contains('hidden'), false, 'label has hidden class');
 
           var displayValue = label.getComputedStyleValue('display');
-          assert.equal(displayValue, 'block', "element's label is not visible");
+          assert.equal(displayValue, 'inline', "element's label is not visible");
         });
 
         test('is label hidden', function () {
