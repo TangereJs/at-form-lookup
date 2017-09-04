@@ -4381,10 +4381,11 @@
         var topValue = flClientRect.top + flClientRect.height;
         var dropdownClientRect = this.$dropdown.getBoundingClientRect();
         var ddHeight = dropdownClientRect.height;
+        var dropdownShadowHeightAsSeenByHumanEye = 4;
 
         if (topValue + ddHeight > window.innerHeight) {
           // open the dropdown up
-          topValue = flClientRect.top - ddHeight;          
+          topValue = flClientRect.top - ddHeight - dropdownShadowHeightAsSeenByHumanEye;
         }
         this.$dropdown.style.top = topValue + 'px';
       };
