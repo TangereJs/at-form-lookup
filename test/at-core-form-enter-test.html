@@ -35,7 +35,11 @@
           properties: {
             text1: {
               type: 'string',
-              xtype: 'enum'
+              xtype: 'enum',
+              xvaluelist: [ 
+                { title: 'Lorem ipsum', value: 'lorem ipsum'},
+                { title: 'Lorem ipsum delta', value: 'lorem ipsum delta'}
+              ]
             }
           }
         };
@@ -57,7 +61,6 @@
 
       test('at-core-form-enter.keypress use case', function(done) {
         /**
-         * Its not possible to create automated test that tests this usecase because of DOM API restrictions
          * 7. ensure that validate() behaves like “blur” (so assign current input to .value, validate current input, ensure that focus is not lost). add test for this.
          * 3. In at-core-form-enter.keypress handler its ok to display at-form-lookup.value event tough at-form-lookup.<input type=text>.value is being validated
          * in keypress handler .value is old
@@ -76,7 +79,7 @@
 
         coreForm.addEventListener('keypress', function(event) {
 
-            // event.which is deprecated and should not be used!
+          // event.which is deprecated and should not be used!
           var keyCode = event.keyCode;
           console.log(keyCode);
           if (keyCode === 13) {
@@ -84,12 +87,14 @@
             var textInputValue = textInput.value;
             var inputProviderValue = inputProvider.value;
 
-            // This aseert will always fail because in DOM API its not possible to insert characters into <input type=text> by dispatching events
-            assert.equal(inputProviderValue, "lorem ipsum delta");
-            // This aseert will always fail because in DOM API its not possible to insert characters into <input type=text> by dispatching events
-            assert.equal(textInputValue, "lorem ipsum delta");
-            // This aseert will always fail because in DOM API its not possible to insert characters into <input type=text> by dispatching events
-            assert.equal(coreForm.data.text1, "lorem ipsum delta");
+            // we test input field value for " delta", because when we start typing input field is empty
+            assert.equal(inputProviderValue, " delta");
+
+            // we test at-form-lookup.value for "lorem ipsum" because at-form-lookup.value changes when user selects from the dropdown
+            assert.equal(textInputValue, "lorem ipsum");
+            
+            // we test at-core-form.data for "lorem ipsum" because lookup value didn't change
+            assert.equal(coreForm.data.text1, "lorem ipsum");
 
             var activeElement = document.activeElement;
             // get correct activeElement if shadow DOM is used
@@ -111,10 +116,7 @@
         }
         assert.equal(activeElement.id, inputProvider.id, 'text element has lost focus');
 
-        // in DOM API its not possible to insert characters into <input type=text> by dispatching events
-        // so coreForm, at-form-lookup and at-form-lookup.$.input detect these events but at-form-lookup.$.input value is not updated
-        // MockInteractions uses Custom Events
-        // Creating KeyEvent or KeyboardEvent and dispatching them produces the same result as CustomEvent
+        // UPDATE: As of mock-interactions v2.0 character insertion works. Its now possible to create automatic test 
         MockInteractions.keyEventOn(inputProvider, 'keypress', 32, ' ');
         inputProvider.value = inputProvider.value + " ";
         MockInteractions.keyEventOn(inputProvider, 'keypress', 100, 'd');
@@ -134,7 +136,6 @@
 
       test('at-core-form-enter.keypress use case where only enter is simulated', function(done) {
         /**
-         * Its not possible to create automated test that tests this usecase because of DOM API restrictions
          * 7. ensure that validate() behaves like “blur” (so assign current input to .value, validate current input, ensure that focus is not lost). add test for this.
          * 3. In at-core-form-enter.keypress handler its ok to display at-form-lookup.value event tough at-form-lookup.<input type=text>.value is being validated
          * in keypress handler .value is old
