@@ -4371,7 +4371,7 @@
         // this is terrible programming but gets the job done
         // we passed a reference to the instance of at-form-lookup as this.settings.atFormLookup
         // so that we can compute value of display property
-        var formLookup = this.settings.atFormLookup;
+        var formLookup = this.settings.atFormLookup.$.contentContainer;
         var displayValue = window.getComputedStyle(formLookup).getPropertyValue('display');
         var flClientRect = formLookup.getBoundingClientRect();
         if (displayValue === 'block') {
