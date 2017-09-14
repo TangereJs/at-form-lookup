@@ -1,0 +1,85 @@
+<link rel="import" href="../tangere/tangere.html" />
+<link rel="import" href="../at-theme/at-theme.html" />
+<link rel="import" href="../at-core-style-classes/at-core-style-classes.html" />
+
+<dom-module id="option-view">
+  <template>
+    <style include="at-core-style-classes">
+      :host {
+        display: block;
+        box-sizing: border-box;
+
+        /* @CLEANUP */
+        border: 1px solid blue;
+        margin: 4px;
+        padding: 4px;
+      }
+
+      .title {
+        @apply(--at-form-input-font);
+      }
+
+      .highlight {
+        @apply(--at-text-selected);
+        @apply(--at-form-border-radius1111);
+      }
+    </style>
+
+    <!--
+      if title has highlighted items its a mixed array of strings and objects
+      highlighted item is an object with text property
+    -->
+    <template is="dom-if" if="[[_hasHighlight(data)]]">
+      <div class="title">
+        <template id="dataTitleArray" is="dom-repeat" items="[[data.title]]">
+          <template is="dom-if" if="[[_isHighlighted(item)]]">
+            <span class="highlight">[[item.text]]</span>
+          </template>
+          <template is="dom-if" if="[[!_isHighlighted(item)]]">
+            <span>[[item]]</span>
+          </template>
+        </template>
+      </div>
+    </template>
+
+    <!-- if title is a string display that string -->
+    <template is="dom-if" if="[[!_hasHighlight(data)]]">
+      <div class="title">[[data.title]]</div>
+    </template>
+
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "option-view",
+    properties: {
+      
+      data: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      }
+
+    },
+
+    _hasHighlight: function(data) {
+      function isArray(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Array]";
+      }
+      var result = data && isArray(data.title)
+      console.log(`data ${JSON.stringify(data)} has highlight ${result}`);
+      return result;
+    },
+
+    _isHighlighted: function(item) {
+      function isObject(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Object]";
+      }
+
+      return isObject(item);
+    }
+
+
+  });
+</script>

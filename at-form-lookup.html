@@ -3,11 +3,12 @@
 <link rel="import" href="../at-i18n/at-i18n-behavior.html">
 <link rel="import" href="../at-form-behaviors/at-form-behaviors.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
-<link rel="import" href="../at-carbon-icon/at-carbon-icon.html" />
 <link rel="import" href="../iron-label/iron-label.html">
 <link rel="import" href="../at-core-view/at-core-view.html">
+<link rel="import" href="../at-core-dropdown/at-core-dropdown.html" />
 <link rel="import" href="at-form-lookup-input-validation-behavior.html">
 <link rel="import" href="at-form-lookup-styles.html">
+<link rel="import" href="options-view.html" />
 
 <dom-module id="at-form-lookup">
   <template>
@@ -55,7 +56,12 @@
         display: block;
       }
     </style>
+    
+    
+    
     <div id="atContainer" class="at-container">
+      <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="_coreAjaxOnResponse"  on-error="_handle_coreAjax_onError"></at-core-activity>
+
       <!--
         Introduced label container as a workaround for a bug with opacity calculation in polymer-js
         Right now, if opacity is changed via js by setting a disabled class on iron-label, iron-label is not styled correctly
@@ -65,14 +71,18 @@
       <div id="labelContainer">
         <iron-label id="label" on-tap="focus">{{label}}</iron-label>
       </div>
+      
       <div id="contentContainer" class="at-content-container">
-        <!--<input id="inputTags" type="text" value="{{available}}" style="display:none" />-->
         <select id="selectTags" style="display:none"></select>
-        <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="_coreAjaxOnResponse" on-error="_handle_coreAjax_onError"></at-core-activity>
         <div id="disabledOverlay">
           <div id="disabledText">Loading...</div>
         </div>
       </div>
+      
+      <at-core-dropdown id="coreDropdown">
+        <options-view id="optionsView"></options-view>
+      </at-core-dropdown>
+
       <div id="hint" class="hint"></div>
     </div>
   </template>
@@ -1927,7 +1937,7 @@
             var endbit = middlebit.splitText(match[0].length);
             var middleclone = middlebit.cloneNode(true);
             Polymer.dom(spannode).appendChild(middleclone);
-            var parent = Polymer.dom(middlebit.parentNode);
+            var parent = Polymer.dom(node.parentNode);
             parent.replaceChild(spannode, middlebit);
             skip = 1;
           }
@@ -1940,6 +1950,42 @@
       };
 
       return highlight($element);
+    };
+
+    var highlightOptions = function(options, token) {
+
+      var highlightTitle = function(title) {
+        var result = [];
+        var tokenLen = token.length;
+        var prev = 0;
+        var pos = title.indexOf(token, prev);
+
+        if (pos < 0) return title;
+        
+        while (pos > -1) {
+          var textBefore = title.slice(prev, pos);
+          if (textBefore.length) {
+            result.push(textBefore);
+          }
+
+          var titlePart = title.slice(pos, pos+tokenLen);
+          result.push({ text: titlePart });
+          pos+= tokenLen;
+          prev = pos;
+          pos = title.indexOf(token, pos);
+        }
+
+        if (prev < title.length) {
+          var remTxt = title.slice(prev, title.length);
+          result.push(remTxt);
+        }
+
+        return result;
+      };
+
+      options.forEach(function(option, index){ 
+        option.title = highlightTitle(option.title);
+      });
     };
 
     var MicroEvent = function() {};
@@ -2566,15 +2612,17 @@
 
         $dropdown_parent = settings.dropdownParent || $wrapper;
 
-        $dropdown = document.createElement('div');
-        $dropdown.classList.add(settings.dropdownClass);
-        $dropdown.classList.add(inputMode);
-        $dropdown.style.display = "none";
-        Polymer.dom($dropdown_parent).appendChild($dropdown);
+        // @ CREATE DROPDOWN HERE
+        $dropdown = self.settings.atFormLookup.$.coreDropdown;
+        // $dropdown.classList.add(settings.dropdownClass);
+        // $dropdown.classList.add(inputMode);
+        // $dropdown.style.display = "none";
+        // Polymer.dom($dropdown_parent).appendChild($dropdown);
 
-        $dropdown_content = document.createElement('div');
-        $dropdown_content.classList.add(settings.dropdownContentClass);
-        Polymer.dom($dropdown).appendChild($dropdown_content);
+        // @ CREATE options-view HERE
+        $dropdown_content = self.settings.atFormLookup.$.optionsView; //document.createElement('options-view');
+        // $dropdown_content.classList.add(settings.dropdownContentClass);
+        // Polymer.dom($dropdown).appendChild($dropdown_content);
 
         $dropdown_content.addEventListener('mousedown', function(e) {
           e.preventDefault();
@@ -3633,8 +3681,10 @@
           groups_order = [];
         }
 
+        var filteredOptions = [];
         for (i = 0; i < n; i += 1) {
           option = self.options[results.items[i].id];
+          filteredOptions.push(JSON.parse(JSON.stringify(option)));
           option_html = self.render('option', option);
           optgroup = option[self.settings.optgroupField] || '';
           optgroups = isArray(optgroup) ? optgroup : [optgroup];
@@ -3668,13 +3718,28 @@
             html.push(groups[optgroup].join(''));
           }
         }
+        
+        // Polymer.dom($dropdown_content).innerHTML = html.join('');
 
-        Polymer.dom($dropdown_content).innerHTML = html.join('');
+        // @ RENDER DROPDOWN ITEMS HERE
+        // var filteredOptions = [
+        //   { title: 'pera1', value: '1' },
+        //   { title: 'pera2', value: '2' }
+        // ];
+        if (self.settings.highlight && results.query.length && results.tokens.length) {
+          for (i = 0, n = results.tokens.length; i < n; i += 1) {
+            highlightOptions(filteredOptions, results.tokens[i].string);
+          }
+        }
+        
+        $dropdown_content.items = filteredOptions;
+         // results.items;
+        
 
         // highlight matching terms inline
         if (self.settings.highlight && results.query.length && results.tokens.length) {
           for (i = 0, n = results.tokens.length; i < n; i += 1) {
-            highlight($dropdown_content, results.tokens[i].regex);
+            // highlight($dropdown_content, results.tokens[i].regex);
           }
         }
 
@@ -4330,15 +4395,19 @@
         if (self.isLocked || self.isOpen || (self.settings.mode === 'multi' && self.isFull())) {
           return;
         }
+        // @ OPEN DROPDOWN HERE
         self.focus();
         self.isOpen = true;
         self.refreshState();
-        //self.$dropdown.css({ visibility: 'hidden', display: 'block' });
-        self.$dropdown.style.visibility = 'hidden';
-        self.$dropdown.style.display = 'block';
-        self.positionDropdown();
-        //self.$dropdown.css({ visibility: 'visible' });
-        self.$dropdown.style.visibility = 'visible';
+
+        var relativeTo = self.$control;
+        self.$dropdown.show(null, relativeTo);
+
+        // self.$dropdown.style.visibility = 'hidden';
+        // self.$dropdown.style.display = 'block';
+        // self.positionDropdown();
+
+        // self.$dropdown.style.visibility = 'visible';
         self.trigger('dropdown_open', self.$dropdown);
       };
 
@@ -4349,12 +4418,14 @@
         var self = this;
         var trigger = self.isOpen;
 
+        // @ CLOSE DROPDOWN HERE
         if (self.settings.mode === 'single' && self.items.length) {
           self.hideInput();
         }
 
         self.isOpen = false;
-        self.$dropdown.style.display = "none";
+        self.$dropdown.hide();
+        // self.$dropdown.style.display = "none";
         self.setActiveOption(null);
         self.refreshState();
 
