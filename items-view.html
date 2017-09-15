@@ -1,0 +1,148 @@
+<link rel="import" href="../tangere/tangere.html" />
+<link rel="import" href="../at-theme/at-theme.html" />
+<link rel="import" href="../at-core-style-classes/at-core-style-classes.html" />
+
+<dom-module id="items-view">
+  <template>
+    <style include="at-form-common"></style>
+    <style include="at-core-style-classes">
+      :host {
+        display: block;
+        box-sizing: border-box;
+
+        @apply(--layout-horizontal);
+        @apply(--layout-wrap);
+
+        /* @DEBUG */
+        border: 1px solid red;
+        margin: 4px;
+        padding: 4px;
+      }
+
+      .item {
+        @apply(--layout-inline-flex);
+        @apply(--layout-horizontal);
+        
+        margin: 0 4px 4px 0;
+      }
+
+      .item-title {
+        @apply(--unselectable);
+        @apply(--at-form-input-font);
+        display: block;
+        cursor: default;
+        padding-right: 14px;
+      }
+
+      .delete-button {
+        display: none;
+      }
+
+      .filter-text-input {
+        display: block;
+        min-width: 4px;
+        width: 4px;
+        padding: 2px;
+        @apply(--unselectable);
+
+        /* @DEBUG */
+        border: 1px dashed green;
+        margin: 0 4px 4px 0;
+      }
+
+      .dropdown-arrow {
+        @apply(--layout-inline-flex);
+
+        border-style: solid;
+        border-width: 5px 5px 0 5px;
+        border-color: #333333 transparent transparent transparent;
+      }
+
+      .dropdown-arrow.open {
+        border-width: 0 5px 5px 5px;
+        border-color: transparent transparent #333333 transparent;
+      }
+
+      :host([multiple]) .item {
+        border-radius: 2px;
+      }
+
+      :host([multiple]) .item-title {
+        @apply(--at-text-selected);
+        padding: 2px;
+        border-radius: 2px 0 0 2px;
+      }
+
+      :host([multiple]) .item .delete-button {
+        @apply(--at-text-selected);
+
+        padding: 2px;
+        line-height: 24px;
+        display: block;
+        cursor: pointer;
+        border-radius: 0 2px 2px 0;
+      }
+
+      :host([multiple]) .item .delete-button:hover {
+        background: #C4CDD1;
+      }
+
+      :host([multiple]) .dropdown-arrow {
+        display: none;
+      }
+
+    </style>
+    
+    <template is="dom-repeat" items="[[items]]">
+      <div class="item" index$="[[index]]" value$="[[item.value]]">
+        <div class="item-title">[[item.title]]</div>
+        <a class="delete-button" title="Remove">×</a>
+      </div>
+    </template>
+    <input id="filterTextInput" class="filter-text-input" />
+    <div class="dropdown-arrow"></div>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "items-view",
+    properties: {
+      
+      items: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+        observer: '_itemsChanged'
+      },
+
+      multiple: {
+        type: Boolean,
+        value: false,
+        readonly: true,
+        reflectToAttribute: true
+      }
+
+    },
+
+    listeners: {
+      'tap': '_handleHostOnTap'
+    },
+
+    _handleHostOnTap: function(event) {
+      // we return if mouse click happened on items or input field
+      if (event.target !== event.currentTarget) return;
+
+      // we focus input field otherwise
+      this.$.filterTextInput.focus();
+    },
+
+    _itemsChanged: function(newValue, oldValue) {
+      this.toggleAttribute('multiple', newValue.length > 1, this);
+    },
+
+    ready: function () {
+
+    }
+  });
+</script>

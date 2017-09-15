@@ -73,7 +73,8 @@
       </div>
       
       <div id="contentContainer" class="at-content-container">
-        <select id="selectTags" style="display:none"></select>
+        <select id="selectTags" hidden></select>
+
         <div id="disabledOverlay">
           <div id="disabledText">Loading...</div>
         </div>
@@ -2497,6 +2498,7 @@
         loadedSearches: {},
 
         $activeOption: null,
+        activeOptionIndex: -1,
         $activeItems: [],
 
         optgroups: {},
@@ -2624,22 +2626,24 @@
         // $dropdown_content.classList.add(settings.dropdownContentClass);
         // Polymer.dom($dropdown).appendChild($dropdown_content);
 
-        $dropdown_content.addEventListener('mousedown', function(e) {
-          e.preventDefault();
-          if (e.target !== self.$dropdown_content) {
-            if (e.target.parentElement === self.$dropdown_content) {
-              self.setActiveOption(e.target, true, true);
-              self.onOptionSelect({
-                currentTarget: self.$activeOption
-              });
-            } else {
-              self.setActiveOption(e.target.parentElement, true, true);
-              self.onOptionSelect({
-                currentTarget: self.$activeOption
-              });
-            }
-          }
-        });
+        // $dropdown_content.addEventListener('mousedown', function(e) {
+        //   e.preventDefault();
+        //   if (e.target === self.$dropdown_content) return;
+
+        //   if (e.target.parentElement === self.$dropdown_content) {
+        //     self.setActiveOption(e.target, true, true);
+        //     self.onOptionSelect({
+        //       currentTarget: self.$activeOption
+        //     });
+
+        //   } else {
+        //     self.setActiveOption(e.target.parentElement, true, true);
+        //     self.onOptionSelect({
+        //       currentTarget: self.$activeOption
+        //     });
+        //   }
+          
+        // });
 
         if (self.settings.copyClassesToDropdown) {
           for (i = 0; i < classes.length; i += 1) {
@@ -3011,39 +3015,50 @@
             }
             if (!self.isOpen && self.hasOptions) {
               self.open();
-            } else if (self.$activeOption) {
-              self.ignoreHover = true;
-              var $next = self.getAdjacentOption(self.$activeOption, 1);
-              if ($next.length) {
-                self.setActiveOption($next[0], true, true);
-              }
+            
             } else {
-              var $first = self.getFirstItem();
-              if ($first !== undefined) {
-                self.setActiveOption($first, true, true);
+              var optionsView = self.$dropdown_content;
+              var itemsLength = optionsView.items.length;
+              var activeIndex = self.activeOptionIndex;
+              
+              if (activeIndex < 0) {
+                optionsView.set('items.0.selected', true);
+                self.activeOptionIndex +=1;
+              
+              } else if (activeIndex < itemsLength-1) {
+                optionsView.set('items.'+ activeIndex +'.selected', false);
+                optionsView.set('items.'+ (activeIndex+1) +'.selected', true);
+                self.activeOptionIndex +=1;
               }
             }
+
             e.preventDefault();
             return;
           case KEY_UP:
             if (e.keyCode === KEY_P && (!e.ctrlKey || e.altKey)) {
               break;
             }
-            if (self.$activeOption) {
-              self.ignoreHover = true;
-              var $prev = self.getAdjacentOption(self.$activeOption, -1);
-              if ($prev.length) {
-                self.setActiveOption($prev[0], true, true);
-              }
+
+            var optionsView = self.$dropdown_content;
+            var itemsLength = optionsView.items.length;
+            var activeIndex = self.activeOptionIndex;
+            
+            if (activeIndex > 0) {
+              optionsView.set('items.'+ activeIndex +'.selected', false);
+              optionsView.set('items.'+ (activeIndex-1) +'.selected', true);
+              self.activeOptionIndex -=1;
             }
+
             e.preventDefault();
             return;
+
           case KEY_RETURN:
-            if (self.isOpen && self.$activeOption) {
+            if (self.isOpen && self.activeOptionIndex > -1) {
               self.onOptionSelect({
-                currentTarget: self.$activeOption
+                option: self.$dropdown_content.items[self.activeOptionIndex]
               });
             }
+
             if (self.settings.maxItems === 1) {
               var blurEvent = document.createEvent('Event');
               blurEvent.initEvent('blur', true, true);
@@ -3051,6 +3066,7 @@
             }
             e.preventDefault();
             return;
+
           case KEY_LEFT:
             self.advanceSelection(-1, e);
             return;
@@ -3061,9 +3077,9 @@
             if (!self.$activeOption) {
               self.$activeOption = self.getFirstItem();
             }
-            if (self.settings.selectOnTab && self.isOpen && self.$activeOption) {
+            if (self.settings.selectOnTab && self.isOpen && self.activeOptionIndex > -1) {
               self.onOptionSelect({
-                currentTarget: self.$activeOption
+                option: self.$dropdown_content.items[self.activeOptionIndex]
               });
               // e.preventDefault();
             }
@@ -3230,27 +3246,33 @@
        * @returns {boolean}
        */
       namespace.onOptionSelect = function(e) {
-        var value, $target, $option, self = this;
+        var self = this;
+        self.lastQuery = null;
+        self.setTextboxValue('');
+        self.addItem(e.option.value);
 
-        if (e.preventDefault) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
 
-        $target = e.currentTarget;
-        if ($target.classList.contains('create')) {
-          self.createItem();
-        } else {
-          value = $target.getAttribute('data-value');
-          if (typeof value !== 'undefined') {
-            self.lastQuery = null;
-            self.setTextboxValue('');
-            self.addItem(value);
-            if (!self.settings.hideSelected && e.type && /mouse/.test(e.type)) {
-              self.setActiveOption(self.getOption(value));
-            }
-          }
-        }
+        // var value, $target, $option, self = this;
+
+        // if (e.preventDefault) {
+        //   e.preventDefault();
+        //   e.stopPropagation();
+        // }
+
+        // $target = e.currentTarget;
+        // if ($target.classList.contains('create')) {
+        //   self.createItem();
+        // } else {
+        //   value = $target.getAttribute('data-value');
+        //   if (typeof value !== 'undefined') {
+        //     self.lastQuery = null;
+        //     self.setTextboxValue('');
+        //     self.addItem(value);
+        //     if (!self.settings.hideSelected && e.type && /mouse/.test(e.type)) {
+        //       self.setActiveOption(self.getOption(value));
+        //     }
+        //   }
+        // }
       };
 
       /**
@@ -3658,6 +3680,7 @@
         }
 
         var self = this;
+        self.activeOptionIndex = -1;
         var query = self.$control_input.value.trim();
         var results = self.search(query);
         var $dropdown_content = self.$dropdown_content;
@@ -3744,11 +3767,11 @@
         }
 
         // add "selected" class to selected options
-        if (!self.settings.hideSelected) {
-          for (i = 0, n = self.items.length; i < n; i += 1) {
-            self.getOption(self.items[i]).classList.add('selected');
-          }
-        }
+        // if (!self.settings.hideSelected) {
+        //   for (i = 0, n = self.items.length; i < n; i += 1) {
+        //     self.getOption(self.items[i]).classList.add('selected');
+        //   }
+        // }
 
         // add create option
         has_create_option = self.canCreate(query);

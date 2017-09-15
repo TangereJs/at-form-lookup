@@ -23,21 +23,25 @@
         margin: 4px;
         padding: 4px;
       }
+
+      .option[selected] {
+        @apply(--at-text-primary-selected);
+      }
     </style>
     
-    <div class="debug">
+    <!-- <div class="debug">
       <h4>Appended Content</h4>
       <content></content>
-    </div>
+    </div> -->
 
     <div class="debug">
-      <h4>Items Content</h4>
+      <!-- <h4>Items Content</h4> -->
       <template is="dom-repeat" items="[[items]]">
         <template is="dom-if" if="[[!itemView]]">
-          <option-view class="option" data="[[item]]"></option-view>
+          <option-view class="option" data="[[item]]" selected$="[[item.selected]]"></option-view>
         </template>
         <template is="dom-if" if="[[itemView]]">
-          <at-core-view class="option" view="[[itemView]]" model="[[item]]"></option-view>
+          <at-core-view class="option" view="[[itemView]]" model="[[item]]" selected$="[[item.selected]]"></option-view>
         </template>
       </template>      
     </div>
@@ -59,11 +63,12 @@
       itemView: {
         type: String,
         value: ''        
-      }
+      },
 
     },
     ready: function () {
 
     }
+
   });
 </script>
