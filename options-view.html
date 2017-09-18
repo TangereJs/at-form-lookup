@@ -29,13 +29,7 @@
       }
     </style>
     
-    <!-- <div class="debug">
-      <h4>Appended Content</h4>
-      <content></content>
-    </div> -->
-
     <div class="debug">
-      <!-- <h4>Items Content</h4> -->
       <template is="dom-repeat" items="[[items]]">
         <template is="dom-if" if="[[!itemView]]">
           <option-view class="option" data="[[item]]" selected$="[[item.selected]]"></option-view>

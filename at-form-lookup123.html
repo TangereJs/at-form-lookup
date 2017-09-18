@@ -8,27 +8,61 @@
 <link rel="import" href="../at-core-dropdown/at-core-dropdown.html" />
 <link rel="import" href="at-form-lookup-input-validation-behavior.html">
 <link rel="import" href="at-form-lookup-styles.html">
-<link rel="import" href="../at-core-spinner/at-core-spinner.html" />
-<link rel="import" href="../at-carbon-message/at-carbon-message.html" />
-<link rel="import" href="items-view.html" />
 <link rel="import" href="options-view.html" />
 
 <dom-module id="at-form-lookup">
   <template>
     <style include="at-form-common"></style>
-    <style include="at-form-lookup-styles">
+    <style include="at-form-lookup-styles"></style>
+    <style>
       :host {
         @apply(--at-form-host);
         box-sizing: border-box;
       }
+
+      .input {
+        @apply(--at-form-input-common);
+      }
+
+      #contentContainer {
+        position: relative;;
+      }
+
+      #contentContainer.error .input {
+        @apply(--at-form-content-error);
+      }
+
+      #disabledOverlay {
+        display: none;
+      }
+
+      #disabledOverlay[disabled] {
+        display: flex;
+        flex-direction: row;
+        position: absolute;
+        bottom: 0px;
+        width: 100%;
+        z-index: 99999;
+        height: 100%;
+      }
+
+      #disabledText {
+        text-align: center;
+        align-self: center;
+        flex: 1;
+      }
+
+      at-core-view.item {
+        display: block;
+      }
     </style>
     
-    <at-core-activity id="coreAjax" url="[[url]]" params="[[params]]" on-response="_handleCoreAjaxOnResponse" on-error="_handleCoreAjaxOnError"></at-core-activity>
-    <at-core-spinner id="coreSpinner"></at-core-spinner>
-    <at-carbon-message id="carbonMessage" type="info"></at-carbon-message>
+    
     
     <div id="atContainer" class="at-container">
-        <!--
+      <at-core-activity id="coreAjax" handle-as="json" url="{{url}}" params="{{params}}" on-response="_coreAjaxOnResponse"  on-error="_handle_coreAjax_onError"></at-core-activity>
+
+      <!--
         Introduced label container as a workaround for a bug with opacity calculation in polymer-js
         Right now, if opacity is changed via js by setting a disabled class on iron-label, iron-label is not styled correctly
         And changing its text also doesn't work correctly when disabled class is set
@@ -39,9 +73,13 @@
       </div>
       
       <div id="contentContainer" class="at-content-container">
-        <items-view id="itemsView" multiple$="[[_computeMultiple(maxItems)]]"></items-view>
-      </div>
+        <select id="selectTags" hidden></select>
 
+        <div id="disabledOverlay">
+          <div id="disabledText">Loading...</div>
+        </div>
+      </div>
+      
       <at-core-dropdown id="coreDropdown">
         <options-view id="optionsView"></options-view>
       </at-core-dropdown>
@@ -56,7 +94,9 @@
   Polymer({
     is: 'at-form-lookup',
     behaviors: [ Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric, Tangere.behaviors.AtFormLookupInputValidation ],
-
+    _selectizeLoadCallback: false,
+    _selectizeInstance: {},
+    _isUpdating: false,
     properties: {
       /**
        * Element's label for element display purposes
@@ -330,38 +370,14 @@
         title: 'Maximum number of selectable items'
       },
 
-      /**
-       * Liquid template to render options in the dropdown with
-       * 
-       * @property itemView
-       * @type String
-       * @default ''
-       */
       itemView: {
         type: String,
         title: "Item view",
-        value: '',
         observer: "_itemViewChanged",
         xtype: "code",
         mode: "carbon"
-      },
-
-      /**
-       * view model objects that holds internal state of the element
-       * 
-       * @property _viewModel
-       * @type Object
-       * @default {}
-       */
-      _viewModel: {
-        type: Object,
-        value: function() {
-          return {};
-        }
       }
-
     },
-
     $meta: [{
       title: "Enum",
       type: "string",
@@ -373,24 +389,45 @@
     }],
 
     observers: [
-      '_internalValidStateUpdate(required)',
-      '_initialize(available, enum, xvaluelist, value, initialSearchTerm, url, xurl, noCredentials, noPreload, params)'
+      '_internalValidStateUpdate(required)'
     ],
 
     _hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hidden", newValue, this.$.label);
     },
 
-    // computes multiple attribute for items-view
-    _computeMultiple: function(maxItems) {
-      var value = parseInt(maxItems);
-      if (isNaN(value)) {
-        value = 0;
-      }
-      return value > 0;
-    },
-
     ready: function() {
+
+      var maxItems = parseInt(this.maxItems);
+      if (isNaN(maxItems)) {
+        maxItems = 0;
+      }
+      maxItems = maxItems < 1 ? null : maxItems;
+
+      // create the selectize instance
+      var instance = this._selectizeInstance = window.atFormLookup.selectize(this.$.selectTags, {
+        plugins: ['remove_button'],
+        create: this.allowNewItems,
+        selectOnTab: true,
+        preload: !this.noPreload,
+        allowEmpty: this.allowEmpty,
+        maxItems: maxItems,
+        load: this._selectizeOnLoad.bind(this),
+        onChange: this._selectizeChange.bind(this),
+        atFormLookup: this // we need this to compute value of display property each time dropdown is positioned 
+      });
+
+      // NOT NEEDED clear options and items from from instance
+
+      // initialzie the component
+      // maxItems = 1 => show dropdown icon; maxItems > 1 do not show dropdown icon
+
+      // set disabled state
+      if (this.disabled) {
+        this.toggleClass('disabled', true, this.$.label);
+        instance.disable();
+      }
+
 
       // *ij* 17.06.2016 (dd.mm.yyyy)
       // there is a requirement for 'required' at-form-*elements that they initially be displayed
@@ -406,8 +443,24 @@
         });
       }
 
-      // call into at-form-behaviors.formUIGeneric._attachFocusBlurEvents
+      this._isReady = true;
+
+      // reinitialize url
+      this._urlChanged();
+
+      // set available options
+      this._availableChanged(this.available, []);
+
+      // set items selected by default
+      this._valueChanged(this.value, []);
+
+      this._disabledChanged(this.disabled, undefined);
+
       this._attachFocusBlurEvents();
+
+      this._internalValidStateUpdate(this.required);
+
+      this._itemViewChanged(this.itemView);
     },
 
     attached: function() {
@@ -424,8 +477,9 @@
     },
 
     _handleWindowScrollEvent: function() {
+      if (!this._selectizeInstance) return;
       // close the dropdown
-      this.$.coreDropdown.hide();
+      this._selectizeInstance.close();
     },
 
     _disabledChanged: function(newValue, oldValue) {
@@ -493,67 +547,6 @@
       this.toggleClass('error', !isValid, label);
       var contentContainer = this.$.contentContainer;
       this.toggleClass('error', !isValid, contentContainer);
-    },
-
-    _initialize: function(available, enumarr, xvaluelist, value, initialSearchTerm, url, xurl, noCredentials, noPreload, params) {
-
-      var self = this;
-      // debounce the initialization to avoid mutliple function calls in two use cases
-      // 1. during polymer element lifecycle function calls
-      // 2. in playground
-      // 3. in form designer
-      this.debounce('debounce-initialization', function() {
-        self._initializeDebounced(available, enumarr, xvaluelist, value, initialSearchTerm, url, xurl, noCredentials, noPreload, params);
-      }, 250);
-    },
-
-    _initializeDebounced: function(available, enumarr, xvaluelist, value, initialSearchTerm, url, xurl, noCredentials, noPreload, params) {
-      console.log(`_initializeDebounced`);
-
-      console.log(`available ${available}`);
-      console.log(`enum ${JSON.stringify(enumarr)}`);
-      console.log(`xvaluelist ${JSON.stringify(xvaluelist)}`);
-      console.log(`value ${value}`);
-      console.log(`initialSearchTerm ${initialSearchTerm}`);
-      console.log(`url ${url}`);
-      console.log(`xurl ${xurl}`);
-      console.log(`noCredentials ${noCredentials}`);
-      console.log(`noPreload ${noPreload}`);
-      console.log(`params ${JSON.stringify(params)}`);
-
-      // detect if we work with local or remote data source
-      if (!url && !xurl) {
-        // we are working with local data source
-        this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm);
-
-      } else {
-        // we are working with remote data source
-        this._initializeRemoteDataSource(initialSearchTerm, url, xurl, noCredentials, noPreload, params);
-      }
-    },
-
-    _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm) {
-
-      // 1. compute available options
-      var availableOptions = xvaluelist || enumarr || available;
-
-      // 2. put available options into options-view
-
-      // 3. compute initially selected items based on value
-
-      // 4. put initalSearchTerm into filterTextInput
-
-
-    },
-
-    _initializeRemoteDataSource: function(initialSearchTerm, url, xurl, noCredentials, noPreload, params) {
-      // 1. compute available options
-
-      // 2. put available options into options-view
-
-      // 3. compute initially selected items based on value
-
-      // 4. put initalSearchTerm into filterTextInput
     },
 
     _availableChanged: function(newValue, oldValue) {
@@ -857,12 +850,12 @@
       }
     },
 
-    _handleCoreAjaxOnError: function(event) {
+    _handle_coreAjax_onError: function(event) {
       this.$.disabledOverlay.removeAttribute('disabled');
       this._selectizeInstance.enable();
     },
 
-    _handleCoreAjaxOnResponse: function(event) {
+    _coreAjaxOnResponse: function(event) {
       // extract the data from the event
       var eventObject = {
         response: event.detail,
@@ -1057,16 +1050,17 @@
 
 
     focus: function() {
-      this._getFocusableElement().focus();
+      if (this._selectizeInstance) {
+        this._selectizeInstance.focus(true);
+      }
     },
-
     // this function is part of the hint/validation API
     // hint should be displayed when element gains focus
     // behavior can not know when element gained focus
     // but if gived focusable element it can attach to its focus event
     // it should return focusable element if available or null if focusable element doesn't exist
     _getFocusableElement: function () {
-      var focusable = this.$.itemsView.$.filterTextInput;
+      var focusable = this.$$('.control input');
       return focusable;
     }
   });
