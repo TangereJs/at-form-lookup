@@ -11,7 +11,6 @@
         box-sizing: border-box;
 
         @apply(--layout-horizontal);
-        @apply(--layout-wrap);
 
         /* @DEBUG */
         border: 1px solid red;
@@ -22,13 +21,12 @@
       .item {
         @apply(--layout-inline-flex);
         @apply(--layout-horizontal);
-        
-        margin: 0 4px 4px 0;
       }
 
       .item-title {
         @apply(--unselectable);
         @apply(--at-form-input-font);
+        @apply(--layout-self-center);
         display: block;
         cursor: default;
         padding-right: 14px;
@@ -39,19 +37,27 @@
       }
 
       .filter-text-input {
-        display: block;
+        @apply(--at-form-input-font);
+        @apply(--layout-inline);
+        /*display: block;*/
         min-width: 4px;
         width: 4px;
-        padding: 2px;
+        /*padding: 2px;*/
         @apply(--unselectable);
 
         /* @DEBUG */
         border: 1px dashed green;
-        margin: 0 4px 4px 0;
+        /*border: none;*/
+        /*margin: 0 4px 4px 0;*/
+      }
+
+      .filter-text-input:focus {
+        outline: none;
       }
 
       .dropdown-arrow {
-        @apply(--layout-inline-flex);
+        margin-left: auto;
+        @apply(--layout-self-center);
 
         border-style: solid;
         border-width: 5px 5px 0 5px;
@@ -63,7 +69,12 @@
         border-color: transparent transparent #333333 transparent;
       }
 
+      :host([multiple]) {
+        @apply(--layout-wrap);
+      }
+
       :host([multiple]) .item {
+        margin: 0 4px 4px 0;
         border-radius: 2px;
       }
 
@@ -73,11 +84,11 @@
         border-radius: 2px 0 0 2px;
       }
 
-      :host([multiple]) .item .delete-button {
+      :host([multiple]) .delete-button {
         @apply(--at-text-selected);
 
         padding: 2px;
-        line-height: 24px;
+        line-height: 22px;
         display: block;
         cursor: pointer;
         border-radius: 0 2px 2px 0;
@@ -85,6 +96,10 @@
 
       :host([multiple]) .item .delete-button:hover {
         background: #C4CDD1;
+      }
+
+      :host([multiple]) .filter-text-input {
+        margin: 0 4px 4px 0;
       }
 
       :host([multiple]) .dropdown-arrow {
@@ -99,7 +114,7 @@
         <a class="delete-button" title="Remove">×</a>
       </div>
     </template>
-    <input id="filterTextInput" class="filter-text-input" />
+    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" />
     <div class="dropdown-arrow"></div>
   </template>
 </dom-module>
@@ -137,12 +152,161 @@
       this.$.filterTextInput.focus();
     },
 
+    _VK_KEY_CODES: {
+      VK_ENTER: 13,
+      VK_ESCAPE: 27,
+      VK_TAB: 9,
+      VK_A: 65,
+      VK_COMMA: 188,
+      VK_LEFT: 37,
+      VK_UP: 38,
+      VK_P: 80,
+      VK_RIGHT: 39,
+      VK_DOWN: 40,
+      VK_N: 78,
+      VK_BACKSPACE: 8,
+      VK_DELETE: 46,
+      VK_SHIFT: 16,
+      VK_CMD: /Mac/.test(navigator.userAgent) ? 91 : 17,
+      VK_CTRL: /Mac/.test(navigator.userAgent) ? 18 : 17
+    },
+
+    _handleFilterTextInputKeydown: function(event) {
+      var key = event.which;
+
+      var filterTextInput = this.$.filterTextInput;
+      var textBuffer = this._computeTextBuffer(filterTextInput, event);
+      var newWidth = this._measureString(textBuffer, filterTextInput);
+      // var widthOfPaddingAndBorders = 8;
+        var widthOfPaddingAndBorders = 0;
+      filterTextInput.style.width = Math.ceil(widthOfPaddingAndBorders+newWidth) + 'px';
+    },
+
     _itemsChanged: function(newValue, oldValue) {
       this.toggleAttribute('multiple', newValue.length > 1, this);
     },
 
     ready: function () {
 
+    },
+
+    _computeTextBuffer: function(filterTextInput, keydownEvent) {
+      var value = filterTextInput.value;
+      var keyCode = keydownEvent.keyCode;
+      var printable = (
+        (keyCode >= 97 && keyCode <= 122) || // a-z
+        (keyCode >= 65 && keyCode <= 90) || // A-Z
+        (keyCode >= 48 && keyCode <= 57) || // 0-9
+        keyCode === 32 // space
+      );
+
+      if (keyCode === this._VK_KEY_CODES.VK_DELETE || keyCode === this._VK_KEY_CODES.VK_BACKSPACE) {
+        var selection = this._getSelection(filterTextInput);
+        if (selection.length) {
+          value = value.substring(0, selection.start) + value.substring(selection.start + selection.length);
+        } else if (keyCode === this._VK_KEY_CODES.VK_BACKSPACE && selection.start) {
+          value = value.substring(0, selection.start - 1) + value.substring(selection.start + 1);
+        } else if (keyCode === this._VK_KEY_CODES.VK_DELETE && typeof selection.start !== 'undefined') {
+          value = value.substring(0, selection.start) + value.substring(selection.start + 1);
+        }
+      } else if (printable) {
+        var shift = keydownEvent.shiftKey;
+        var character = String.fromCharCode(keydownEvent.keyCode);
+        if (shift) {
+          character = character.toUpperCase();
+        } else {
+          character = character.toLowerCase();
+        }
+        value += character;
+      } else {
+        // TODO
+        // add punctuation and other non letter printable characters to value
+      }
+
+      if (!value) {
+        var placeholder = filterTextInput.getAttribute('placeholder');
+        if (placeholder) { 
+          value = placeholder;
+        }
+      }
+
+      return value;
+    },
+
+    /**
+     * Determines the current selection within a text input control.
+     * Returns an object containing:
+     *  -start
+     *  -length
+     *
+     * @param {object} input
+     * @returns {object}
+     */
+    _getSelection: function(input) {
+      var result = {
+        start: 0,
+        length: 0
+      };
+      if (input.selectionStart !== undefined) {
+        result.start = input.selectionStart;
+        result.length = input.selectionEnd - result.start;
+      } else if (document.selection) {
+        input.focus();
+        var sel = document.selection.createRange();
+        var selLen = document.selection.createRange().text.length;
+        sel.moveStart('character', -input.value.length);
+        result.start = sel.text.length - selLen;
+        result.length = selLen;
+      }
+      return result;
+    },
+
+    /**
+     * Measures the width of a string within a
+     * parent element (in pixels).
+     *
+     * @param {string} str
+     * @param {object} parent
+     * @returns {int}
+     */
+    _measureString: function(str, parent) {
+      if (!str) {
+        return 0;
+      }
+
+      var computedStyle = window.getComputedStyle(parent);
+      var fontSize = computedStyle.getPropertyValue('font-size');
+      var fontFamily = computedStyle.getPropertyValue('font-family');
+
+      if (fontSize === "0px" && fontFamily === "") {
+        /*
+          If parent is hidden, or any parentElement of parent is hidden font-size and font-family do not exist
+          As a fallback we get font-size and font-family from document.body instead
+        */
+        computedStyle = window.getComputedStyle(document.body);
+        fontSize = computedStyle.getPropertyValue('font-size');
+        fontFamily = computedStyle.getPropertyValue('font-family');
+      }
+
+      var measurementDiv = document.createElement('div');
+      measurementDiv.style.position = 'absolute';
+      measurementDiv.style.visibility = 'hidden';
+      measurementDiv.style.height = 'auto';
+      measurementDiv.style.width = 'auto';
+      measurementDiv.style.whiteSpace = 'pre';
+      measurementDiv.style.fontFamily = fontFamily;
+      measurementDiv.style.fontSize = fontSize;
+      measurementDiv.style.left = '-1000px';
+      
+      measurementDiv.textContent = str;
+
+      document.body.appendChild(measurementDiv);
+
+      var width = measurementDiv.getBoundingClientRect().width;
+
+      document.body.removeChild(measurementDiv);
+
+      return width;
     }
   });
 </script>
