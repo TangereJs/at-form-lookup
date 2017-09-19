@@ -27,7 +27,7 @@
     <at-core-spinner id="coreSpinner"></at-core-spinner>
     <at-carbon-message id="carbonMessage" type="info"></at-carbon-message>
     
-    <div id="atContainer" class="at-container">
+    <div id="atContainer" class="at-container" hidden>
         <!--
         Introduced label container as a workaround for a bug with opacity calculation in polymer-js
         Right now, if opacity is changed via js by setting a disabled class on iron-label, iron-label is not styled correctly
@@ -130,8 +130,7 @@
        */
       available: {
         type: String,
-        value: '',
-        observer: '_availableChanged'
+        value: ''
       },
       // ------------------------------------------------------------
       // "Why is xvaluelist here?" - you ask.
@@ -154,7 +153,6 @@
         value: function() {
           return [];
         },
-        observer: '_availableChanged',
         schema: {
           items: {
             type: "object",
@@ -189,7 +187,6 @@
         value: function() {
           return [];
         },
-        observer: '_availableChanged',
         schema: {
           items: {
             type: "string",
@@ -213,7 +210,6 @@
       value: {
         type: String,
         value: '',
-        observer: '_valueChanged',
         title: 'Value'
       },
 
@@ -226,7 +222,6 @@
       initialSearchTerm: {
         type: String,
         value: "",
-        observer: '_initialSearchTermChanged',
         title: 'Initial Search Term'
       },
 
@@ -387,7 +382,7 @@
       if (isNaN(value)) {
         value = 0;
       }
-      return value > 0;
+      return value > 1;
     },
 
     ready: function() {
@@ -472,7 +467,7 @@
         * this._selectizeInstance.$control_input.value contains value that user typed
         * this.value is empty if user didn't select an item
        */
-      var userTypedText = this._selectizeInstance.$control_input.value;
+      var userTypedText = this.$.itemsView.$.filterTextInput;
       if (
         userTypedText.length && // if user typed text
         !this.value.length // but didn't select a value
@@ -510,16 +505,16 @@
     _initializeDebounced: function(available, enumarr, xvaluelist, value, initialSearchTerm, url, xurl, noCredentials, noPreload, params) {
       console.log(`_initializeDebounced`);
 
-      console.log(`available ${available}`);
-      console.log(`enum ${JSON.stringify(enumarr)}`);
-      console.log(`xvaluelist ${JSON.stringify(xvaluelist)}`);
-      console.log(`value ${value}`);
-      console.log(`initialSearchTerm ${initialSearchTerm}`);
-      console.log(`url ${url}`);
-      console.log(`xurl ${xurl}`);
-      console.log(`noCredentials ${noCredentials}`);
-      console.log(`noPreload ${noPreload}`);
-      console.log(`params ${JSON.stringify(params)}`);
+      // console.log(`available ${available}`);
+      // console.log(`enum ${JSON.stringify(enumarr)}`);
+      // console.log(`xvaluelist ${JSON.stringify(xvaluelist)}`);
+      // console.log(`value ${value}`);
+      // console.log(`initialSearchTerm ${initialSearchTerm}`);
+      // console.log(`url ${url}`);
+      // console.log(`xurl ${xurl}`);
+      // console.log(`noCredentials ${noCredentials}`);
+      // console.log(`noPreload ${noPreload}`);
+      // console.log(`params ${JSON.stringify(params)}`);
 
       // detect if we work with local or remote data source
       if (!url && !xurl) {
@@ -536,14 +531,80 @@
 
       // 1. compute available options
       var availableOptions = xvaluelist || enumarr || available;
+      var vmOptions = [];
+
+      function isArray(obj) { return Object.prototype.toString.apply(obj) === "[object Array]"; }
+      function isString(obj) { return Object.prototype.toString.apply(obj) === "[object String]"; }
+      function isObject(obj) { return Object.prototype.toString.apply(obj) === "[object Object]"; }
+      function isCommaSeparated(obj) { return isString(obj) && obj.indexOf(',') > -1; }
+
+      if (isArray(availableOptions)) {
+        availableOptions.forEach(function(option) {
+          if (isString(option)) {
+            option = option.trim();
+            vmOptions.push({
+              title: option,
+              value: option
+            });
+          } else if (isObject(option)) {
+            if (!option.title) {
+              option.title = option.value;
+            }
+            vmOptions.push(option);
+          }
+        });
+
+      } else if (isCommaSeparated(availableOptions)) {
+        availableOptions = availableOptions.split(',');
+        availableOptions.forEach(function(option) { 
+          option = option.trim();
+          vmOptions.push({
+            title: option,
+            value: option
+          });
+        });
+      }
 
       // 2. put available options into options-view
+      this.$.optionsView.items = vmOptions;
 
       // 3. compute initially selected items based on value
+      if (isString(value) && value.length) {
+        // value is a csv string
+        var valueParts = value.split(',');
+        var selectedOptions = [];
+        valueParts.forEach(function(valuePart) {
+          valuePart = valuePart.trim();
+          var found;
+          for (var i = 0; i < vmOptions.length && !found; i++) {
+            var vmOption = vmOptions[i];
+            found = vmOption.value === valuePart;
+          }
+          // @TODO handle maxItems here ?
+          if (found) {
+            selectedOptions.add(found);
+          }
+        });
+
+        this.$.itemsView.items = selectedOptions;
+
+      } else {
+        if (!isString(value)) {
+          console.log('type of value is ' + (typeof value));
+        }
+      }
 
       // 4. put initalSearchTerm into filterTextInput
+      this.$.itemsView.$.filterTextInput.value = initialSearchTerm;
 
+      // 5. hide the spinner
+      this.$.coreSpinner.display = 'none';
 
+      // 6. show the element
+      this.$.atContainer.removeAttribute('hidden');
+
+      // 7. attach relevant events
+      this._setupEventListeners();
     },
 
     _initializeRemoteDataSource: function(initialSearchTerm, url, xurl, noCredentials, noPreload, params) {
@@ -556,49 +617,149 @@
       // 4. put initalSearchTerm into filterTextInput
     },
 
-    _availableChanged: function(newValue, oldValue) {
-      var i;
+    _setupEventListeners: function() {
+      var filterTextInput = this.$.itemsView.$.filterTextInput;
 
-      if (this._isReady) {
-        var instance = this._selectizeInstance;
-        // *ij* this setting prevents unnecessary change event
-        // which clears the current valid at-form-lookup value
-        instance.isInitializing = true;
-        instance.clearOptions(true);
-        instance.isInitializing = false;
-
-        if (isArray(newValue)) {
-          for (i = 0; i < newValue.length; i += 1) {
-            var option = newValue[i];
-            if (isString(option)) {
-              option = option.trim();
-              instance.addOption({
-                value: option,
-                title: option
-              });
-            } else if (!option.title) {
-              option.title = option.value;
-              instance.addOption(option);
-            } else {
-              instance.addOption(option);
-            }
-          }
-          instance.addOption(newValue);
-        } else if (isCommaSeparated(newValue)) {
-          var items = newValue.split(',');
-          for (i = 0; i < items.length; i += 1) {
-            var newOption = {
-              value: items[i].trim(),
-              title: items[i].trim()
-            };
-            instance.addOption(newOption);
-          }
-        }
-
-        if (this.value !== "" && instance.options.hasOwnProperty(this.value)) {
-          instance.addItem(this.value);
-        }
+      if (!this._boundFilterTextInputFocusHandler) {
+        this._boundFilterTextInputFocusHandler = this._handleFilterTextInputFocusEvent.bind(this);
       }
+      filterTextInput.addEventListener('focus', this._boundFilterTextInputFocusHandler);
+
+      if (!this._boundFilterTextInputBlurHandler) {
+        this._boundFilterTextInputBlurHandler = this._handleFilterTextInputBlurEvent.bind(this);
+      }
+      filterTextInput.addEventListener('blur', this._boundFilterTextInputBlurHandler);
+
+      if (!this._boundFilterTextInputKeydownHandler) {
+        this._boundFilterTextInputKeydownHandler = this._handleFilterTextInputKeydownEvent.bind(this);
+      }
+      filterTextInput.addEventListener('keydown', this._boundFilterTextInputKeydownHandler);
+
+      // @TODO Probably not necessary; remove if so
+      if (!this._boundItemsViewItemsChangedHandler) {
+        this._boundItemsViewItemsChangedHandler = this._handleItemsViewItemsChangedEvent.bind(this);
+      }
+      this.$.itemsView.addEventListener('items-changed', this._boundItemsViewItemsChangedHandler);
+
+      if (!this._boundOptionsViewOptionSelectedHadler) {
+        this._boundOptionsViewOptionSelectedHadler = this._handleOptionsViewOptionSelectedEvent.bind(this);
+      }
+      this.$.optionsView.addEventListener('option-selected', this._boundOptionsViewOptionSelectedHadler);
+    },
+
+    _detachEventListeners: function() {
+      var itemsView = this.$.itemsView;
+      var filterText = itemsView.$.filterTextInput;
+      filterTextInput.removeEventListener('focus', this._boundFilterTextInputFocusHandler);
+      filterTextInput.removeEventListener('blur', this._boundFilterTextInputBlurHandler);
+
+      // @TODO Probably not necessary; remove if so
+      itemsView.removeEventListener('items-changed', this._boundItemsViewItemsChangedHandler);
+
+      this.$.optionsView.removeEventListener('option-selected', this._boundOptionsViewOptionSelectedHadler);
+    },
+
+    _handleFilterTextInputFocusEvent: function(event) {
+      if (this.$.itemsView.items.length === this.maxItems) return;
+      this.$.coreDropdown.show(null, this.$.itemsView);
+    },
+
+    _handleFilterTextInputBlurEvent: function(event) {
+      this.$.coreDropdown.hide();
+    },
+
+    _handleFilterTextInputKeydownEvent: function(event) {
+      var keyCode = event.keyCode;
+
+      var VK_BACKSPACE = 8;
+      var VK_TAB = 9;
+      var VK_ENTER = 13;
+      var VK_UP = 38;
+      var VK_DOWN = 40;
+      var VK_ESCAPE = 27;
+
+      switch (keyCode) {
+        case VK_ESCAPE:
+          this.$.coreDropdown.hide();
+          break;
+
+        case VK_ENTER:
+        case VK_TAB:
+          // select highlighted element
+          var selectedItem = this._selectHighlighted(this.$.optionsView.items, this.maxItems);
+          if (selectedItem) {
+            this.$.itemsView.push('items', selectedItem);
+          }
+          break;
+
+        case VK_UP: 
+          // highlight previous element 
+          this._highlightPrevious(this.$.optionsView.items);
+          break;
+
+        case VK_DOWN: 
+          // highlight next element 
+          this._highlightNext(this.$.optionsView.items);
+          break;
+
+        case VK_BACKSPACE: 
+          if (this.$.itemsView.items.length === this.maxItems) return;
+          this.$.coreDropdown.show(null, this.$.itemsView);
+          break;
+      }
+    },
+
+    _findSelectedIndex: function(options) {
+      for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        if (option.selected) return i;
+      }
+      return -1;
+    },
+
+    _selectHighlighted: function(options, maxItems) {
+      if (this.$.itemsView.items.length === maxItems) return;
+
+      var selectedIndex = this._findSelectedIndex(options);
+      if (selectedIndex < 0) return;
+      this.$.optionsView.set('items.' + selectedIndex + '.selected', false);
+      return this.$.optionsView.items[selectedIndex];
+    },
+
+    _highlightPrevious: function(options) {
+      var selectedIndex = this._findSelectedIndex(options);
+      if (selectedIndex < 1) return;
+      this.$.optionsView.set('items.' + selectedIndex + '.selected', false);
+      selectedIndex -= 1;
+      if (selectedIndex < 0) return;
+      this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
+    },
+
+    _highlightNext: function(options) {
+      var selectedIndex = this._findSelectedIndex(options);
+      if (selectedIndex > -1 && selectedIndex < options.length-1) {
+        this.$.optionsView.set('items.' + selectedIndex + '.selected', false);
+      }
+      selectedIndex +=1;
+      if (selectedIndex > options.length) return;
+      this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
+    },
+
+    // @TODO Probably not necessary; remove if so
+    _handleItemsViewItemsChangedEvent: function(event) {
+      if (event.detail.path !== "items.length") return;
+      console.log('items-view items-changed ');
+    },
+
+    _handleOptionsViewOptionSelectedEvent: function(event) {
+      var selectedIndex = this._findSelectedIndex(this.$.optionsView.items);
+      if (selectedIndex > -1) {
+        this.$.optionsView.set('items.' + selectedIndex + '.selected', false);
+      }
+      var index = event.detail.index;
+      this.$.optionsView.set('items.' + index + '.selected', true);
+      var option = event.detail.value;
+      this.$.itemsView.push('items', option);
     },
 
     // this function is here to improve compatibility with form designer

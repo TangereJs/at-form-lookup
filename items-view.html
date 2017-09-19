@@ -180,6 +180,10 @@
       // var widthOfPaddingAndBorders = 8;
         var widthOfPaddingAndBorders = 0;
       filterTextInput.style.width = Math.ceil(widthOfPaddingAndBorders+newWidth) + 'px';
+
+      if (event.keyCode === this._VK_KEY_CODES.VK_BACKSPACE && this.items.length && !filterTextInput.value) {
+        this.splice('items', this.items.length-1, 1);
+      }
     },
 
     _itemsChanged: function(newValue, oldValue) {

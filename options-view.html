@@ -32,10 +32,10 @@
     <div class="debug">
       <template is="dom-repeat" items="[[items]]">
         <template is="dom-if" if="[[!itemView]]">
-          <option-view class="option" data="[[item]]" selected$="[[item.selected]]"></option-view>
+          <option-view class="option" data="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
         </template>
         <template is="dom-if" if="[[itemView]]">
-          <at-core-view class="option" view="[[itemView]]" model="[[item]]" selected$="[[item.selected]]"></option-view>
+          <at-core-view class="option" view="[[itemView]]" model="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
         </template>
       </template>      
     </div>
@@ -62,6 +62,13 @@
     },
     ready: function () {
 
+    },
+
+    _handleOptionOnTap: function(event) {
+      var index = event.currentTarget.getAttribute('index');
+      index = parseInt(index);
+      var option = this.items[index];
+      this.fire('option-selected', { index: index, value: option }, { bubbles: false });
     }
 
   });
