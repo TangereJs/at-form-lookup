@@ -23,6 +23,10 @@
         @apply(--layout-horizontal);
       }
 
+      .item:focus {
+        outline: none;
+      }
+
       .item-title {
         @apply(--unselectable);
         @apply(--at-form-input-font);
@@ -109,9 +113,9 @@
     </style>
     
     <template is="dom-repeat" items="[[items]]">
-      <div class="item" index$="[[index]]" value$="[[item.value]]">
+      <div class="item" index$="[[index]]" value$="[[item.value]]" tabindex="0">
         <div class="item-title">[[item.title]]</div>
-        <a class="delete-button" title="Remove">×</a>
+        <a class="delete-button" title="Remove" on-tap="_handleRemoveOnTap">×</a>
       </div>
     </template>
     <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" />
@@ -182,8 +186,17 @@
       filterTextInput.style.width = Math.ceil(widthOfPaddingAndBorders+newWidth) + 'px';
 
       if (event.keyCode === this._VK_KEY_CODES.VK_BACKSPACE && this.items.length && !filterTextInput.value) {
-        this.splice('items', this.items.length-1, 1);
+        var itemsDeleted = this.splice('items', this.items.length-1, 1);
+        this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
       }
+    },
+
+    _handleRemoveOnTap: function(event) {
+      var parentElement = event.currentTarget.parentElement;
+      var index = parentElement.getAttribute('index');
+      index = parseInt(index);
+      var itemsDeleted = this.splice('items', index, 1);
+      this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
     },
 
     _itemsChanged: function(newValue, oldValue) {
