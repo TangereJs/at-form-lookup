@@ -574,7 +574,6 @@
         var valueParts = value.split(',');
         var selectedOptions = [];
         
-        // TODO(ij): handle maxItems here
         for (var i = 0; i < valueParts.length; i++) {
           var vmOption = null;
           var valuePart = valueParts[i];
@@ -588,6 +587,27 @@
           if (found) {
             selectedOptions.push(vmOption);
           }
+        }
+
+        if (maxItems === 1) {
+          selectedOptions.splice(1);
+          
+        } else if (maxItems > 1) {
+          selectedOptions.splice(maxItems, selectedOptions.length - maxItems);
+
+          var remainingOptions = [];
+          vmOptions.forEach(function(option) {
+            var value = option.value;
+            var found = false;
+            for (var i = 0; i < selectedOptions.length && !found; i++) {
+              var selected = selectedOptions[i];
+              found = selected.value === value;
+            }
+            if (!found) {
+              remainingOptions.push(option);
+            }
+          });
+          this.$.optionsView.items = remainingOptions;
         }
 
         this.$.itemsView.items = selectedOptions;
