@@ -424,20 +424,13 @@
     },
 
     _disabledChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance !== undefined) {
-        this.toggleClass('disabled', newValue, this.$.labelContainer);
+      this.toggleClass('disabled', newValue, this.$.labelContainer);
 
-        if (newValue) {
-          this._selectizeInstance.disable();
-        } else {
-          this._selectizeInstance.enable();
-        }
-      }
+      // TODO(ij): disable items view
     },
 
     _hideChanged: function(newValue, oldValue) {
-      var wrapper = this.$.atContainer;
-      this.toggleClass('hidden', newValue, wrapper);
+      this.toggleClass('hidden', newValue, this.$.atContainer);
     },
 
     _internalValidStateUpdate: function (required) {
@@ -659,7 +652,6 @@
       }
       filterTextInput.addEventListener('keydown', this._boundFilterTextInputKeydownHandler);
 
-      // @TODO Probably not necessary; remove if so
       if (!this._boundItemsViewItemsDeletedHandler) {
         this._boundItemsViewItemsDeletedHandler = this._handleItemsViewItemsDeletedEvent.bind(this);
       }
@@ -677,7 +669,6 @@
       filterTextInput.removeEventListener('focus', this._boundFilterTextInputFocusHandler);
       filterTextInput.removeEventListener('blur', this._boundFilterTextInputBlurHandler);
 
-      // @TODO Probably not necessary; remove if so
       itemsView.removeEventListener('items-deleted', this._boundItemsViewItemsDeletedHandler);
 
       this.$.optionsView.removeEventListener('option-selected', this._boundOptionsViewOptionSelectedHadler);
@@ -785,6 +776,11 @@
           }
         }
       }
+
+      // if maxItems have been selected close the dropdown
+      if (this._isFull()) {
+        this.$.coreDropdown.hide();
+      }
     },
 
     _highlightPrevious: function(options) {
@@ -806,15 +802,20 @@
       this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
     },
 
-    // @TODO Probably not necessary; remove if so
     _handleItemsViewItemsDeletedEvent: function(event) {
       if (!this._isMultiSelect()) return;
       var itemsDeleted = event.detail.value;
       itemsDeleted.forEach(function(item) {
         item.selected = false;
-        // TODO(ij): deleted option needs to be returned to its original index
         this.$.optionsView.push('items', item);
       }.bind(this));
+
+      this.$.optionsView.items.sort(function(i1, i2) { 
+        return i1.value > i2.value;
+      });
+      var sortedItems = this.$.optionsView.items;
+      this.$.optionsView.set('items', []);
+      this.$.optionsView.set('items', sortedItems);
 
       if (itemsDeleted.length && !this.$.coreDropdown.open) {
         // focusing the input will open the dropdown 
