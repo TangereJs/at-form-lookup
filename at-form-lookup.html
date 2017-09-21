@@ -695,7 +695,10 @@
       if (event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
 
       // if element receiving focus is an item in <items-view> return
-      if (event.relatedTarget.classList.contains('item')) return;
+      if (event.relatedTarget.classList.contains('item')) {
+        this._getInput().focus();
+        return;
+      }
 
       // if element receiving focus is outside at-form-lookup hide the dropdown
       this.$.coreDropdown.hide();
