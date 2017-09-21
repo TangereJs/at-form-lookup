@@ -118,7 +118,7 @@
         <a class="delete-button" title="Remove" on-tap="_handleRemoveOnTap">×</a>
       </div>
     </template>
-    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" />
+    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" />
     <div class="dropdown-arrow"></div>
   </template>
 </dom-module>
@@ -156,39 +156,23 @@
       this.$.filterTextInput.focus();
     },
 
-    _VK_KEY_CODES: {
-      VK_ENTER: 13,
-      VK_ESCAPE: 27,
-      VK_TAB: 9,
-      VK_A: 65,
-      VK_COMMA: 188,
-      VK_LEFT: 37,
-      VK_UP: 38,
-      VK_P: 80,
-      VK_RIGHT: 39,
-      VK_DOWN: 40,
-      VK_N: 78,
-      VK_BACKSPACE: 8,
-      VK_DELETE: 46,
-      VK_SHIFT: 16,
-      VK_CMD: /Mac/.test(navigator.userAgent) ? 91 : 17,
-      VK_CTRL: /Mac/.test(navigator.userAgent) ? 18 : 17
-    },
-
     _handleFilterTextInputKeydown: function(event) {
-      var key = event.which;
-
-      var filterTextInput = this.$.filterTextInput;
-      var textBuffer = this._computeTextBuffer(filterTextInput, event);
-      var newWidth = this._measureString(textBuffer, filterTextInput);
-      // var widthOfPaddingAndBorders = 8;
-        var widthOfPaddingAndBorders = 0;
-      filterTextInput.style.width = Math.ceil(widthOfPaddingAndBorders+newWidth) + 'px';
-
-      if (event.keyCode === this._VK_KEY_CODES.VK_BACKSPACE && this.items.length && !filterTextInput.value) {
+      var VK_BACKSPACE = 8;
+      if (event.keyCode === VK_BACKSPACE && this.items.length && !filterTextInput.value) {
         var itemsDeleted = this.splice('items', this.items.length-1, 1);
         this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
       }
+    },
+
+    _handleFilterTextInputKeypress: function(event) {
+      var filterTextInput = this.$.filterTextInput;
+      var value = filterTextInput.value;
+      var newWidth = this._measureString(value, filterTextInput);
+      filterTextInput.style.width = Math.ceil(newWidth) + 'px';
+
+      this.debounce('fire-filter-changed', function() { 
+        this.fire('filter-changed', { value: value }, { bubbles: false });
+      }.bind(this), 150);
     },
 
     _handleRemoveOnTap: function(event) {
@@ -205,76 +189,6 @@
 
     ready: function () {
 
-    },
-
-    _computeTextBuffer: function(filterTextInput, keydownEvent) {
-      var value = filterTextInput.value;
-      var keyCode = keydownEvent.keyCode;
-      var printable = (
-        (keyCode >= 97 && keyCode <= 122) || // a-z
-        (keyCode >= 65 && keyCode <= 90) || // A-Z
-        (keyCode >= 48 && keyCode <= 57) || // 0-9
-        keyCode === 32 // space
-      );
-
-      if (keyCode === this._VK_KEY_CODES.VK_DELETE || keyCode === this._VK_KEY_CODES.VK_BACKSPACE) {
-        var selection = this._getSelection(filterTextInput);
-        if (selection.length) {
-          value = value.substring(0, selection.start) + value.substring(selection.start + selection.length);
-        } else if (keyCode === this._VK_KEY_CODES.VK_BACKSPACE && selection.start) {
-          value = value.substring(0, selection.start - 1) + value.substring(selection.start + 1);
-        } else if (keyCode === this._VK_KEY_CODES.VK_DELETE && typeof selection.start !== 'undefined') {
-          value = value.substring(0, selection.start) + value.substring(selection.start + 1);
-        }
-      } else if (printable) {
-        var shift = keydownEvent.shiftKey;
-        var character = String.fromCharCode(keydownEvent.keyCode);
-        if (shift) {
-          character = character.toUpperCase();
-        } else {
-          character = character.toLowerCase();
-        }
-        value += character;
-      } else {
-        // TODO(ij): add punctuation and other non letter printable characters to value
-      }
-
-      if (!value) {
-        var placeholder = filterTextInput.getAttribute('placeholder');
-        if (placeholder) { 
-          value = placeholder;
-        }
-      }
-
-      return value;
-    },
-
-    /**
-     * Determines the current selection within a text input control.
-     * Returns an object containing:
-     *  -start
-     *  -length
-     *
-     * @param {object} input
-     * @returns {object}
-     */
-    _getSelection: function(input) {
-      var result = {
-        start: 0,
-        length: 0
-      };
-      if (input.selectionStart !== undefined) {
-        result.start = input.selectionStart;
-        result.length = input.selectionEnd - result.start;
-      } else if (document.selection) {
-        input.focus();
-        var sel = document.selection.createRange();
-        var selLen = document.selection.createRange().text.length;
-        sel.moveStart('character', -input.value.length);
-        result.start = sel.text.length - selLen;
-        result.length = selLen;
-      }
-      return result;
     },
 
     /**

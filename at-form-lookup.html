@@ -663,6 +663,11 @@
         this._boundOptionsViewOptionSelectedHadler = this._handleOptionsViewOptionSelectedEvent.bind(this);
       }
       this.$.optionsView.addEventListener('option-selected', this._boundOptionsViewOptionSelectedHadler);
+
+      if (!this._boundItemsViewFilterChangedHandler) {
+        this._boundItemsViewFilterChangedHandler = this._handleItemsViewFilterChangedEvent.bind(this);
+      }
+      this.$.itemsView.addEventListener('filter-changed', this._boundItemsViewFilterChangedHandler);
     },
 
     _detachEventListeners: function() {
@@ -671,9 +676,13 @@
       filterTextInput.removeEventListener('focus', this._boundFilterTextInputFocusHandler);
       filterTextInput.removeEventListener('blur', this._boundFilterTextInputBlurHandler);
 
+      filterTextInput.removeEventListener('keydown', this._boundFilterTextInputKeydownHandler);
+      
       itemsView.removeEventListener('items-deleted', this._boundItemsViewItemsDeletedHandler);
 
       this.$.optionsView.removeEventListener('option-selected', this._boundOptionsViewOptionSelectedHadler);
+
+      this.$.itemsView.removeEventListener('filter-changed', this._boundItemsViewFilterChangedHandler);
     },
 
     _handleFilterTextInputFocusEvent: function(event) {
@@ -841,6 +850,15 @@
       this._selectOptionAtIndex(index);
       
       this._getInput().focus();
+    },
+
+    _handleItemsViewFilterChangedEvent: function(event) {
+      var filterText = event.detail.value;
+      console.log('filterTextChanged ' + filterText);
+
+      // 1. filter the options 
+
+      // 2. highlight the options
     },
 
     // this function is here to improve compatibility with form designer
