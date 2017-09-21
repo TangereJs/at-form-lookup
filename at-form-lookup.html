@@ -585,9 +585,11 @@
         if (maxItems === 1) {
           selectedOptions.splice(1);
           
-        } else if (maxItems > 1) {
-          selectedOptions.splice(maxItems, selectedOptions.length - maxItems);
-
+        } else {
+          if (maxItems > 1) {
+            selectedOptions.splice(maxItems, selectedOptions.length - maxItems);
+          }
+          
           var remainingOptions = [];
           vmOptions.forEach(function(option) {
             var value = option.value;
