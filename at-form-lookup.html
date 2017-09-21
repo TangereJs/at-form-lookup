@@ -854,11 +854,49 @@
 
     _handleItemsViewFilterChangedEvent: function(event) {
       var filterText = event.detail.value;
-      console.log('filterTextChanged ' + filterText);
+      var filteredOptions = [];
 
       // 1. filter the options 
+      if (filterText) {
+        // save unfiltered options
+        if (!this._viewModel.unfiltered || !this._viewModel.unfiltered.length) {
+          this._viewModel.unfiltered = JSON.parse(JSON.stringify(this.$.optionsView.items));
+        }
+
+        var sifter = new window.atFormLookup.Sifter(this.$.optionsView.items);
+        var results = sifter.search(filterText, {
+          score: sifter.getScoreFunction(filterText, {
+            fields: 'title',
+            conjunction: 'and',
+            sort: {
+              field: 'value'
+            }
+          })
+        });
+        
+        var items = this.$.optionsView.items;
+        results.items.forEach(function(item){ 
+          var option = items[item.id];
+          filteredOptions.push(option);
+        });
+        
+
+      } else {
+        // restore unfiltered options
+        if (this._viewModel.unfiltered) {
+          filteredOptions = this._viewModel.unfiltered;
+          this._viewModel.unfiltered = [];
+        }
+      }
 
       // 2. highlight the options
+      this._highlightOptions(filteredOptions, filterText);
+
+      console.log(`filteredOptions ${JSON.stringify(filteredOptions)}`);
+
+      // 3. set filtered options to options view
+      this.$.optionsView.set('items', []);
+      this.$.optionsView.set('items', filteredOptions);
     },
 
     // this function is here to improve compatibility with form designer
@@ -889,6 +927,43 @@
 
     _getInput: function() {
       return this.$.itemsView.$.filterTextInput;
+    },
+
+    _highlightOptions: function(options, token) {
+      if (!token) return;
+
+      var highlightTitle = function(title) {
+        var result = [];
+        var tokenLen = token.length;
+        var prev = 0;
+        var pos = title.indexOf(token, prev);
+
+        if (pos < 0) return title;
+        
+        while (pos > -1) {
+          var textBefore = title.slice(prev, pos);
+          if (textBefore.length) {
+            result.push(textBefore);
+          }
+
+          var titlePart = title.slice(pos, pos+tokenLen);
+          result.push({ text: titlePart });
+          pos+= tokenLen;
+          prev = pos;
+          pos = title.indexOf(token, pos);
+        }
+
+        if (prev < title.length) {
+          var remTxt = title.slice(prev, title.length);
+          result.push(remTxt);
+        }
+
+        return result;
+      };
+
+      options.forEach(function(option, index){ 
+        option.title = highlightTitle(option.title);
+      });
     },
 
     _valueChanged: function(newValue, oldValue) {
@@ -1504,12 +1579,12 @@
      *
      * @constructor
      * @param {array|object} items
-     * @param {object} items
+     * @param {object} settings
      */
     var Sifter = function(items, settings) {
       this.items = items;
       this.settings = settings || {
-        diacritics: true
+        diacritics: false
       };
     };
 
@@ -1532,13 +1607,13 @@
 
       for (i = 0, n = words.length; i < n; i += 1) {
         regex = escape_regex(words[i]);
-        // if (this.settings.diacritics) {
-        //   for (letter in DIACRITICS) {
-        //     if (DIACRITICS.hasOwnProperty(letter)) {
-        //       regex = regex.replace(new RegExp(letter, 'g'), DIACRITICS[letter]);
-        //     }
-        //   }
-        // }
+        if (this.settings.diacritics) {
+          for (letter in DIACRITICS) {
+            if (DIACRITICS.hasOwnProperty(letter)) {
+              regex = regex.replace(new RegExp(letter, 'g'), DIACRITICS[letter]);
+            }
+          }
+        }
         tokens.push({
           string: words[i],
           regex: new RegExp(regex, 'i')
