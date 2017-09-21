@@ -825,8 +825,10 @@
       if (itemsDeleted.length && !this.$.coreDropdown.open) {
         // focusing the input will open the dropdown 
         this._getInput().focus();
+        if (!this.$.coreDropdown.open) {
+          this.$.coreDropdown.show(null, this.$.itemsView);
+        }
       }
-      // console.log('items-view items-deleted ' + JSON.stringify(event.detail.value));
     },
 
     _handleOptionsViewOptionSelectedEvent: function(event) {
