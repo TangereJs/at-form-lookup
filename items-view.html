@@ -18,6 +18,11 @@
         padding: 4px;
       }
 
+      :host([disabled]) {
+        @apply(--at-form-disabled);
+        pointer-events: none;        
+      }
+
       .item {
         @apply(--layout-inline-flex);
         @apply(--layout-horizontal);
@@ -118,7 +123,7 @@
         <a class="delete-button" title="Remove" on-tap="_handleRemoveOnTap">×</a>
       </div>
     </template>
-    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" />
+    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" disabled$="[[disabled]]" />
     <div class="dropdown-arrow"></div>
   </template>
 </dom-module>
@@ -139,6 +144,12 @@
         type: Boolean,
         value: false,
         readonly: true,
+        reflectToAttribute: true
+      },
+
+      disabled: {
+        type: Boolean,
+        value: false,
         reflectToAttribute: true
       }
 

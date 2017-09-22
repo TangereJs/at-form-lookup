@@ -432,7 +432,7 @@
     _disabledChanged: function(newValue, oldValue) {
       this.toggleClass('disabled', newValue, this.$.labelContainer);
 
-      // TODO(ij): disable items view
+      this.toggleAttribute('disabled', newValue, this.$.itemsView);
     },
 
     _hideChanged: function(newValue, oldValue) {
@@ -524,7 +524,7 @@
 
       } else {
         // we are working with remote data source
-        this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems);
+        this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
       }
     },
 
@@ -642,14 +642,211 @@
       this._setupEventListeners();
     },
 
-    _initializeRemoteDataSource: function(url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems) {
+    _initializeRemoteDataSource: function(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems) {
       // 1. compute available options
+      var remoteUrl = xurl || url;
+      var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
+      var coreAjax = this.$.coreAjax;
+      
+      if (!noPreload) {
+        // TODO(ij): remember the last full url used to avoid repeated requests to the same url
 
-      // 2. put available options into options-view
+        // preload data; go to remote url with noCredentials and params and receive results
+        coreAjax.url = baseAndQuery.baseUrl;
 
-      // 3. compute initially selected items based on value
+        baseAndQuery.queryParams.forEach(function(queryParam) {
+          coreAjax.params[queryParam.name] = queryParam.value;
+        });
+        coreAjax.params["query"] = initialSearchTerm;
+        coreAjax.params["page"] = 1;
+        coreAjax.params["pageSize"] = 25;
+
+        coreAjax.noCredentials = noCredentials;
+
+        this.fire('at-form-lookup-beforeAjax', {
+          coreAjax: coreAjax,
+          query: initialSearchTerm
+        }, { bubbles: false });
+
+        // disable the lookup element
+        this.disabled = true;
+
+        coreAjax.generateRequest();
+      }
+
+      // 3. load initially selected from remote url based on value
+      if (!this._boundInitialValueActivityResponseHandler) {
+        this._boundInitialValueActivityResponseHandler = this._handleInitialValueActivityResponse.bind(this);
+      }
+
+      if (!this._boundInitialValueActivityErrorHanlder) {
+        this._boundInitialValueActivityErrorHanlder = this._handleInitialValueActivityError.bind(this);
+      }
+
+      if (isString(value) && value.length) {
+        // TODO(ij): remember last value used to send requests to avoid doubling of sent requests
+
+        // value is a csv string
+        var valueParts = value.split(',');
+        this._viewModel.initialValueRequestsQueue = [];
+        this._viewModel.initialValueActivitiesQueue = [];
+
+        valueParts.forEach(function(part, index) { 
+          part = part.trim();
+          // ignore empty parts
+          if (!part) { 
+            console.log('initial value csv string has empty value at zero-based index of ' + index);
+            return;
+          }
+
+          var partUrl = baseAndQuery.baseUrl + '/' + part;
+          var partCoreActivity = document.createElement('at-core-activity');
+          partCoreActivity.url = partUrl;
+          baseAndQuery.queryParams.forEach(function(queryParam) {
+            partCoreActivity.params[queryParam.name] = queryParam.value;
+          });
+          partCoreActivity.noCredentials = noCredentials;
+          partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
+          partCoreActivity.addEventListener('erorr', this._boundInitialValueActivityErrorHanlder);
+
+          this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
+          this._viewModel.initialValueRequestsQueue.push({
+            requestedItemId: part,
+            isCompleted: false,
+            item: undefined
+          })
+        }, this);
+
+        this._viewModel.initialValueActivitiesQueue.forEach(function(a) {
+          a.generateRequest();
+        })
+
+      } else {
+        if (!isString(value)) {
+          console.log('type of value is ' + (typeof value));
+        }
+      }
 
       // 4. put initalSearchTerm into filterTextInput
+      this._getInput().value = initialSearchTerm;
+
+      // 5. hide the spinner
+      this.$.coreSpinner.display = 'none';
+
+      // 6. show the element
+      this.$.atContainer.removeAttribute('hidden');
+
+      // 7. attach relevant events
+      this._setupEventListeners();
+    },
+
+    _handleCoreAjaxOnError: function(event) {
+      this.disabled = false;
+    },
+
+    _handleCoreAjaxOnResponse: function(event) {
+      // extract the data from the event
+      var eventObject = {
+        response: event.detail,
+        returnData: []
+      };
+      this.fire('at-form-lookup-afterAjax', eventObject, { bubbles: false });
+      var availableOptions = [];
+
+      if (!eventObject.returnData.length) {
+        // process data from at-core-activity
+        var response = event.detail;
+        if (response.Data && response.Data.items) {
+          // save response.Data.items in _viewModel
+          this._viewModel.remoteData = response.Data.items;
+
+          response.Data.items.forEach(function(item, index) {
+            // we create an option object that will be used internally for dropdown, selection, search and highlighting, where itemRef points to original object returned from server
+            availableOptions.push({
+              title: item.title,
+              value: item.id,
+              itemRef: item
+            });
+          });
+        }
+
+      } else {
+        // TODO(ij): define rules for populating returnData
+        // debugger;
+
+        // use data that 3rd party provided
+        var availableOptions = eventObject.returnData;
+      }
+
+      // 2. put available options into options-view
+      this._viewModel.availableOptions = availableOptions;
+      var filterText = this._getInput().value;
+      var filteredOptions = filterText ? this._filterAndHighlightOptions(filterText) : availableOptions;
+      this.$.coreDropdown.items = filteredOptions;
+
+      if (!this._viewModel.initialValueRequestsQueue.length) {
+        this.disabled = false;
+      }
+    },
+
+    _handleInitialValueActivityError: function(event) {
+      if (!this._viewModel.initialValueRequestsQueue.length) {
+        this.disabled = false;
+      }
+    },
+
+    _handleInitialValueActivityResponse: function(event) {
+      var item = event.detail.Data;
+      var i; 
+      var tmpReq;
+      var ivRequest = false;
+
+      for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
+        var tmpReq = this._viewModel.initialValueRequestsQueue[i];
+        ivRequest = tmpReq.requestedItemId === item.id ? tmpReq : ivRequest;
+      }
+
+      if (!ivRequest) {
+        console.log('lookup initialization error: request for item not found. Item id ' + item.id);
+        return;
+      }
+
+      ivRequest.completed = true;
+      ivRequest.item = item;
+
+      // check if all requests are complete
+      var queueComplete = true;
+      this._viewModel.initialValueRequestsQueue.forEach(function (request) {
+        queueComplete = queueComplete && request.isCompleted;
+      });
+
+      if (!queueComplete) return;
+
+      // process queue data; insert into itemsView
+      var selectedOptions = [];
+      this._viewModel.initialValueRequestsQueue.forEach(function (request) {
+        var option = {
+          title: request.item.title,
+          value: request.item.id,
+          itemRef: request.item
+        };
+        selectedOptions.push(option);
+      }, this);
+      this.$.itemsView.set('items', selectedOptions);
+
+      // clear the queue
+      this._viewModel.initialValueRequestsQueue = [];
+
+      // TODO(ij): clean the coreActivities queue and detach event listeners
+      // TODO(ij): use the created activities as a pool 
+
+      if (!this._viewModel.initialValueRequestsQueue.length) {
+        this.disabled = false;
+      }
+
+      this.fire('at-form-lookup-initialized', {
+        data: item
+      });
     },
 
     _setupEventListeners: function() {
@@ -1023,6 +1220,37 @@
       this.fire('selected-items-changed', { value: selectedItems }, { bubbles: false});
     },
 
+    // for a given url computes the base url and query params
+    _computeBaseUrlAndQueryParams: function(url) {
+      var result = {
+        baseUrl: '',
+        queryParams: []
+      };
+
+      var urlParts = url.split('?');
+      result.baseUrl = urlParts[0];
+      var urlQueryString = urlParts.length > 1 ? urlParts[1] : '';
+      var queryParams = urlQueryString.split('&');
+      queryParams.forEach(function(queryParam){
+        // skip malformed queryparams
+        if (queryParam.indexOf('=') === -1)  {
+          console.log('query parameter ' + queryParam + ' is invalid');
+          return;
+        }
+
+        var paramParts = queryParam.split('=');
+        var paramName = paramParts[0];
+        var paramValue = paramParts.length > 1 ? paramParts[1] : '';
+        var paramObj = {
+          name: paramName,
+          value: paramValue
+        };
+        result.queryParams.push(paramObj);
+      });
+
+      return result;
+    },
+
     // 
     // 
     // 
@@ -1065,7 +1293,7 @@
           }
 
           var coreActivityQueue = [];
-          this._issuedRequestsQueue = [];
+          this.initialValueRequestsQueue = [];
 
           for (var i = 0; i < itemsToAdd.length; i++) {
             var currentItem = itemsToAdd[i];
@@ -1098,7 +1326,7 @@
                 // put current request in a queue
                 coreActivityQueue.push(coreActivity);
                 // create an entry in issued requests queue
-                this._issuedRequestsQueue.push({
+                this.initialValueRequestsQueue.push({
                   requestItemId: currentItem,
                   isCompleted: false
                 });
@@ -1284,56 +1512,6 @@
       }
     },
 
-    _handleCoreAjaxOnError: function(event) {
-      this.$.disabledOverlay.removeAttribute('disabled');
-      this._selectizeInstance.enable();
-    },
-
-    _handleCoreAjaxOnResponse: function(event) {
-      // extract the data from the event
-      var eventObject = {
-        response: event.detail,
-        returnData: []
-      };
-      this.fire('at-form-lookup-afterAjax', eventObject);
-
-      if (!this._selectizeLoadCallback) {
-        this.$.disabledOverlay.removeAttribute('disabled');
-        if (!this.disabled) {
-          this._selectizeInstance.enable();          
-        }
-        return;
-      }
-      
-      if (eventObject.returnData.length > 0) {
-        this._selectizeLoadCallback(eventObject.returnData);
-      } else {
-        var data = [];
-        // we check if property exists with hasOwnProperty check
-        // if property exists, we check if value not not false (so not false, 0, null, undefined or "")
-        if (event.hasOwnProperty('detail') && event.detail && 
-            event.detail.hasOwnProperty('Data') && event.detail.Data && 
-            event.detail.Data.hasOwnProperty('items') && event.detail.Data.items
-          ) {
-          data = event.detail.Data.items;
-        }
-        var dataArray = [];
-        for (var i = 0; i < data.length; i++) {
-          var entry = data[i];
-          entry.value = entry.id;
-          //dataArray.push({ value: entry.id, title: entry.title });
-          dataArray.push(entry);
-        }
-        this._selectizeLoadCallback(dataArray);
-      }
-
-      if (!this._issuedRequestsQueue.length) {
-        this.$.disabledOverlay.removeAttribute('disabled');
-      }
-      if (!this.disabled) {
-        this._selectizeInstance.enable();
-      }
-    },
 
     _selectizeOnLoad: function(query, callback) {
       // this here is selectize object
@@ -1380,12 +1558,12 @@
       var item = event.detail.Data;
 
       var irIndex;
-      var irqLength = this._issuedRequestsQueue.length;
+      var irqLength = this.initialValueRequestsQueue.length;
       var issuedRequest = null;
       
       // find the issued request in the queue by id
       for (irIndex = 0; irIndex < irqLength; irIndex++) {
-        issuedRequest = this._issuedRequestsQueue[irIndex];
+        issuedRequest = this.initialValueRequestsQueue[irIndex];
         if (issuedRequest.id === item.id) {
           break;
         }
@@ -1398,7 +1576,7 @@
 
       // check if all requests are complete
       var queueComplete = true;
-      this._issuedRequestsQueue.forEach(function (request) {
+      this.initialValueRequestsQueue.forEach(function (request) {
         queueComplete = queueComplete && request.isCompleted;
       });
 
@@ -1406,7 +1584,7 @@
 
       // process queue data into selectize instance
       var sInstance = this._selectizeInstance;
-      this._issuedRequestsQueue.forEach(function (request, index) {
+      this.initialValueRequestsQueue.forEach(function (request, index) {
 
         sInstance.addOption({
           value: request.item.id,
@@ -1417,7 +1595,7 @@
       });
 
       // clear the queue
-      this._issuedRequestsQueue = [];
+      this.initialValueRequestsQueue = [];
 
       this.$.disabledOverlay.removeAttribute('disabled');
       if (!this.disabled) {
