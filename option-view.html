@@ -36,7 +36,7 @@
     -->
     <template is="dom-if" if="[[_hasHighlight(data)]]">
       <div class="title">
-        <template id="dataTitleArray" is="dom-repeat" items="[[data.title]]">
+        <template is="dom-repeat" items="[[data.title]]" strip-whitespace>
           <template is="dom-if" if="[[_isHighlighted(item)]]">
             <span class="highlight">[[item.text]]</span>
           </template>

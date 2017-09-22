@@ -53,6 +53,12 @@
 <script>
   'use strict';
 
+  // TODO(ij): make VK_LEFT and VK_RIGHT work in items-view to move input field left or right
+  // when item is selected from the dropdown insert it into itemsView.items at the index input field is
+  // when item is deleted with VK_BACKSPACE or VK_DELETE it should be deleted relative to the position of the input field is
+
+  // TODO(ij): when xvaluelist is set, available options are objects; create { title, value, indexInXvalueList } objects to use in dropdown and selected items list, and use indexInXvalueList to properly compute value and selectedItems
+
   Polymer({
     is: 'at-form-lookup',
     behaviors: [ Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric, Tangere.behaviors.AtFormLookupInputValidation ],
@@ -484,6 +490,8 @@
     },
 
     _initialize: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems) {
+      // this is required when value is updated and value-changed event fired
+      if (this._skipInitialization) return;
 
       var self = this;
       // debounce the initialization to avoid mutliple function calls in two use cases
@@ -559,7 +567,8 @@
       }
 
       // 2. put available options into options-view
-      this.$.optionsView.items = vmOptions;
+      // delay until value is processed, so already selected options are removed
+      // delay until initialSearchTerm is processed, so that remaining items are filtered and highlighted
 
       // 3. compute initially selected items based on value
       if (isString(value) && value.length) {
@@ -602,7 +611,7 @@
               remainingOptions.push(option);
             }
           });
-          this.$.optionsView.items = remainingOptions;
+          vmOptions = remainingOptions;
         }
 
         this.$.itemsView.items = selectedOptions;
@@ -615,6 +624,13 @@
 
       // 4. put initalSearchTerm into filterTextInput
       this._getInput().value = initialSearchTerm;
+
+      // save unfiltered and non highlighted options as _viewModel available options
+      this._viewModel.availableOptions = vmOptions;
+
+      // if initialSearchTerm is set, do filter and highlight; if not, use vmOptions because _filterAndHighlight will create a copy of vmOptions for empty searchTerm which is not necessary for initialization
+      var filteredOptions = initialSearchTerm ? this._filterAndHighlightOptions(initialSearchTerm) : vmOptions;
+      this.$.optionsView.items = filteredOptions;
 
       // 5. hide the spinner
       this.$.coreSpinner.display = 'none';
@@ -774,14 +790,25 @@
       if (isFull && isMulti) return;
 
       var option = this.$.optionsView.items[selectedIndex];
+
+      // based on selected option value, find the original option in available options and push that option into itemsView.items
+      var originalOption = false;
+      for (var i = 0; i < this._viewModel.availableOptions.length && !originalOption; i++) {
+        var tmp = this._viewModel.availableOptions[i];
+        originalOption = tmp.value === option.value ? tmp : false;
+      }
+      delete originalOption.selected;
+      // remove found option from availableOptions
+      this._viewModel.availableOptions.splice(i-1, 1);
+
       if (isFull && !isMulti) {
         // maxItems == 1 and itemsView already displays selected item
         // replace that item with newly selected one
-        this.$.itemsView.splice('items', 0, 1, option);
+        this.$.itemsView.splice('items', 0, 1, originalOption);
 
       } else {
         // add selected option to the items view
-        this.$.itemsView.push('items', option);
+        this.$.itemsView.push('items', originalOption);
 
         if (isMulti) {
           this.$.optionsView.splice('items', selectedIndex, 1);
@@ -795,6 +822,12 @@
       if (this._isFull()) {
         this.$.coreDropdown.hide();
       }
+
+      // update .value and fire changed event
+      this._updateLookupValue();
+
+      // update .selectedItems and fire changed event
+      this._updateLookupSelectedItems();
     },
 
     _highlightPrevious: function(options) {
@@ -819,17 +852,18 @@
     _handleItemsViewItemsDeletedEvent: function(event) {
       if (!this._isMultiSelect()) return;
       var itemsDeleted = event.detail.value;
+      // return deleted items to available options
       itemsDeleted.forEach(function(item) {
-        item.selected = false;
-        this.$.optionsView.push('items', item);
+        this._viewModel.availableOptions.push(item);
       }.bind(this));
 
-      this.$.optionsView.items.sort(function(i1, i2) { 
+      this._viewModel.availableOptions.sort(function(i1, i2) { 
         return i1.value > i2.value;
       });
-      var sortedItems = this.$.optionsView.items;
+
+      var filteredOptions = this._filterAndHighlightOptions(this._getInput().value);
       this.$.optionsView.set('items', []);
-      this.$.optionsView.set('items', sortedItems);
+      this.$.optionsView.set('items', filteredOptions);
 
       if (itemsDeleted.length && !this.$.coreDropdown.open) {
         // focusing the input will open the dropdown 
@@ -838,6 +872,12 @@
           this.$.coreDropdown.show(null, this.$.itemsView);
         }
       }
+
+      // update .value and fire changed event
+      this._updateLookupValue();
+
+      // update .selectedItems and fire changed event
+      this._updateLookupSelectedItems();
     },
 
     _handleOptionsViewOptionSelectedEvent: function(event) {
@@ -854,16 +894,19 @@
 
     _handleItemsViewFilterChangedEvent: function(event) {
       var filterText = event.detail.value;
+      var filteredOptions = this._filterAndHighlightOptions(filterText);
+
+      this.$.optionsView.set('items', []);
+      this.$.optionsView.set('items', filteredOptions);
+    },
+
+    _filterAndHighlightOptions: function(filterText) {
       var filteredOptions = [];
 
       // 1. filter the options 
       if (filterText) {
-        // save unfiltered options
-        if (!this._viewModel.unfiltered || !this._viewModel.unfiltered.length) {
-          this._viewModel.unfiltered = JSON.parse(JSON.stringify(this.$.optionsView.items));
-        }
-
-        var sifter = new window.atFormLookup.Sifter(this.$.optionsView.items);
+        var sifter = new window.atFormLookup.Sifter(this._viewModel.availableOptions);
+        var filterRegexp = new RegExp(filterText, "i");
         var results = sifter.search(filterText, {
           score: sifter.getScoreFunction(filterText, {
             fields: 'title',
@@ -874,29 +917,22 @@
           })
         });
         
-        var items = this.$.optionsView.items;
+        var availalble = this._viewModel.availableOptions;
         results.items.forEach(function(item){ 
-          var option = items[item.id];
-          filteredOptions.push(option);
+          var option = availalble[item.id];
+          filteredOptions.push(JSON.parse(JSON.stringify(option)));
         });
-        
 
       } else {
-        // restore unfiltered options
-        if (this._viewModel.unfiltered) {
-          filteredOptions = this._viewModel.unfiltered;
-          this._viewModel.unfiltered = [];
-        }
+        // restore available options
+        filteredOptions = JSON.parse(JSON.stringify(this._viewModel.availableOptions));
       }
 
       // 2. highlight the options
       this._highlightOptions(filteredOptions, filterText);
 
-      console.log(`filteredOptions ${JSON.stringify(filteredOptions)}`);
-
-      // 3. set filtered options to options view
-      this.$.optionsView.set('items', []);
-      this.$.optionsView.set('items', filteredOptions);
+      // 3. return result
+      return filteredOptions;
     },
 
     // this function is here to improve compatibility with form designer
@@ -934,9 +970,11 @@
 
       var highlightTitle = function(title) {
         var result = [];
+        var tokenLowerCase = token.toLowerCase();
+        var titleLowerCase = title.toLowerCase();
         var tokenLen = token.length;
         var prev = 0;
-        var pos = title.indexOf(token, prev);
+        var pos = titleLowerCase.indexOf(tokenLowerCase, prev);
 
         if (pos < 0) return title;
         
@@ -950,7 +988,7 @@
           result.push({ text: titlePart });
           pos+= tokenLen;
           prev = pos;
-          pos = title.indexOf(token, pos);
+          pos = titleLowerCase.indexOf(tokenLowerCase, pos);
         }
 
         if (prev < title.length) {
@@ -965,6 +1003,35 @@
         option.title = highlightTitle(option.title);
       });
     },
+
+    _updateLookupValue: function() {
+      var valuesArr = [];
+      this.$.itemsView.items.forEach(function(item){ 
+        valuesArr.push(item.value);
+      });
+      var newValue = valuesArr.join(',');
+
+      this._skipInitialization = true;
+      this.value = newValue;
+      this.fire('value-changed', { value: newValue }, { bubbles: false});
+      this._skipInitialization = false;
+    },
+
+    _updateLookupSelectedItems: function(newValue) {
+      var selectedItems = JSON.parse(JSON.stringify(this.$.itemsView.items));
+      this.selectedItems = selectedItems;
+      this.fire('selected-items-changed', { value: selectedItems }, { bubbles: false});
+    },
+
+    // 
+    // 
+    // 
+    // 
+    // OLD CODE
+    // 
+    // 
+    // 
+    // 
 
     _valueChanged: function(newValue, oldValue) {
       if (this._isReady) {
