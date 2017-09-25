@@ -168,7 +168,17 @@
 
     _handleFilterTextInputKeydown: function(event) {
       var VK_BACKSPACE = 8;
-      if (event.keyCode === VK_BACKSPACE && this.items.length && !this.$.filterTextInput.value) {
+      var VK_UP = 38;
+      var VK_DOWN = 40;
+      var keyCode = event.keyCode;
+
+      // this prevents horizontal keyboard cursor movement when using up and down keyboard buttons
+      if (keyCode === VK_UP || keyCode === VK_DOWN) { 
+        event.preventDefault(); 
+        return;
+      }
+
+      if (keyCode === VK_BACKSPACE && this.items.length && !this.$.filterTextInput.value) {
         var itemsDeleted = this.splice('items', this.items.length-1, 1);
         this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
       }
