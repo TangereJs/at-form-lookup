@@ -136,8 +136,7 @@
         type: Array,
         value: function() {
           return [];
-        },
-        observer: '_itemsChanged'
+        }
       },
 
       multiple: {
@@ -156,7 +155,7 @@
     },
 
     listeners: {
-      'tap': '_handleHostOnTap'
+      'tap': '_handleHostOnTap'      
     },
 
     _handleHostOnTap: function(event) {
@@ -169,7 +168,7 @@
 
     _handleFilterTextInputKeydown: function(event) {
       var VK_BACKSPACE = 8;
-      if (event.keyCode === VK_BACKSPACE && this.items.length && !filterTextInput.value) {
+      if (event.keyCode === VK_BACKSPACE && this.items.length && !this.$.filterTextInput.value) {
         var itemsDeleted = this.splice('items', this.items.length-1, 1);
         this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
       }
@@ -192,10 +191,6 @@
       index = parseInt(index);
       var itemsDeleted = this.splice('items', index, 1);
       this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
-    },
-
-    _itemsChanged: function(newValue, oldValue) {
-      this.toggleAttribute('multiple', newValue.length > 1, this);
     },
 
     ready: function () {
