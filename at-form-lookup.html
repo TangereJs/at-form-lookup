@@ -23,7 +23,7 @@
       }
     </style>
     
-    <at-core-activity id="coreAjax" url="[[url]]" params="[[params]]" on-response="_handleCoreAjaxOnResponse" on-error="_handleCoreAjaxOnError"></at-core-activity>
+    <at-core-activity id="coreAjax" url="[[url]]" on-response="_handleCoreAjaxOnResponse" on-error="_handleCoreAjaxOnError"></at-core-activity>
     <at-core-spinner id="coreSpinner"></at-core-spinner>
     <at-carbon-message id="carbonMessage" type="info"></at-carbon-message>
     
@@ -375,7 +375,7 @@
 
     observers: [
       '_internalValidStateUpdate(required)',
-      '_initialize(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems)'
+      '_initializeLookup(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems)'
     ],
 
     _hideLabelChanged: function(newValue, oldValue) {
@@ -489,7 +489,8 @@
       this.toggleClass('error', !isValid, contentContainer);
     },
 
-    _initialize: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems) {
+    // this function can not be called _initialize because in at-i18n-behavior there is a function called _initialize. if this function is called _initialize then at-i18n will call this function instead of at-i18n initialize
+    _initializeLookup: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems) {
       // this is required when value is updated and value-changed event fired
       if (this._skipInitialization) return;
 
@@ -645,33 +646,13 @@
     _initializeRemoteDataSource: function(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems) {
       // 1. compute available options
       var remoteUrl = xurl || url;
-      var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
-      var coreAjax = this.$.coreAjax;
+      
       
       if (!noPreload) {
         // TODO(ij): remember the last full url used to avoid repeated requests to the same url
 
         // preload data; go to remote url with noCredentials and params and receive results
-        coreAjax.url = baseAndQuery.baseUrl;
-
-        baseAndQuery.queryParams.forEach(function(queryParam) {
-          coreAjax.params[queryParam.name] = queryParam.value;
-        });
-        coreAjax.params["query"] = initialSearchTerm;
-        coreAjax.params["page"] = 1;
-        coreAjax.params["pageSize"] = 25;
-
-        coreAjax.noCredentials = noCredentials;
-
-        this.fire('at-form-lookup-beforeAjax', {
-          coreAjax: coreAjax,
-          query: initialSearchTerm
-        }, { bubbles: false });
-
-        // disable the lookup element
-        this.disabled = true;
-
-        coreAjax.generateRequest();
+        this._sendRequestToQueryOptions(remoteUrl, initialSearchTerm);
       }
 
       // 3. load initially selected from remote url based on value
@@ -685,6 +666,7 @@
 
       if (isString(value) && value.length) {
         // TODO(ij): remember last value used to send requests to avoid doubling of sent requests
+        var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
 
         // value is a csv string
         var valueParts = value.split(',');
@@ -707,8 +689,7 @@
           });
           partCoreActivity.noCredentials = noCredentials;
           partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
-          partCoreActivity.addEventListener('erorr', this._boundInitialValueActivityErrorHanlder);
-
+          partCoreActivity.addEventListener('error', this._boundInitialValueActivityErrorHanlder);
           this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
           this._viewModel.initialValueRequestsQueue.push({
             requestedItemId: part,
@@ -740,8 +721,39 @@
       this._setupEventListeners();
     },
 
+    _sendRequestToQueryOptions: function(remoteUrl, query) {
+      var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
+      var coreAjax = this.$.coreAjax;
+
+      coreAjax.url = baseAndQuery.baseUrl;
+
+      baseAndQuery.queryParams.forEach(function(queryParam) {
+        coreAjax.params[queryParam.name] = queryParam.value;
+      });
+
+      // TODO(ij): lookup.params property needs to be added here
+
+      coreAjax.params["query"] = query;
+      coreAjax.params["page"] = 1;
+      coreAjax.params["pageSize"] = 25;
+
+      coreAjax.noCredentials = this.noCredentials;
+
+      this.fire('at-form-lookup-beforeAjax', {
+        coreAjax: coreAjax,
+        query: query
+      }, { bubbles: false });
+
+      // disable the lookup element
+      this.disabled = true;
+
+      coreAjax.generateRequest();
+    },
+
     _handleCoreAjaxOnError: function(event) {
-      this.disabled = false;
+      if (!this._viewModel.initialValueRequestsQueue.length) {
+        this.disabled = false;
+      }
     },
 
     _handleCoreAjaxOnResponse: function(event) {
@@ -781,11 +793,18 @@
       // 2. put available options into options-view
       this._viewModel.availableOptions = availableOptions;
       var filterText = this._getInput().value;
-      var filteredOptions = filterText ? this._filterAndHighlightOptions(filterText) : availableOptions;
-      this.$.coreDropdown.items = filteredOptions;
+      // _filterAndHighlight will return a clone of availableOptions for empty filter text
+      var filteredOptions = this._filterAndHighlightOptions(filterText);
+      this.$.optionsView.set('items', filteredOptions);
 
-      if (!this._viewModel.initialValueRequestsQueue.length) {
+      if (!this._viewModel.initialValueRequestsQueue || !this._viewModel.initialValueRequestsQueue.length) {
         this.disabled = false;
+
+        if (this._viewModel.openDropdownOnResponse) {
+          this._viewModel.openDropdownOnResponse = false;
+          this.$.coreDropdown.show(null, this.$.itemsView);
+          this._getInput().focus();
+        }
       }
     },
 
@@ -811,7 +830,7 @@
         return;
       }
 
-      ivRequest.completed = true;
+      ivRequest.isCompleted = true;
       ivRequest.item = item;
 
       // check if all requests are complete
@@ -883,6 +902,8 @@
       this.$.itemsView.addEventListener('filter-changed', this._boundItemsViewFilterChangedHandler);
     },
 
+    // TODO(ij): _detach event listeners should be called in detached handler
+    // TODO(ij): _setupEventListeners should be called in attached but only if element is initialized
     _detachEventListeners: function() {
       var itemsView = this.$.itemsView;
       var filterText = itemsView.$.filterTextInput;
@@ -945,6 +966,7 @@
 
         case VK_ENTER:
         case VK_TAB:
+          if (!this.$.coreDropdown.open) return;
           // select highlighted element
           var selectedIndex = this._findSelectedIndex(this.$.optionsView.items);
           if (selectedIndex < 0) return;
@@ -1091,10 +1113,24 @@
 
     _handleItemsViewFilterChangedEvent: function(event) {
       var filterText = event.detail.value;
-      var filteredOptions = this._filterAndHighlightOptions(filterText);
+      var remoteUrl = this.xurl || this.url;
+      if (!remoteUrl) {
+        // do the filtering of local data
+        var filteredOptions = this._filterAndHighlightOptions(filterText);
 
-      this.$.optionsView.set('items', []);
-      this.$.optionsView.set('items', filteredOptions);
+        this.$.optionsView.set('items', []);
+        this.$.optionsView.set('items', filteredOptions);
+
+      } else {
+        // clear selected options because new and different items will be fetched from the remoteUrl
+        this.$.itemsView.set('items', []);
+        this._updateLookupValue();
+        this._updateLookupSelectedItems();
+
+        // send new request to the server with filter text as query
+        this._sendRequestToQueryOptions(remoteUrl, filterText);
+        this._viewModel.openDropdownOnResponse = true;
+      }
     },
 
     _filterAndHighlightOptions: function(filterText) {
@@ -1232,6 +1268,10 @@
       var urlQueryString = urlParts.length > 1 ? urlParts[1] : '';
       var queryParams = urlQueryString.split('&');
       queryParams.forEach(function(queryParam){
+        queryParam = queryParam.trim();
+        // skip empty params
+        if (!queryParam) return;
+
         // skip malformed queryparams
         if (queryParam.indexOf('=') === -1)  {
           console.log('query parameter ' + queryParam + ' is invalid');
