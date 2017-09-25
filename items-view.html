@@ -170,17 +170,49 @@
       var VK_BACKSPACE = 8;
       var VK_UP = 38;
       var VK_DOWN = 40;
+      var VK_LEFT = 37;
+      var VK_RIGHT = 39;
       var keyCode = event.keyCode;
+      var input = this.$.filterTextInput;
 
       // this prevents horizontal keyboard cursor movement when using up and down keyboard buttons
       if (keyCode === VK_UP || keyCode === VK_DOWN) { 
-        event.preventDefault(); 
+        event.preventDefault();
         return;
       }
 
-      if (keyCode === VK_BACKSPACE && this.items.length && !this.$.filterTextInput.value) {
+      if (input.value) return;
+        
+      if (keyCode === VK_BACKSPACE && this.items.length) {
         var itemsDeleted = this.splice('items', this.items.length-1, 1);
         this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
+      
+      } else if (keyCode === VK_LEFT) {
+        // TODO(ij): set attribute on input field so that in blur event handler i can know to not close the dropdown 
+
+        // move input field left
+        var prevSibling = input.previousElementSibling;
+        if (!prevSibling) return;
+        if (prevSibling.nodeName === "TEMPLATE") prevSibling = prevSibling.previousElementSibling;
+        Polymer.dom(this.root).removeChild(input);
+        Polymer.dom(this.root).insertBefore(input, prevSibling);
+        Polymer.dom.flush();
+        input.focus();
+        console.log('input field moved left');
+
+      } else if (keyCode === VK_RIGHT) {
+        // TODO(ij): set attribute on input field so that in blur event handler i can know to not close the dropdown 
+
+        // move input field right
+        var nextSibling = input.nextElementSibling;
+        if (nextSibling.classList.contains('dropdown-arrow')) { return; }
+        nextSibling = nextSibling.nextElementSibling;
+        if (!nextSibling) { return; }
+        Polymer.dom(this.root).removeChild(input);
+        Polymer.dom(this.root).insertBefore(input, nextSibling);
+        Polymer.dom.flush();
+        input.focus();
+        console.log('input field moved right');
       }
     },
 

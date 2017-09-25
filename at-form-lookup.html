@@ -926,6 +926,8 @@
     },
 
     _handleFilterTextInputBlurEvent: function(event) {
+      // TODO(ij): read the attribute on input field that will tell me to not close the dropdown because I'm rearranging items in the items-view; relatedTarget is null in this case
+
       if (!event.relatedTarget) {
         // if focus didn't transfer to any other element hide the dropdown
         this.$.coreDropdown.hide();
