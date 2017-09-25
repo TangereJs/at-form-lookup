@@ -43,7 +43,7 @@
       </div>
 
       <at-core-dropdown id="coreDropdown" no-mask>
-        <options-view id="optionsView"></options-view>
+        <options-view id="optionsView" item-view="[[itemView]]"></options-view>
       </at-core-dropdown>
 
       <div id="hint" class="hint"></div>
@@ -641,7 +641,6 @@
     _initializeRemoteDataSource: function(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems) {
       // 1. compute available options
       var remoteUrl = xurl || url;
-      
       
       if (!noPreload) {
         // TODO(ij): remember the last full url used to avoid repeated requests to the same url
