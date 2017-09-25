@@ -277,7 +277,6 @@
       url: {
         type: String,
         value: '',
-        observer: '_urlChanged',
         title: 'Url'
       },
 
@@ -289,8 +288,7 @@
        */
       xurl: {
         type: String,
-        value: '',
-        observer: '_urlChanged'
+        value: ''
       },
 
       /**
@@ -301,8 +299,7 @@
        */
       params: {
         type: String,
-        value: '',
-        observer: '_paramsChanged'
+        value: ''
       },
 
       /**
@@ -327,7 +324,6 @@
       maxItems: {
         type: Number,
         value: 1,
-        observer: '_maxItemsChanged',
         title: 'Maximum number of selectable items'
       },
 
@@ -342,7 +338,6 @@
         type: String,
         title: "Item view",
         value: '',
-        observer: "_itemViewChanged",
         xtype: "code",
         mode: "carbon"
       },
@@ -663,6 +658,8 @@
       if (!this._boundInitialValueActivityErrorHanlder) {
         this._boundInitialValueActivityErrorHanlder = this._handleInitialValueActivityError.bind(this);
       }
+
+      function isString(obj) { return Object.prototype.toString.apply(obj) === "[object String]"; }
 
       if (isString(value) && value.length) {
         // TODO(ij): remember last value used to send requests to avoid doubling of sent requests
@@ -1168,9 +1165,31 @@
       return filteredOptions;
     },
 
+    _allowNewItemsChanged: function(newValue, oldValue) {
+      // TODO(ij): implement allowNewItems
+    },
+
+
     // this function is here to improve compatibility with form designer
     xvaluelistChanged: function(newValue, oldValue) {
       this._availableChanged(newValue, oldValue);
+    },
+
+    // this function is here to avoid console errors with setting selectedItems because its readonly
+    set selectedItems(newValue) {},
+
+    focus: function() {
+      this._getFocusableElement().focus();
+    },
+
+    // this function is part of the hint/validation API
+    // hint should be displayed when element gains focus
+    // behavior can not know when element gained focus
+    // but if gived focusable element it can attach to its focus event
+    // it should return focusable element if available or null if focusable element doesn't exist
+    _getFocusableElement: function () {
+      var focusable = this.$.itemsView.$.filterTextInput;
+      return focusable;
     },
 
     // 
@@ -1289,486 +1308,8 @@
       });
 
       return result;
-    },
-
-    // 
-    // 
-    // 
-    // 
-    // OLD CODE
-    // 
-    // 
-    // 
-    // 
-
-    _valueChanged: function(newValue, oldValue) {
-      if (this._isReady) {
-        if (!this._isUpdating && !this._selectizeUpdate) {
-          this._isUpdating = true;
-
-          // do the update
-          var sInstance = this._selectizeInstance;
-
-          var newValues = this.value;
-          if (!isArray(newValues)) {
-            // newValue can be string, array or number; if its number we convert it to string
-            if (!isString(newValues)) {
-              newValues = String(newValues);
-            }
-            if (newValues.length <= 0) {
-              newValues = new Array();
-            } else {
-              newValues = newValues.split(',');
-            }
-          }
-
-          var selectedItems = sInstance.items;
-
-          var arrIntersection = arrayIntersect(newValues, selectedItems);
-          var itemsToAdd = arraySubtract(newValues, arrIntersection);
-          var itemsToRemove = arraySubtract(selectedItems, arrIntersection);
-
-          for (var i = 0; i < itemsToRemove.length; i++) {
-            sInstance.removeItem(itemsToRemove[i]);
-          }
-
-          var coreActivityQueue = [];
-          this.initialValueRequestsQueue = [];
-
-          for (var i = 0; i < itemsToAdd.length; i++) {
-            var currentItem = itemsToAdd[i];
-
-            if (sInstance.options.hasOwnProperty(currentItem)) {
-              sInstance.addItem(currentItem);
-            } else {
-              if (this._internalUrl && this._internalUrl !== "" && currentItem !== "") {
-                // *ij* this here is request by *ma*
-                // at-form-lookup should work in orchard without any additional configuration
-                // code bellow makes that possible
-                // component is first disabled so user can't input
-                this._selectizeInstance.disable();
-                // an disabled overlay is "displayed"
-                Polymer.dom(this.$.disabledOverlay).setAttribute('disabled', true);
-                // a correct url is constructed
-                var urlParts = this._internalUrl.split('?');
-                var baseUrl = urlParts[0];
-                var queryPart = urlParts.length > 1 ? '?' + urlParts[1] : '';
-                var coreActivity = document.createElement('at-core-activity');
-                coreActivity.handleAs = 'json';
-                var finalUrl = baseUrl + '/' + currentItem + queryPart;
-                coreActivity.url = finalUrl;
-                // noCredentials parameter is set on the ajax component
-                coreActivity.noCredentials = this.noCredentials;
-                // add listener for response event
-                coreActivity.addEventListener('response', this._loadDefaultOnResponse.bind(this));
-                coreActivity.addEventListener('error', this._loadDefaultOnError.bind(this));
-
-                // put current request in a queue
-                coreActivityQueue.push(coreActivity);
-                // create an entry in issued requests queue
-                this.initialValueRequestsQueue.push({
-                  requestItemId: currentItem,
-                  isCompleted: false
-                });
-              }
-            }
-          }
-
-          // generate requests for each core activity
-          coreActivityQueue.forEach(function (coreActivity, index) {
-            // request is made
-            coreActivity.generateRequest();
-          });
-
-          this._isUpdating = false;
-          this._selectizeUpdate = false;
-        }
-
-        if (this.autoValidate) { this.validate(); }
-
-        this._fireValueChangedEvent(newValue);
-      }
-    },
-
-    _initialSearchTermChanged: function (newValue, oldValue) {
-      if (!this._isReady || !this._selectizeInstance) { return; }
-      var optionsLength = Object.keys(this._selectizeInstance.options);
-      if (!optionsLength) { return; }
-      if (this._selectizeInstance.isFull()) { return; }
-
-      this._selectizeInstance.$control_input.value = newValue;
-      var updateEvent = new CustomEvent('keyup', {});
-      this._selectizeInstance.$control_input.dispatchEvent(updateEvent);
-
-      // we open the dropdown manually because 'keyup' event doesn't do it reliably
-      this._selectizeInstance.open();
-    },
-
-    set selectedItems(newValue) {},
-
-    _urlChanged: function(newValue, oldValue) {
-      if (this._isReady) {
-        this.noPreload = true;
-        if (this.xurl && this.xurl !== ""){
-          this._internalUrl = this.xurl;
-        } else if (this.url && this.url !== "") {
-          this._internalUrl = this.url;
-        }
-
-        if (this._internalUrl && this._internalUrl !== '') {
-          this.noPreload = false;
-        }
-
-        this._request_paramsChanged();
-        // AT-32 when value is set before url, that value needs to be displayed
-        this._valueChanged(this.value, this.value);
-        this.xurl = this.url; // update legacy xurl parameter
-      }
-    },
-
-    _paramsChanged: function() {
-      if (this._isReady) {
-        this.noPreload = true;
-        if (this.params !== '') {
-          this.noPreload = false;
-        }
-        this._request_paramsChanged();
-      }
-    },
-
-    _request_paramsChanged: function() {
-      if (this._selectizeInstance.clear && this._selectizeInstance.clearOptions) {
-        this._selectizeInstance.clear();
-        this._selectizeInstance.clearOptions();
-        this._selectizeInstance.onSearchChange('');
-      }
-    },
-
-    _allowNewItemsChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance) {
-        var valueToSet = Boolean(newValue);
-        this._selectizeInstance.settings.create = valueToSet;
-      }
-    },
-
-    _maxItemsChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance) {
-        try {
-          // ok what is happening here?
-          // 1. we calculate what is value to set is by using Number constructor function
-          var valueToSet = parseInt(newValue);
-          if (isNaN(valueToSet)) {
-            valueToSet = 0;
-          }
-          // 2. we need to update selectize settings
-          var settings = this._selectizeInstance.settings;
-          // 3. we need to update maxItems
-          settings.maxItems = valueToSet < 1 ? null : valueToSet;
-          // we need to set mode; I found out that I need to do this by inspecting and debuggin selectize code
-          var mode = valueToSet === 1 ? 'single' : 'multi';
-          // we also need to remember current value for mode
-          var prevMode = settings.mode;
-          // we set the new mode value
-          settings.mode = mode;
-          // we also need to set this setting when mode is multi
-          settings.hideSelected = mode === 'multi';
-          // we need to set classes on $wrapper and $dropdown; I found out that I need to do this by inspecting and debuggin selectize code
-          var wrapper = this._selectizeInstance.$wrapper;
-          Polymer.dom(wrapper).classList.remove(prevMode);
-          Polymer.dom(wrapper).classList.add(mode);
-          var dropdown = this._selectizeInstance.$dropdown;
-          Polymer.dom(dropdown).classList.remove(prevMode);
-          Polymer.dom(dropdown).classList.add(mode);
-          // now we update the view
-          var instance = this._selectizeInstance;
-          // we need to clear the cache; this is clearing the rencer cache; we need to do this because after mode change the way items are rendered changes
-          // so cache needs to be updated
-          instance.clearCache();
-          // we run setup plugins; remove_button plugin behaves differently based on mode; its disabled in single and enabled in multi
-          // since mode is updated plugins need to update themselves
-          instance.setupPlugins();
-          // finally we update selected items
-          var oldItems = instance.items;
-          instance.clear();
-          var itemsLength = oldItems.length;
-          var i;
-          // if maxItems < length of currently selected items we need to trim
-          if (valueToSet < itemsLength) {
-            for (i = 0; i < valueToSet; i++) {
-              var oldItem = oldItems[i];
-              instance.addItem(oldItem);
-            }
-          } else {
-          // else maxItems >= length so we do not trim
-            for (i = 0; i < itemsLength; i++) {
-              var oldItem = oldItems[i];
-              instance.addItem(oldItem);
-            }
-          }
-        } catch (e) {
-          console.log(e);
-        }
-      }
-    },
-
-    _itemViewChanged: function(newValue, oldValue) {
-      if (this._isReady && this._selectizeInstance) {
-
-        if (!this._originalOptionRender) {
-          this._originalOptionRender = this._selectizeInstance.settings.render.option;
-        }
-
-        var render = {};
-
-        if (newValue && newValue !== "") {
-          render.option = function (data, escape) {
-              return '<at-core-view class="item" view="'+ newValue +'" value=\''+ JSON.stringify(data) +'\'></at-core-view>';
-            };
-          this._selectizeInstance.renderCache = {};
-        } else {
-          if (this._originalOptionRender) {
-            render.option = this._originalOptionRender;
-          }
-        }
-
-        var extend = function(a, b) {
-          var i, n, k, object;
-          for (i = 1, n = arguments.length; i < n; i += 1) {
-            object = arguments[i];
-            if (!object) {
-              continue;
-            }
-            for (k in object) {
-              if (object.hasOwnProperty(k)) {
-                a[k] = object[k];
-              }
-            }
-          }
-          return a;
-        };
-
-        this._selectizeInstance.settings.render = extend({}, this._selectizeInstance.settings.render, render);
-        this._selectizeInstance.refreshOptions(false);
-      }
-    },
-
-
-    _selectizeOnLoad: function(query, callback) {
-      // this here is selectize object
-      // polymer element upon which selectize is constructed is passed into selectize settings and can be accessed here
-      if (this._internalUrl && this._internalUrl !== '') {
-
-        this.$.coreAjax.params = {};
-
-        var urlParts = this._internalUrl.split('?');
-        var baseUrl = urlParts[0];
-        var queryPart = urlParts.length > 1 ? urlParts[1] : '';
-
-        var queryPieces = queryPart.split('&');
-        var index;
-        for (index = 0; index < queryPieces.length; index++) {
-          var queryPiece = queryPieces[index];
-          var pieceParts = queryPiece.split('=');
-          if (pieceParts.length && pieceParts.length === 2) {
-            this.$.coreAjax.params[pieceParts[0]] = pieceParts[1];
-          }
-        }
-
-        this._selectizeLoadCallback = callback;
-        this.$.coreAjax.params["query"] = query;
-        this.$.coreAjax.params["page"] = 1;
-        this.$.coreAjax.params["pageSize"] = 25;
-        this.$.coreAjax.url = baseUrl;
-        //this.$.coreAjax.params = {
-        //  "query": query,
-        //  "page": "1",
-        //  "pageSize": "25"
-        //};
-
-        this.fire('at-form-lookup-beforeAjax', {
-          coreAjax: this.$.coreAjax,
-          query: query
-        });
-        this.$.coreAjax.noCredentials = this.noCredentials;
-        this.$.coreAjax.generateRequest();
-      }
-    },
-
-    _loadDefaultOnResponse: function(event) {
-      var item = event.detail.Data;
-
-      var irIndex;
-      var irqLength = this.initialValueRequestsQueue.length;
-      var issuedRequest = null;
-      
-      // find the issued request in the queue by id
-      for (irIndex = 0; irIndex < irqLength; irIndex++) {
-        issuedRequest = this.initialValueRequestsQueue[irIndex];
-        if (issuedRequest.id === item.id) {
-          break;
-        }
-      }
-      if (!issuedRequest) { return; }
-
-      // mark the request as completed and save the data from the server
-      issuedRequest.isCompleted = true;
-      issuedRequest.item = item;
-
-      // check if all requests are complete
-      var queueComplete = true;
-      this.initialValueRequestsQueue.forEach(function (request) {
-        queueComplete = queueComplete && request.isCompleted;
-      });
-
-      if (!queueComplete) { return; }
-
-      // process queue data into selectize instance
-      var sInstance = this._selectizeInstance;
-      this.initialValueRequestsQueue.forEach(function (request, index) {
-
-        sInstance.addOption({
-          value: request.item.id,
-          title: request.item.title
-        });
-
-        sInstance.addItem(request.item.id);
-      });
-
-      // clear the queue
-      this.initialValueRequestsQueue = [];
-
-      this.$.disabledOverlay.removeAttribute('disabled');
-      if (!this.disabled) {
-        this._selectizeInstance.enable();
-      }
-
-      this.fire('at-form-lookup-initialized', {
-        data: item
-      });
-    },
-
-    _loadDefaultOnError: function (event) {
-      this.$.disabledOverlay.removeAttribute('disabled');
-      if (!this.disabled) {
-        this._selectizeInstance.enable();
-      }
-    },
-
-    _selectizeChange: function(newValue) {
-
-      /* at-form-lookup has display mode of block and display mode of inline
-        when display mode is inline lookup is about the size of its content 
-        but when value is empty there is almost no content to wrap around so size is very small
-        but very small lookup doesn't look like a lookup up at all and that you can select anything from it
-        so in this special case we give input field width of 100px; in other cases we give it its original width of 4px;
-        @see at-form-lookup-styles.html .inline-and-empty-width
-      */
-      (function(lookup, instance, value){
-        // if at-form-lookup has display:inline-* and newValue is empty
-        // give input field a special css class inline-and-empty-width
-        // else remove it
-        var displayValue = window.getComputedStyle(lookup).getPropertyValue('display');
-        var isInline = /^inline/gi.test(displayValue);
-        if (isInline && !value.length) {
-          instance.$control_input.classList.add('inline-and-empty-width');
-        } else {
-          instance.$control_input.classList.remove('inline-and-empty-width');
-        }
-      })(this, this._selectizeInstance, newValue);
-
-      this._selectizeUpdate = true;
-      if (isArray(newValue)) {
-        this.value = newValue.join(',');
-      } else {
-        this.value = newValue;
-      }
-
-      var selectedItemsIds = this._selectizeInstance.items;
-      var allItems = this._selectizeInstance.options;
-      var result = [];
-
-      selectedItemsIds.forEach(function (id, index) {
-        var item = allItems[id];
-        if (item.title !== "" && item.value !== "") {
-          result.push(item);
-        }
-      });
-      this._setSelectedItems(result);
-
-      this._selectizeUpdate = false;
-      this._fireValueChangedEvent(this.value);
-      this.fire('selected-items-changed', { value: this.selectedItems });
-    },
-
-
-    focus: function() {
-      this._getFocusableElement().focus();
-    },
-
-    // this function is part of the hint/validation API
-    // hint should be displayed when element gains focus
-    // behavior can not know when element gained focus
-    // but if gived focusable element it can attach to its focus event
-    // it should return focusable element if available or null if focusable element doesn't exist
-    _getFocusableElement: function () {
-      var focusable = this.$.itemsView.$.filterTextInput;
-      return focusable;
     }
   });
-
-  function isArray(obj) {
-    return Object.prototype.toString.call(obj) === "[object Array]";
-  }
-
-  function isString(obj) {
-    return Object.prototype.toString.call(obj) === "[object String]";
-  }
-
-  function isCommaSeparated(obj) {
-    return isString(obj) && obj.indexOf(',') !== -1;
-  }
-
-  /**
-   * Computes the intersection of two arrays
-   *
-   * @param arr1-{array} first array
-   * @param arr2-{array} second array
-   * @return {array} intersection
-   */
-  function arrayIntersect(arr1, arr2) {
-    var intersection = [];
-    if (isArray(arr1) && isArray(arr2)) {
-      for (var i = 0; i < arr1.length; i++) {
-        if (arr2.indexOf(arr1[i]) != -1) {
-          intersection.push(arr1[i]);
-        }
-      }
-    }
-
-    return intersection;
-  }
-
-  /**
-   * Subtract itemsToSubtract array from subtractFrom array
-   * Items from the itemsToSubtract are removed from subtractFrom array
-   *
-   * @param arr1-{array} subtractFrom
-   * @param arr2-{array} itemsToSubtract
-   * @return {array} subtraction
-   */
-  function arraySubtract(subtractFrom, itemsToSubtract) {
-    var subtraction = [];
-
-    if (isArray(subtractFrom) && isArray(itemsToSubtract)) {
-      for (var i = 0; i < subtractFrom.length; i++) {
-        if (itemsToSubtract.indexOf(subtractFrom[i]) == -1) {
-          subtraction.push(subtractFrom[i]);
-        }
-      }
-    }
-
-    return subtraction;
-  }
 
   /**
    * sifter.js
