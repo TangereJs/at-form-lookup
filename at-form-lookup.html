@@ -53,10 +53,6 @@
 <script>
   'use strict';
 
-  // TODO(ij): make VK_LEFT and VK_RIGHT work in items-view to move input field left or right
-  // when item is selected from the dropdown insert it into itemsView.items at the index input field is
-  // when item is deleted with VK_BACKSPACE or VK_DELETE it should be deleted relative to the position of the input field is
-
   // TODO(ij): when xvaluelist is set, available options are objects; create { title, value, itemRef } objects to use in dropdown and selected items list, and use itemRef to properly compute value and selectedItems
 
   Polymer({
@@ -1028,8 +1024,10 @@
       } else {
         // add selected option to the items view, to the left of input field
         var indexOfInput = this.$.itemsView._getInputIndex();
-        // TODD(ij): dom-repeat doesn't always insert at correct position
+        
+        // TODO(ij): dom-repeat doesn't always insert at correct position
         // deleting with VK_BACKSPACE and VK_DELETE has different effects
+
         var len = this.$.itemsView.items.length;
         if (!len) {
           // insert when empty
