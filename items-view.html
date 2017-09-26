@@ -124,7 +124,7 @@
       </div>
     </template>
     <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" disabled$="[[disabled]]" />
-    <div class="dropdown-arrow"></div>
+    <div id="dropdownArrow" class="dropdown-arrow"></div>
   </template>
 </dom-module>
 <script>
@@ -172,6 +172,7 @@
       var VK_DOWN = 40;
       var VK_LEFT = 37;
       var VK_RIGHT = 39;
+      var VK_DELETE = 46;
       var keyCode = event.keyCode;
       var input = this.$.filterTextInput;
 
@@ -182,13 +183,42 @@
       }
 
       if (input.value) return;
-        
-      if (keyCode === VK_BACKSPACE && this.items.length) {
-        var itemsDeleted = this.splice('items', this.items.length-1, 1);
-        this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
-      
+      if (!this.items.length) return;
+
+      if ([ VK_BACKSPACE, VK_DELETE].indexOf(keyCode) > -1) {
+        var indexOfInput = this._getInputIndex();
+
+        if (keyCode === VK_BACKSPACE && (indexOfInput-1 > -1)) {
+          indexOfInput-=1;
+          if (indexOfInput === this.items.length) indexOfInput-=1;
+          // delete the item to the left of input element
+          var itemsDeleted = this.splice('items', indexOfInput, 1);
+          this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
+
+        } else if (keyCode === VK_DELETE && indexOfInput < this.items.length) {
+          // delete the item to the right of input element
+          var itemsDeleted = this.splice('items', indexOfInput, 1);
+          this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
+        }
+
+        // NOTE. this._lookupInstance is assigned in at-form-lookup ready function
+
+        if (!this.items.length) {
+          // move input element after template element and before dropdown arrow element
+          input.removeEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
+          input.removeEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+
+          Polymer.dom(this.root).removeChild(input);
+          Polymer.dom(this.root).insertBefore(input, this.$.dropdownArrow);
+          input.focus();
+
+          input.addEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
+          input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+        }
+
       } else if (keyCode === VK_LEFT) {
-        // TODO(ij): set attribute on input field so that in blur event handler i can know to not close the dropdown 
+        input.removeEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
+        input.removeEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
 
         // move input field left
         var prevSibling = input.previousElementSibling;
@@ -196,12 +226,13 @@
         if (prevSibling.nodeName === "TEMPLATE") prevSibling = prevSibling.previousElementSibling;
         Polymer.dom(this.root).removeChild(input);
         Polymer.dom(this.root).insertBefore(input, prevSibling);
-        Polymer.dom.flush();
         input.focus();
-        console.log('input field moved left');
+        input.addEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
+        input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
 
       } else if (keyCode === VK_RIGHT) {
-        // TODO(ij): set attribute on input field so that in blur event handler i can know to not close the dropdown 
+        input.removeEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
+        input.removeEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
 
         // move input field right
         var nextSibling = input.nextElementSibling;
@@ -210,9 +241,9 @@
         if (!nextSibling) { return; }
         Polymer.dom(this.root).removeChild(input);
         Polymer.dom(this.root).insertBefore(input, nextSibling);
-        Polymer.dom.flush();
         input.focus();
-        console.log('input field moved right');
+        input.addEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
+        input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
       }
     },
 
@@ -233,6 +264,16 @@
       index = parseInt(index);
       var itemsDeleted = this.splice('items', index, 1);
       this.fire('items-deleted', { value: itemsDeleted }, { bubbles: false });
+    },
+
+    _getInputIndex: function() {
+      var children = Polymer.dom(this.root).children;
+      var indexOfInput = -1;
+      for (var ci = 0; ci < children.length && indexOfInput < 0; ci++) {
+        var child = children[ci];
+        indexOfInput = child.id === "filterTextInput" ? ci : indexOfInput;
+      }
+      return indexOfInput;
     },
 
     ready: function () {

@@ -404,6 +404,9 @@
 
       // call into at-form-behaviors.formUIGeneric._attachFocusBlurEvents
       this._attachFocusBlurEvents();
+
+      // reference to lookup instance is given to items view so that focus/blur handling can be turned off when moving input field left and right
+      this.$.itemsView._lookupInstance = this;
     },
 
     attached: function() {
@@ -624,8 +627,8 @@
       // save unfiltered and non highlighted options as _viewModel available options
       this._viewModel.availableOptions = vmOptions;
 
-      // if initialSearchTerm is set, do filter and highlight; if not, use vmOptions because _filterAndHighlight will create a copy of vmOptions for empty searchTerm which is not necessary for initialization
-      var filteredOptions = initialSearchTerm ? this._filterAndHighlightOptions(initialSearchTerm) : vmOptions;
+      // do filter and highlight
+      var filteredOptions = this._filterAndHighlightOptions(initialSearchTerm);
       this.$.optionsView.items = filteredOptions;
 
       // 5. hide the spinner
@@ -922,12 +925,11 @@
       if (isFull && isMulti) return;
 
       if (!this.$.optionsView.items.length) return;
+
       this.$.coreDropdown.show(null, this.$.itemsView);
     },
 
     _handleFilterTextInputBlurEvent: function(event) {
-      // TODO(ij): read the attribute on input field that will tell me to not close the dropdown because I'm rearranging items in the items-view; relatedTarget is null in this case
-
       if (!event.relatedTarget) {
         // if focus didn't transfer to any other element hide the dropdown
         this.$.coreDropdown.hide();
@@ -1024,8 +1026,23 @@
         this.$.itemsView.splice('items', 0, 1, originalOption);
 
       } else {
-        // add selected option to the items view
-        this.$.itemsView.push('items', originalOption);
+        // add selected option to the items view, to the left of input field
+        var indexOfInput = this.$.itemsView._getInputIndex();
+        // TODD(ij): dom-repeat doesn't always insert at correct position
+        // deleting with VK_BACKSPACE and VK_DELETE has different effects
+        var len = this.$.itemsView.items.length;
+        if (!len) {
+          // insert when empty
+          this.$.itemsView.push('items', originalOption);
+
+        } else if (len && indexOfInput < len) {
+          // insert when not empty at the begining or middle
+          this.$.itemsView.splice('items', indexOfInput, 0, originalOption);
+  
+        } else {
+          // insert when not empty at the end
+          this.$.itemsView.push('items', originalOption);
+        }
 
         if (isMulti) {
           this.$.optionsView.splice('items', selectedIndex, 1);
@@ -1137,7 +1154,6 @@
       // 1. filter the options 
       if (filterText) {
         var sifter = new window.atFormLookup.Sifter(this._viewModel.availableOptions);
-        var filterRegexp = new RegExp(filterText, "i");
         var results = sifter.search(filterText, {
           score: sifter.getScoreFunction(filterText, {
             fields: 'title',
