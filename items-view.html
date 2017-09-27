@@ -274,9 +274,20 @@
     _moveInputFieldOnePlaceToTheRight: function(input)  {
       // move input field right
       var nextSibling = input.nextElementSibling;
-      if (nextSibling.classList.contains('dropdown-arrow')) { return; }
+      if (nextSibling.classList.contains('dropdown-arrow')) {
+        // input field is next to dropdown arrow; done.
+        return;
+      }
+      // we move to the next sibling because we need to insertBefore that sibling
       nextSibling = nextSibling.nextElementSibling;
-      if (!nextSibling) { return; }
+      if (!nextSibling) {
+        console.log('Should not happen. Erorr. nextSibling is null');
+        return;
+      }
+      if (nextSibling.nodeName === "TEMPLATE") {
+        // if next sibling is TEMPLATE we move to the right because we need input to be after template element
+        nextSibling = nextSibling.nextElementSibling;
+      }
       
       input.removeEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
       input.removeEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
