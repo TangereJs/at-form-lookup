@@ -55,6 +55,8 @@
 
   // TODO(ij): when xvaluelist is set, available options are objects; create { title, value, itemRef } objects to use in dropdown and selected items list, and use itemRef to properly compute value and selectedItems
 
+  // TODO(ij): update dropdown size after adding or deleting an item
+
   Polymer({
     is: 'at-form-lookup',
     behaviors: [ Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric, Tangere.behaviors.AtFormLookupInputValidation ],
@@ -1025,9 +1027,6 @@
         // add selected option to the items view, to the left of input field
         var indexOfInput = this.$.itemsView._getInputIndex();
         
-        // TODO(ij): dom-repeat doesn't always insert at correct position
-        // deleting with VK_BACKSPACE and VK_DELETE has different effects
-
         var len = this.$.itemsView.items.length;
         if (!len) {
           // insert when empty
