@@ -52,9 +52,6 @@
 </dom-module>
 <script>
   'use strict';
-
-  // TODO(ij): update dropdown size after adding or deleting an item
-
   Polymer({
     is: 'at-form-lookup',
     behaviors: [ Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric, Tangere.behaviors.AtFormLookupInputValidation ],
@@ -1051,6 +1048,9 @@
       // if maxItems have been selected close the dropdown
       if (this._isFull()) {
         this.$.coreDropdown.hide();
+      } else {
+        Polymer.dom.flush();
+        this.$.coreDropdown.updateContainerAndOutlineSize();
       }
 
       // update .value and fire changed event
@@ -1101,6 +1101,8 @@
         if (!this.$.coreDropdown.open) {
           this.$.coreDropdown.show(null, this.$.itemsView);
         }
+      } else {
+        this.$.coreDropdown.updateContainerAndOutlineSize();
       }
 
       // update .value and fire changed event
