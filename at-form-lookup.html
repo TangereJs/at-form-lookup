@@ -53,8 +53,6 @@
 <script>
   'use strict';
 
-  // TODO(ij): when xvaluelist is set, available options are objects; create { title, value, itemRef } objects to use in dropdown and selected items list, and use itemRef to properly compute value and selectedItems
-
   // TODO(ij): update dropdown size after adding or deleting an item
 
   Polymer({
@@ -545,10 +543,11 @@
               value: option
             });
           } else if (isObject(option)) {
-            if (!option.title) {
-              option.title = option.value;
-            }
-            vmOptions.push(option);
+            vmOptions.push({
+              title: option.title ? option.title : option.value,
+              value: option.value,
+              itemRef: option
+            });
           }
         });
 
@@ -1284,7 +1283,11 @@
     },
 
     _updateLookupSelectedItems: function(newValue) {
-      var selectedItems = JSON.parse(JSON.stringify(this.$.itemsView.items));
+      var selectedItems = [];
+      this.$.itemsView.items.forEach(function(item) {
+        var tmp = item.itemRef ? item.itemRef : item;
+        selectedItems.push(tmp);
+      });
       this.selectedItems = selectedItems;
       this.fire('selected-items-changed', { value: selectedItems }, { bubbles: false});
     },

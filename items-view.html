@@ -199,7 +199,7 @@
           // move input element after the right sibling that should be removed
           // this is done so that dom-repeat that renders selected options doesn't confuse itself
           // with where items should be inserted when selecting from dropdown
-          this._moveInputFieldOnePlaceToTheRight();
+          this._moveInputFieldOnePlaceToTheRight(input);
 
           // delete the item to the right of input element
           var itemsDeleted = this.splice('items', indexOfInput, 1);
