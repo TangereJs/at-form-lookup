@@ -1011,15 +1011,22 @@
         originalOption = tmp.value === option.value ? tmp : false;
       }
       delete originalOption.selected;
-      // remove found option from availableOptions
-      this._viewModel.availableOptions.splice(i-1, 1);
 
-      if (isFull && !isMulti) {
-        // maxItems == 1 and itemsView already displays selected item
-        // replace that item with newly selected one
-        this.$.itemsView.splice('items', 0, 1, originalOption);
+      
+      if (!isMulti) {
+        if (isFull) {
+          // maxItems == 1 and itemsView already displays selected item
+          // replace that item with newly selected one
+          this.$.itemsView.splice('items', 0, 1, originalOption);
+
+        } else {
+          this.$.itemsView.push('items', originalOption);
+        }
 
       } else {
+        // remove found option from availableOptions
+        this._viewModel.availableOptions.splice(i-1, 1);
+
         // add selected option to the items view, to the left of input field
         var indexOfInput = this.$.itemsView._getInputIndex();
         
