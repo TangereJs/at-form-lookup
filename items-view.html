@@ -221,7 +221,7 @@
           input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
         }
 
-      } else if (keyCode === VK_LEFT) {
+      } else if (this.multiple && keyCode === VK_LEFT) {
         // move input field left
         var prevSibling = input.previousElementSibling;
         if (!prevSibling) return;
@@ -237,7 +237,7 @@
         input.addEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
         input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
 
-      } else if (keyCode === VK_RIGHT) {
+      } else if (this.multiple && keyCode === VK_RIGHT) {
         this._moveInputFieldOnePlaceToTheRight(input);
       }
     },
