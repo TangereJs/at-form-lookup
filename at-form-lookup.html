@@ -16,10 +16,18 @@
 <dom-module id="at-form-lookup">
   <template>
     <style include="at-form-common"></style>
-    <style include="at-form-lookup-styles">
+    <style>
       :host {
         @apply(--at-form-host);
         box-sizing: border-box;
+      }
+
+      .at-content-container {
+        padding-bottom: 5px;
+      }
+
+      [focused].at-content-container {
+        @apply(--at-form-input-focus);
       }
     </style>
     
@@ -42,7 +50,7 @@
         <items-view id="itemsView" multiple$="[[_computeMultiple(maxItems)]]"></items-view>
       </div>
 
-      <at-core-dropdown id="coreDropdown" no-mask>
+      <at-core-dropdown id="coreDropdown" no-mask y-offset="7">
         <options-view id="optionsView" item-view="[[itemView]]"></options-view>
       </at-core-dropdown>
 
@@ -913,6 +921,8 @@
     },
 
     _handleFilterTextInputFocusEvent: function(event) {
+      this.$.contentContainer.setAttribute('focused', '');
+
       var isFull = this._isFull();
       var isMulti = this._isMultiSelect();
       
@@ -924,7 +934,9 @@
     },
 
     _handleFilterTextInputBlurEvent: function(event) {
+
       if (!event.relatedTarget) {
+        this.$.contentContainer.removeAttribute('focused');
         // if focus didn't transfer to any other element hide the dropdown
         this.$.coreDropdown.hide();
         return;
@@ -932,6 +944,7 @@
 
       // if element receiving focus is at-core-dropdown-impl return
       if (event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
+      this.$.contentContainer.removeAttribute('focused');
 
       // if element receiving focus is an item in <items-view> return
       if (event.relatedTarget.classList.contains('item')) {
@@ -1106,9 +1119,11 @@
         if (!this.$.coreDropdown.open) {
           this.$.coreDropdown.show(null, this.$.itemsView);
         }
-      } else {
-        this.$.coreDropdown.updateContainerAndOutlineSize();
       }
+
+      Polymer.dom.flush();
+      this.$.coreDropdown.updateContainerAndOutlineSize();
+      this.$.coreDropdown.updateDropdownPosition(this.$.itemsView);
 
       // update .value and fire changed event
       this._updateLookupValue();

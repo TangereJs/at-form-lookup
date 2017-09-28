@@ -9,13 +9,7 @@
       :host {
         display: block;
         box-sizing: border-box;
-
         @apply(--layout-horizontal);
-
-        /* @DEBUG */
-        border: 1px solid red;
-        margin: 4px;
-        padding: 4px;
       }
 
       :host([disabled]) {
@@ -48,16 +42,12 @@
       .filter-text-input {
         @apply(--at-form-input-font);
         @apply(--layout-inline);
-        /*display: block;*/
         min-width: 4px;
         width: 4px;
-        /*padding: 2px;*/
         @apply(--unselectable);
 
         /* @DEBUG */
         border: 1px dashed green;
-        /*border: none;*/
-        /*margin: 0 4px 4px 0;*/
       }
 
       .filter-text-input:focus {
@@ -80,6 +70,7 @@
 
       :host([multiple]) {
         @apply(--layout-wrap);
+        padding: 0 9px;
       }
 
       :host([multiple]) .item {

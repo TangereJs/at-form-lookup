@@ -10,18 +10,6 @@
       :host {
         display: block;
         box-sizing: border-box;
-
-        /* @DEBUG remove this! */
-        border: 1px dotted green;
-        margin: 4px;
-        padding: 4px;
-      }
-
-      .debug {
-        /* @DEBUG remove this! */
-        border: 1px dotted green;
-        margin: 4px;
-        padding: 4px;
       }
 
       .option[selected] {
@@ -29,17 +17,14 @@
       }
     </style>
     
-    <div class="debug">
-      <template is="dom-repeat" items="[[items]]">
-        <template is="dom-if" if="[[!itemView]]">
-          <option-view class="option" data="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
-        </template>
-        <template is="dom-if" if="[[itemView]]">
-          <at-core-view class="option" view="[[itemView]]" model="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
-        </template>
-      </template>      
-    </div>
-
+    <template is="dom-repeat" items="[[items]]">
+      <template is="dom-if" if="[[!itemView]]">
+        <option-view class="option" data="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
+      </template>
+      <template is="dom-if" if="[[itemView]]">
+        <at-core-view class="option" view="[[itemView]]" model="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
+      </template>
+    </template>
   </template>
 </dom-module>
 <script>

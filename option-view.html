@@ -10,19 +10,16 @@
         box-sizing: border-box;
         @apply(--at-form-border-radius1111);
         cursor: default;
-
-        /* @CLEANUP */
-        border: 1px solid blue;
-        margin: 4px;
-        padding: 4px;
+        padding: 10px 12px;
       }
 
       :host(:hover) {
-        @apply(--at-text-selected);
+        cursor: pointer;
       }
 
       .title {
         @apply(--at-form-input-font);
+        @apply(--unselectable);
       }
 
       .highlight {
