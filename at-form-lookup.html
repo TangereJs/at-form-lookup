@@ -1012,7 +1012,6 @@
       }
       delete originalOption.selected;
 
-      
       if (!isMulti) {
         if (isFull) {
           // maxItems == 1 and itemsView already displays selected item
@@ -1044,11 +1043,9 @@
           this.$.itemsView.push('items', originalOption);
         }
 
-        if (isMulti) {
-          this.$.optionsView.splice('items', selectedIndex, 1);
-          if (!this.$.optionsView.items.length) {
-            this.$.coreDropdown.hide();
-          }
+        this.$.optionsView.splice('items', selectedIndex, 1);
+        if (!this.$.optionsView.items.length) {
+          this.$.coreDropdown.hide();
         }
       }
 
