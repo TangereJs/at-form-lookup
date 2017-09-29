@@ -507,6 +507,19 @@
       this.debounce('debounce-initialization', function() {
         self._initializeDebounced(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems);
       }, 250);
+
+      /*
+      TODO(ij): debounce is causing unintended effect for value-changed event
+      lookup.value = "v1";
+      lookup.value = "v2";
+      lookup.value = "v3";
+      will cause value-changed to be triggered only for v3
+      v1 and v2 will be lost due to debouncing
+      which is more desirable, value-changed for each value or performance benefit from last only ?
+
+      value-changed is more desirable. Achieve performance by manually detecting which property changed and process the changes
+      */
+      
     },
 
     _initializeDebounced: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems) {
@@ -624,6 +637,8 @@
         }
 
         this.$.itemsView.items = selectedOptions;
+
+        this.fire('value-changed', { value: value }, { bubbles: false });
 
       } else {
         if (!isString(value)) {
@@ -892,6 +907,10 @@
       if (!this._viewModel.initialValueRequestsQueue.length) {
         this.disabled = false;
       }
+
+      // TODO(ij): review and testing pending
+      this._updateLookupValue();
+      this._updateLookupSelectedItems();
 
       this.fire('at-form-lookup-initialized', {
         data: item

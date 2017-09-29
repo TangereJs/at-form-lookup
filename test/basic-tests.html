@@ -139,8 +139,7 @@
           var input = fixture('disabled');
           assert.equal(input.disabled, true, 'disabled property is true');
 
-          var inputElement = input._getFocusableElement().parentElement;
-          assert.equal(inputElement.classList.contains('disabled'), true, 'input element disabled attribute set');
+          assert.equal(input.$.itemsView.hasAttribute('disabled'), true);
           assert.equal(input.$.labelContainer.classList.contains('disabled'), true, 'container has disabled class');
         });
 
@@ -250,8 +249,7 @@
           input.disabled = true;
           assert.equal(input.disabled, true, 'disabled property is true');
 
-          var inputElement = input._getFocusableElement().parentElement;
-          assert.equal(inputElement.classList.contains('disabled'), true, 'input element disabled attribute set');
+          assert.equal(input.$.itemsView.hasAttribute('disabled'), true);
           assert.equal(input.$.labelContainer.classList.contains('disabled'), true, 'container has disabled class');
         });
 

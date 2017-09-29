@@ -48,9 +48,8 @@
         inputElement.focus();
         var activeElement = document.activeElement;
         if (getDomMode(input) === 'shadowDOM') {
-          activeElement = input.shadowRoot.activeElement;
+          activeElement = input.$.itemsView.shadowRoot.activeElement;
         }
-
         assert.equal(inputElement.id, activeElement.id, 'Input element has lost focus');
 
         input.value = "lorem ipsum";
@@ -76,7 +75,7 @@
         inputElement.focus();
         var activeElement = document.activeElement;
         if (getDomMode(input) === 'shadowDOM') {
-          activeElement = input.shadowRoot.activeElement;
+          activeElement = input.$.itemsView.shadowRoot.activeElement;
         }
 
         assert.equal(inputElement.id, activeElement.id, 'Input element has lost focus');
