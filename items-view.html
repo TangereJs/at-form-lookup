@@ -159,6 +159,7 @@
 
     _handleFilterTextInputKeydown: function(event) {
       var VK_BACKSPACE = 8;
+      var VK_TAB = 9;
       var VK_UP = 38;
       var VK_DOWN = 40;
       var VK_LEFT = 37;
@@ -232,7 +233,7 @@
         this._moveInputFieldOnePlaceToTheRight(input);
       }
 
-      if (!this.multiple && this.items.length === 1) { 
+      if (keyCode !== VK_TAB && !this.multiple && this.items.length === 1) { 
         event.preventDefault();
         return;
       }
