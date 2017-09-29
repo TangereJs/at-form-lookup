@@ -231,6 +231,11 @@
       } else if (this.multiple && keyCode === VK_RIGHT) {
         this._moveInputFieldOnePlaceToTheRight(input);
       }
+
+      if (!this.multiple && this.items.length === 1) { 
+        event.preventDefault();
+        return;
+      }
     },
 
     _handleFilterTextInputKeypress: function(event) {
