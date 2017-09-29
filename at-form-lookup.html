@@ -60,8 +60,6 @@
   </template>
 </dom-module>
 <script>
-  // TODO(ij): in single selection mode dropdown should close after selecting an option from dropdown
-
   'use strict';
   Polymer({
     is: 'at-form-lookup',
@@ -1074,6 +1072,8 @@
           }
         }
 
+        this.$.coreDropdown.hide();
+
       } else {
         // remove found option from availableOptions
         this._viewModel.availableOptions.splice(i-1, 1);
@@ -1101,18 +1101,24 @@
         }
       }
 
-      // if maxItems have been selected close the dropdown
-      if (this._isFull() && isMulti) {
-        this.$.coreDropdown.hide();
+      isFull = this._isFull();
+      if (isFull) {
+        if (isMulti) {
+          // if maxItems have been selected in multi selection mode close the dropdown
+          this.$.coreDropdown.hide();
+        
+        } else if (newOptionSelected) {
+          // when new options is selected, clear input field text and blur
+          var input = this._getInput();
+          input.value = '';
+          input.blur();
+        }
+ 
+        this.$.contentContainer.removeAttribute('focused');
 
-      } else if (this._isFull() && !isMulti && newOptionSelected) {
-        // when new options is selected, clear input field text and blur
-        var input = this._getInput();
-        input.value = '';
-        input.blur();
-
-      } else {
+      } else if (isMulti) {
         Polymer.dom.flush();
+        this.$.coreDropdown.updateDropdownPosition(this.$.itemsView);
         this.$.coreDropdown.updateContainerAndOutlineSize();
       }
 
@@ -1187,8 +1193,10 @@
       var index = event.detail.index;
       this.$.optionsView.set('items.' + index + '.selected', true);
       this._selectOptionAtIndex(index);
-      
-      this._getInput().focus();
+
+      if (this._isMultiSelect()) {
+        this._getInput().focus();
+      }
     },
 
     _handleItemsViewFilterChangedEvent: function(event) {
@@ -1287,7 +1295,7 @@
 
     // returns true if maxItems have already been selected from available options
     _isFull: function() {     
-      return this.maxItems === 0 ? false : this.$.itemsView.items.length === this.maxItems;
+      return this.maxItems === 0 ? !this._viewModel.availableOptions.length : this.$.itemsView.items.length === this.maxItems;
     },
 
     // returns true if user can select more than one item
