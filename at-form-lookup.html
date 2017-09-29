@@ -875,8 +875,13 @@
       // clear the queue
       this._viewModel.initialValueRequestsQueue = [];
 
-      // TODO(ij): clean the coreActivities queue and detach event listeners
-      // TODO(ij): use the created activities as a pool 
+      // detach event listeners from coreActivities
+      this._viewModel.initialValueActivitiesQueue.forEach(function(a){ 
+        a.removeEventListener('response', this._boundInitialValueActivityResponseHandler);
+        a.removeEventListener('error', this._boundInitialValueActivityErrorHanlder);
+      }.bind(this));
+      // clear the coreActivities queue
+      this._viewModel.initialValueActivitiesQueue = [];
 
       if (!this._viewModel.initialValueRequestsQueue.length) {
         this.disabled = false;
