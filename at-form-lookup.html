@@ -671,42 +671,45 @@
       function isString(obj) { return Object.prototype.toString.apply(obj) === "[object String]"; }
 
       if (isString(value) && value.length) {
-        // TODO(ij): remember last value used to send requests to avoid doubling of sent requests
-        var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
+        // if current value is the same as _lastUsedValue do not send requests
+        if (!this._lastUsedValue || this._lastUsedValue !== value) {
+          this._lastUsedValue = value;
+          var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
 
-        // value is a csv string
-        var valueParts = value.split(',');
-        this._viewModel.initialValueRequestsQueue = [];
-        this._viewModel.initialValueActivitiesQueue = [];
+          // value is a csv string
+          var valueParts = value.split(',');
+          this._viewModel.initialValueRequestsQueue = [];
+          this._viewModel.initialValueActivitiesQueue = [];
 
-        valueParts.forEach(function(part, index) { 
-          part = part.trim();
-          // ignore empty parts
-          if (!part) { 
-            console.log('initial value csv string has empty value at zero-based index of ' + index);
-            return;
-          }
+          valueParts.forEach(function(part, index) { 
+            part = part.trim();
+            // ignore empty parts
+            if (!part) { 
+              console.log('initial value csv string has empty value at zero-based index of ' + index);
+              return;
+            }
 
-          var partUrl = baseAndQuery.baseUrl + '/' + part;
-          var partCoreActivity = document.createElement('at-core-activity');
-          partCoreActivity.url = partUrl;
-          baseAndQuery.queryParams.forEach(function(queryParam) {
-            partCoreActivity.params[queryParam.name] = queryParam.value;
+            var partUrl = baseAndQuery.baseUrl + '/' + part;
+            var partCoreActivity = document.createElement('at-core-activity');
+            partCoreActivity.url = partUrl;
+            baseAndQuery.queryParams.forEach(function(queryParam) {
+              partCoreActivity.params[queryParam.name] = queryParam.value;
+            });
+            partCoreActivity.noCredentials = noCredentials;
+            partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
+            partCoreActivity.addEventListener('error', this._boundInitialValueActivityErrorHanlder);
+            this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
+            this._viewModel.initialValueRequestsQueue.push({
+              requestedItemId: part,
+              isCompleted: false,
+              item: undefined
+            })
+          }, this);
+
+          this._viewModel.initialValueActivitiesQueue.forEach(function(a) {
+            a.generateRequest();
           });
-          partCoreActivity.noCredentials = noCredentials;
-          partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
-          partCoreActivity.addEventListener('error', this._boundInitialValueActivityErrorHanlder);
-          this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
-          this._viewModel.initialValueRequestsQueue.push({
-            requestedItemId: part,
-            isCompleted: false,
-            item: undefined
-          })
-        }, this);
-
-        this._viewModel.initialValueActivitiesQueue.forEach(function(a) {
-          a.generateRequest();
-        })
+        }
 
       } else {
         if (!isString(value)) {
