@@ -734,7 +734,20 @@
         coreAjax.params[queryParam.name] = queryParam.value;
       });
 
-      // TODO(ij): lookup.params property needs to be added here
+      // handle lookup.params property
+      // lookup.params is a string; the string must be a json string
+      if (this.params && this.params.length) {
+        try {
+          var paramsObj = JSON.parse(this.params);
+          var paramsObjKeys = Object.keys(paramsObj);
+          paramsObjKeys.forEach(function(paramName){ 
+            coreAjax.params[paramName] = paramsObj[paramName];
+          });
+
+        } catch(e) {
+          console.log('params string ' + this.params + 'is not a valid json string');
+        }
+      }
 
       coreAjax.params["query"] = query;
       coreAjax.params["page"] = 1;
