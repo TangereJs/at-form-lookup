@@ -10,6 +10,9 @@
       :host {
         display: block;
         box-sizing: border-box;
+        /* 5 items * (2*10px for padding + 22px for line height) per item */
+        max-height: 210px; 
+        overflow-y: auto;
       }
 
       .option[selected] {
