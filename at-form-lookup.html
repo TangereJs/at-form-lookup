@@ -650,10 +650,12 @@
       var remoteUrl = xurl || url;
       
       if (!noPreload) {
-        // TODO(ij): remember the last full url used to avoid repeated requests to the same url
+        if (!this._lastUsedUrl || (this._lastUsedUrl !== remoteUrl)) {
+          this._lastUsedUrl = remoteUrl;
 
-        // preload data; go to remote url with noCredentials and params and receive results
-        this._sendRequestToQueryOptions(remoteUrl, initialSearchTerm);
+          // preload data; go to remote url with noCredentials and params and receive results
+          this._sendRequestToQueryOptions(remoteUrl, initialSearchTerm);
+        }
       }
 
       // 3. load initially selected from remote url based on value
