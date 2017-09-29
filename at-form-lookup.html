@@ -819,7 +819,7 @@
 
         if (this._viewModel.openDropdownOnResponse) {
           this._viewModel.openDropdownOnResponse = false;
-          this.$.coreDropdown.show(null, this.$.itemsView);
+          this._openDropdown();
           this._getInput().focus();
         }
       }
@@ -951,7 +951,7 @@
 
       if (!this.$.optionsView.items.length) return;
 
-      this.$.coreDropdown.show(null, this.$.itemsView);
+      this._openDropdown();
     },
 
     _handleFilterTextInputBlurEvent: function(event) {
@@ -1017,7 +1017,7 @@
 
         case VK_BACKSPACE: 
           if (this._isFull()) return;
-          this.$.coreDropdown.show(null, this.$.itemsView);
+          this._openDropdown();
           break;
       }
     },
@@ -1113,8 +1113,6 @@
           input.value = '';
           input.blur();
         }
- 
-        this.$.contentContainer.removeAttribute('focused');
 
       } else if (isMulti) {
         Polymer.dom.flush();
@@ -1170,7 +1168,7 @@
         // focusing the input will open the dropdown 
         this._getInput().focus();
         if (!this.$.coreDropdown.open) {
-          this.$.coreDropdown.show(null, this.$.itemsView);
+          this._openDropdown();
         }
       }
 
@@ -1196,6 +1194,8 @@
 
       if (this._isMultiSelect()) {
         this._getInput().focus();
+      } else {
+        this.$.contentContainer.removeAttribute('focused');
       }
     },
 
@@ -1405,6 +1405,14 @@
       });
 
       return result;
+    },
+
+    _openDropdown: function() {
+      var ccClientRect = this.$.contentContainer.getBoundingClientRect();
+      var ccWidth = ccClientRect.width;
+      this.$.optionsView.style.width = ccWidth + 'px';
+
+      this.$.coreDropdown.show(null, this.$.itemsView);
     }
   });
 
