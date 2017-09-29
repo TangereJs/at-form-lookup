@@ -1063,7 +1063,7 @@
       }
 
       // if maxItems have been selected close the dropdown
-      if (this._isFull()) {
+      if (this._isFull() && isMulti) {
         this.$.coreDropdown.hide();
       } else {
         Polymer.dom.flush();
