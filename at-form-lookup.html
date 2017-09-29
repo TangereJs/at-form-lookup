@@ -650,6 +650,7 @@
       var remoteUrl = xurl || url;
       
       if (!noPreload) {
+        // do not send new request if lastUsedUrl is the same as current remoteUrl
         if (!this._lastUsedUrl || (this._lastUsedUrl !== remoteUrl)) {
           this._lastUsedUrl = remoteUrl;
 
