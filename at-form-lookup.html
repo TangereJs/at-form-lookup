@@ -934,7 +934,7 @@
 
     _detachEventListeners: function() {
       var itemsView = this.$.itemsView;
-      var filterText = itemsView.$.filterTextInput;
+      var filterTextInput = itemsView.$.filterTextInput;
       filterTextInput.removeEventListener('focus', this._boundFilterTextInputFocusHandler);
       filterTextInput.removeEventListener('blur', this._boundFilterTextInputBlurHandler);
 
