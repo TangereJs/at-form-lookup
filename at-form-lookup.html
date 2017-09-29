@@ -415,12 +415,18 @@
       // we want to close the dropdown on scroll or resize
       window.addEventListener('scroll', this._boundWidnowScrollEventHandler);
       window.addEventListener('resize', this._boundWidnowScrollEventHandler);
+
+      if (this._isInitialized) {
+        this._setupEventListeners();
+      }
     },
 
     detached: function() {
       // cleanup
       window.removeEventListener('scroll', this._boundWidnowScrollEventHandler);
       window.removeEventListener('resize', this._boundWidnowScrollEventHandler);
+
+      this._detachEventListeners();
     },
 
     _handleWindowScrollEvent: function() {
@@ -526,6 +532,8 @@
         // we are working with remote data source
         this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
       }
+
+      this._isInitialized = true;
     },
 
     _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems) {
@@ -924,8 +932,6 @@
       this.$.itemsView.addEventListener('filter-changed', this._boundItemsViewFilterChangedHandler);
     },
 
-    // TODO(ij): _detach event listeners should be called in detached handler
-    // TODO(ij): _setupEventListeners should be called in attached but only if element is initialized
     _detachEventListeners: function() {
       var itemsView = this.$.itemsView;
       var filterText = itemsView.$.filterTextInput;
