@@ -1134,6 +1134,7 @@
       selectedIndex -= 1;
       if (selectedIndex < 0) return;
       this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
+      this._udpateOptionsViewScrollTop();
     },
 
     _highlightNext: function(options) {
@@ -1144,6 +1145,29 @@
       selectedIndex +=1;
       if (selectedIndex > options.length) return;
       this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
+      this._udpateOptionsViewScrollTop();
+    },
+
+    _udpateOptionsViewScrollTop: function() {
+      var selectedOption = this.$.optionsView.querySelector('[selected]');
+      if (!selectedOption) return;
+      var sobcr = selectedOption.getBoundingClientRect();
+      var soTop = sobcr.top;
+
+      var ovcc = this.$.optionsView.getBoundingClientRect();
+      var ovHeight = ovcc.height;
+      var ovTop = ovcc.top;
+      
+      var currentTop = this.$.optionsView.scrollTop;
+      var topDiff = Math.abs(soTop - ovTop + currentTop);
+
+      if (topDiff < currentTop) {
+        this.$.optionsView.scrollTop = topDiff;
+        
+      } else if (topDiff >= (ovHeight+currentTop)) {
+        var topVal = topDiff - ovHeight + sobcr.height;
+        this.$.optionsView.scrollTop = topVal;
+      }
     },
 
     _handleItemsViewItemsDeletedEvent: function(event) {
@@ -1413,6 +1437,8 @@
       this.$.optionsView.style.width = ccWidth + 'px';
 
       this.$.coreDropdown.show(null, this.$.itemsView);
+
+      this._udpateOptionsViewScrollTop();
     }
   });
 
