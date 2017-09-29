@@ -805,9 +805,6 @@
         }
 
       } else {
-        // TODO(ij): define rules for populating returnData
-        // debugger;
-
         // use data that 3rd party provided
         var availableOptions = eventObject.returnData;
       }
@@ -1894,4 +1891,16 @@
     return Sifter;
   }));
 
+  /**
+   * For at-form-lookup-afterAjax event <br/>
+   * event.detail.response holds data received from the server <br/>
+   * transform the each item in data as follows <br/>
+   * for each item in data create a new object with three properties: title, value and itemRef <br/>
+   * 1) provide adequate value for title from item <br/>
+   * 2) provide adequate value for value from item <br/>
+   * 3) assign item (or any parts of it) to itemRef <br/>
+   * in selectedItems you will get what was placed in itemRef <br/>
+   * 
+   * @event at-form-lookup-afterAjax
+   */ 
 </script>
