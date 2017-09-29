@@ -313,7 +313,6 @@
       allowNewItems: {
         type: Boolean,
         value: false,
-        observer: '_allowNewItemsChanged',
         title: 'Allow new entries'
       },
 
@@ -1024,7 +1023,18 @@
         var tmp = this._viewModel.availableOptions[i];
         originalOption = tmp.value === option.value ? tmp : false;
       }
-      delete originalOption.selected;
+      var newOptionSelected = !originalOption;
+
+      if (!this.allowNewItems) {
+        delete originalOption.selected;
+
+      } else if (!originalOption) {
+        // original option doesn't exist; its should be created
+        originalOption = {
+          title: option.value, 
+          value: option.value
+        };
+      }
 
       if (!isMulti) {
         if (isFull) {
@@ -1034,6 +1044,11 @@
 
         } else {
           this.$.itemsView.push('items', originalOption);
+
+          if (newOptionSelected) {
+            // remove new option from dropdown options
+            this.$.optionsView.shift('items');
+          }
         }
 
       } else {
@@ -1066,6 +1081,13 @@
       // if maxItems have been selected close the dropdown
       if (this._isFull() && isMulti) {
         this.$.coreDropdown.hide();
+
+      } else if (this._isFull() && !isMulti && newOptionSelected) {
+        // when new options is selected, clear input field text and blur
+        var input = this._getInput();
+        input.value = '';
+        input.blur();
+
       } else {
         Polymer.dom.flush();
         this.$.coreDropdown.updateContainerAndOutlineSize();
@@ -1098,23 +1120,24 @@
     },
 
     _handleItemsViewItemsDeletedEvent: function(event) {
-      if (!this._isMultiSelect()) return;
-      var itemsDeleted = event.detail.value;
-      // return deleted items to available options
-      itemsDeleted.forEach(function(item) {
-        this._viewModel.availableOptions.push(item);
-      }.bind(this));
+      if (this._isMultiSelect()) {
+        var itemsDeleted = event.detail.value;
+        // return deleted items to available options
+        itemsDeleted.forEach(function(item) {
+          this._viewModel.availableOptions.push(item);
+        }.bind(this));
 
-      this._viewModel.availableOptions.sort(function(i1, i2) {  
-        if (i1.value === i2.value) return 0;
-        return i1.value > i2.value ? 1 : -1;
-      });
+        this._viewModel.availableOptions.sort(function(i1, i2) {  
+          if (i1.value === i2.value) return 0;
+          return i1.value > i2.value ? 1 : -1;
+        });
+      }
 
       var filteredOptions = this._filterAndHighlightOptions(this._getInput().value);
       this.$.optionsView.set('items', []);
       this.$.optionsView.set('items', filteredOptions);
 
-      if (itemsDeleted.length && !this.$.coreDropdown.open) {
+      if (itemsDeleted && itemsDeleted.length && !this.$.coreDropdown.open) {
         // focusing the input will open the dropdown 
         this._getInput().focus();
         if (!this.$.coreDropdown.open) {
@@ -1197,14 +1220,17 @@
       // 2. highlight the options
       this._highlightOptions(filteredOptions, filterText);
 
+      // add option to add new option/item
+      if (filterText && this.allowNewItems) {
+        filteredOptions.unshift({
+          title: 'Add option ' + filterText,
+          value: filterText
+        });
+      }
+
       // 3. return result
       return filteredOptions;
     },
-
-    _allowNewItemsChanged: function(newValue, oldValue) {
-      // TODO(ij): implement allowNewItems
-    },
-
 
     // this function is here to improve compatibility with form designer
     xvaluelistChanged: function(newValue, oldValue) {
