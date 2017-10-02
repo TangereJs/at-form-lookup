@@ -431,7 +431,7 @@
 
     _handleWindowScrollEvent: function() {
       // close the dropdown
-      this.$.coreDropdown.hide();
+      this._closeDropdown();
     },
 
     _disabledChanged: function(newValue, oldValue) {
@@ -950,7 +950,7 @@
       if (!event.relatedTarget) {
         this.$.contentContainer.removeAttribute('focused');
         // if focus didn't transfer to any other element hide the dropdown
-        this.$.coreDropdown.hide();
+        this._closeDropdown();
         return;
       }
 
@@ -965,7 +965,7 @@
       }
 
       // if element receiving focus is outside at-form-lookup hide the dropdown
-      this.$.coreDropdown.hide();
+      this._closeDropdown();
     },
 
     _handleFilterTextInputKeydownEvent: function(event) {
@@ -980,7 +980,7 @@
 
       switch (keyCode) {
         case VK_ESCAPE:
-          this.$.coreDropdown.hide();
+          this._closeDropdown();
           break;
 
         case VK_ENTER:
@@ -1063,7 +1063,7 @@
           }
         }
 
-        this.$.coreDropdown.hide();
+        this._closeDropdown();
 
       } else {
         // remove found option from availableOptions
@@ -1088,7 +1088,7 @@
 
         this.$.optionsView.splice('items', selectedIndex, 1);
         if (!this.$.optionsView.items.length) {
-          this.$.coreDropdown.hide();
+          this._closeDropdown();
         }
       }
 
@@ -1096,7 +1096,7 @@
       if (isFull) {
         if (isMulti) {
           // if maxItems have been selected in multi selection mode close the dropdown
-          this.$.coreDropdown.hide();
+          this._closeDropdown();
         
         } else if (newOptionSelected) {
           // when new options is selected, clear input field text and blur
@@ -1430,7 +1430,14 @@
 
       this.$.coreDropdown.show(null, this.$.itemsView);
 
+      Polymer.dom(this.$.itemsView.$.dropdownArrow).classList.add('open');
+
       this._udpateOptionsViewScrollTop();
+    },
+
+    _closeDropdown: function() {
+      this.$.coreDropdown.hide();
+      Polymer.dom(this.$.itemsView.$.dropdownArrow).classList.remove('open');
     }
   });
 

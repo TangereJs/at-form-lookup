@@ -146,12 +146,12 @@
     },
 
     listeners: {
-      'tap': '_handleHostOnTap'      
+      'tap': '_handleHostOnTap'
     },
 
     _handleHostOnTap: function(event) {
       // we return if mouse click happened on items or input field
-      if (event.target !== event.currentTarget) return;
+      if (event.srcElement !== this.$.dropdownArrow && event.target !== event.currentTarget) return;
 
       // we focus input field otherwise
       this.$.filterTextInput.focus();
