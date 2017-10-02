@@ -370,8 +370,8 @@
     }],
 
     observers: [
-      '_internalValidStateUpdate(required)',
-      '_initializeLookup(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems)'
+      '_internalValidStateUpdate(required, errorMessage)',
+      '_initializeLookup(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems, _viewModel)'
     ],
 
     _hideLabelChanged: function(newValue, oldValue) {
@@ -444,10 +444,8 @@
       this.toggleClass('hidden', newValue, this.$.atContainer);
     },
 
-    _internalValidStateUpdate: function (required) {
-      if (this._isReady) {
-        this.validate();
-      }
+    _internalValidStateUpdate: function (required, errorMessage) {
+      this.validate();
     },
 
     validate: function (showError) {
@@ -468,7 +466,7 @@
         if user typed text into text input but didn't select an item we
         1) do not want text to be deleted
         2) we want to display a validation error message if user typed but didn't select an item
-        * this._selectizeInstance.$control_input.value contains value that user typed
+        * this.$.itemsView.$.filterTextInput.value contains value that user typed
         * this.value is empty if user didn't select an item
        */
       var userTypedText = this._getInput().value;
@@ -500,53 +498,18 @@
       if (this._skipInitialization) return;
 
       var self = this;
-      // debounce the initialization to avoid mutliple function calls in two use cases
-      // 1. during polymer element lifecycle function calls
-      // 2. in playground
-      // 3. in form designer
-      this.debounce('debounce-initialization', function() {
-        self._initializeDebounced(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems);
-      }, 250);
+      var initRemoteMode = xurl || url;
 
-      /*
-      TODO(ij): debounce is causing unintended effect for value-changed event
-      lookup.value = "v1";
-      lookup.value = "v2";
-      lookup.value = "v3";
-      will cause value-changed to be triggered only for v3
-      v1 and v2 will be lost due to debouncing
-      which is more desirable, value-changed for each value or performance benefit from last only ?
-
-      value-changed is more desirable. Achieve performance by manually detecting which property changed and process the changes
-      */
-      
-    },
-
-    _initializeDebounced: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems) {
-      console.log(`_initializeDebounced`);
-
-      // console.log(`available ${available}`);
-      // console.log(`enum ${JSON.stringify(enumarr)}`);
-      // console.log(`xvaluelist ${JSON.stringify(xvaluelist)}`);
-      // console.log(`value ${value}`);
-      // console.log(`initialSearchTerm ${initialSearchTerm}`);
-      // console.log(`url ${url}`);
-      // console.log(`xurl ${xurl}`);
-      // console.log(`noCredentials ${noCredentials}`);
-      // console.log(`noPreload ${noPreload}`);
-      // console.log(`params ${JSON.stringify(params)}`);
-
-      // detect if we work with local or remote data source
-      if (!url && !xurl) {
-        // we are working with local data source
+      if (!initRemoteMode) {
         this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems);
+        this._isInitialized = true;
 
       } else {
-        // we are working with remote data source
-        this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
+        this.debounce('initialize-remote', function() { 
+          this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
+          this._isInitialized = true;
+        }.bind(this), 150);
       }
-
-      this._isInitialized = true;
     },
 
     _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems) {
@@ -593,7 +556,7 @@
       // delay until initialSearchTerm is processed, so that remaining items are filtered and highlighted
 
       // 3. compute initially selected items based on value
-      if (isString(value) && value.length) {
+      if (isString(value)) {
         // value is a csv string
         var valueParts = value.split(',');
         var selectedOptions = [];
@@ -638,12 +601,15 @@
 
         this.$.itemsView.items = selectedOptions;
 
+        if (this.autoValidate) { this.validate(); }
+        
         this.fire('value-changed', { value: value }, { bubbles: false });
 
       } else {
-        if (!isString(value)) {
-          console.log('type of value is ' + (typeof value));
-        }
+        // value is null, undefined or else
+        if (this.autoValidate) { this.validate(); }
+
+        this.fire('value-changed', { value: value }, { bubbles: false });
       }
 
       // 4. put initalSearchTerm into filterTextInput
@@ -1313,8 +1279,9 @@
     },
 
     // this function is here to improve compatibility with form designer
+    // TODO(ij): is it still needed ?
     xvaluelistChanged: function(newValue, oldValue) {
-      this._availableChanged(newValue, oldValue);
+      // this._availableChanged(newValue, oldValue);
     },
 
     // this function is here to avoid console errors with setting selectedItems because its readonly
