@@ -1060,8 +1060,17 @@
           if (newOptionSelected) {
             // remove new option from dropdown options
             this.$.optionsView.shift('items');
+
+            // add it to available options
+            this._viewModel.availableOptions.push({
+              title: originalOption.title,
+              value: originalOption.value
+            });
           }
         }
+
+        // in single selection mode filter text should be cleared
+        this._getInput().value = "";
 
         this._closeDropdown();
 
@@ -1162,8 +1171,9 @@
     },
 
     _handleItemsViewItemsDeletedEvent: function(event) {
+      var itemsDeleted = event.detail.value;
+      
       if (this._isMultiSelect()) {
-        var itemsDeleted = event.detail.value;
         // return deleted items to available options
         itemsDeleted.forEach(function(item) {
           this._viewModel.availableOptions.push(item);
@@ -1173,6 +1183,12 @@
           if (i1.value === i2.value) return 0;
           return i1.value > i2.value ? 1 : -1;
         });
+
+      } else if (!this._viewModel.availableOptions.length) {
+        // its single select and there is only one option available
+        itemsDeleted.forEach(function(item) {
+          this._viewModel.availableOptions.push(item);
+        }.bind(this));
       }
 
       var filteredOptions = this._filterAndHighlightOptions(this._getInput().value);
@@ -1224,6 +1240,17 @@
         this.$.optionsView.set('items', []);
         this.$.optionsView.set('items', filteredOptions);
 
+        // filter text input has focus, but if initially dropdown was empty and allowNewItems is true
+        // new item is added to options; we should open the dropdown
+        Polymer.dom.flush();
+        if (!this.$.coreDropdown.open && this.allowNewItems) { 
+          this._openDropdown();
+
+        } else {
+          // if options are filtered while dropdown is open we need to update dropdown size
+          this.$.coreDropdown.updateContainerAndOutlineSize();
+        }
+
       } else {
         // clear selected options because new and different items will be fetched from the remoteUrl
         this.$.itemsView.set('items', []);
@@ -1268,10 +1295,19 @@
 
       // add option to add new option/item
       if (filterText && this.allowNewItems) {
-        filteredOptions.unshift({
-          title: 'Add option ' + filterText,
-          value: filterText
-        });
+        // if option with filterText as value already exists in filteredOptions, do not add option to add item
+        var exists = false;
+        for (var i = 0; i < filteredOptions.length && !exists; i++) {
+          var fo = filteredOptions[i];
+          exists = fo.value === filterText;
+        }
+
+        if (!exists) {
+          filteredOptions.unshift({
+            title: 'Add option ' + filterText,
+            value: filterText
+          });
+        }
       }
 
       // 3. return result
@@ -1279,7 +1315,6 @@
     },
 
     // this function is here to improve compatibility with form designer
-    // TODO(ij): is it still needed ?
     xvaluelistChanged: function(newValue, oldValue) {
       // this._availableChanged(newValue, oldValue);
     },
@@ -1318,7 +1353,6 @@
     _isMultiSelect: function() {
       // if maxItems = 0 there is no limit for item selection, user can select as many items as there are available options
       // if maxItems > 1 user can select maxItems items from available options
-      // TODO(ij): when maxItems > availableOptions.lenth code should not break
       return this.maxItems !== 1;
     },
 
