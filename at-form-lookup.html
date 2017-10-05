@@ -514,8 +514,16 @@
 
     _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems) {
 
-      // 1. compute available options
-      var availableOptions = xvaluelist || enumarr || available;
+      // 1. compute available options      
+      var availableOptions = [];
+      if (xvaluelist && xvaluelist.length) {
+        availableOptions = xvaluelist;
+      } else if (enumarr && enumarr.length) {
+        availableOptions = enumarr;
+      } else if (isString(available) && available.length) {
+        availableOptions = available;
+      }
+
       var vmOptions = [];
 
       function isArray(obj) { return Object.prototype.toString.apply(obj) === "[object Array]"; }
