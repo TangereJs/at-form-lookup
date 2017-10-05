@@ -246,8 +246,12 @@
 
     _updateFilterTextInputWidth: function() {
       var filterTextInput = this.$.filterTextInput;
+      var minWidth = window.getComputedStyle(filterTextInput).getPropertyValue('min-width');
+      var minWidth = parseInt(minWidth);
+
       var newWidth = this._measureString(filterTextInput.value, filterTextInput);
-      filterTextInput.style.width = Math.ceil(newWidth) + 'px';
+      newWidth = newWidth < minWidth ? minWidth : newWidth;
+      filterTextInput.style.width = Math.ceil(newWidth+1) + 'px';
     },
 
     _handleRemoveOnTap: function(event) {
