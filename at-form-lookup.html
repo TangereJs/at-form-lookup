@@ -1472,8 +1472,17 @@
     },
 
     _openDropdown: function() {
-      var ccClientRect = this.$.contentContainer.getBoundingClientRect();
-      var ccWidth = ccClientRect.width;
+      var ccWidth = 0;
+      var displayValue = window.getComputedStyle(this).getPropertyValue('display');
+      var isInline = /^inline/gi.test(displayValue);
+      if (isInline) {
+        ccWidth = 150;
+
+      } else {
+        this.classList.remove('inline-and-empty-width');
+        var ccClientRect = this.$.contentContainer.getBoundingClientRect();
+        ccWidth = ccClientRect.width;
+      }
       this.$.optionsView.style.width = ccWidth + 'px';
 
       this.$.coreDropdown.show(null, this.$.itemsView);
