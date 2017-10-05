@@ -770,9 +770,9 @@
     },
 
     _handleCoreAjaxOnError: function(event) {
-      if (!this._viewModel.initialValueRequestsQueue.length) {
-        this.disabled = false;
-      }
+      var q = this._viewModel.initialValueRequestsQueue;
+      if (q && q.length) return;
+      this.disabled = false;
     },
 
     _handleCoreAjaxOnResponse: function(event) {
@@ -1136,6 +1136,9 @@
 
       // update .selectedItems and fire changed event
       this._updateLookupSelectedItems();
+
+      // validate
+      this.validate();
     },
 
     _highlightPrevious: function(options) {
@@ -1238,7 +1241,7 @@
         this._getInput().focus();
       } else {
         this.$.contentContainer.removeAttribute('focused');
-      }
+      }      
     },
 
     _handleItemsViewFilterChangedEvent: function(event) {
