@@ -614,6 +614,7 @@
 
       // 4. put initalSearchTerm into filterTextInput
       this._getInput().value = initialSearchTerm;
+      this.$.itemsView._updateFilterTextInputWidth();
 
       // save unfiltered and non highlighted options as _viewModel available options
       this._viewModel.availableOptions = vmOptions;
@@ -706,6 +707,7 @@
 
       // 4. put initalSearchTerm into filterTextInput
       this._getInput().value = initialSearchTerm;
+      this.$.itemsView._updateFilterTextInputWidth();
 
       // 5. hide the spinner
       this.$.coreSpinner.display = 'none';
@@ -919,7 +921,7 @@
 
     _detachEventListeners: function() {
       var itemsView = this.$.itemsView;
-      var filterTextInput = itemsView.$.filterTextInput;
+      var filterTextInput = this._getInput();
       filterTextInput.removeEventListener('focus', this._boundFilterTextInputFocusHandler);
       filterTextInput.removeEventListener('blur', this._boundFilterTextInputBlurHandler);
 
@@ -1071,6 +1073,7 @@
 
         // in single selection mode filter text should be cleared
         this._getInput().value = "";
+        this.$.itemsView._updateFilterTextInputWidth();
 
         this._closeDropdown();
 

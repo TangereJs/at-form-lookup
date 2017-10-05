@@ -240,14 +240,16 @@
     },
 
     _handleFilterTextInputKeypress: function(event) {
-      var filterTextInput = this.$.filterTextInput;
-      var value = filterTextInput.value;
-      var newWidth = this._measureString(value, filterTextInput);
-      filterTextInput.style.width = Math.ceil(newWidth) + 'px';
-
+      this._updateFilterTextInputWidth();
       this.debounce('fire-filter-changed', function() { 
-        this.fire('filter-changed', { value: value }, { bubbles: false });
+        this.fire('filter-changed', { value: this.$.filterTextInput.value }, { bubbles: false });
       }.bind(this), 150);
+    },
+
+    _updateFilterTextInputWidth: function() {
+      var filterTextInput = this.$.filterTextInput;
+      var newWidth = this._measureString(filterTextInput.value, filterTextInput);
+      filterTextInput.style.width = Math.ceil(newWidth) + 'px';
     },
 
     _handleRemoveOnTap: function(event) {
