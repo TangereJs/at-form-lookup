@@ -821,8 +821,11 @@
         var availableOptions = eventObject.returnData;
       }
 
+      this._viewModel.originalOptions = availableOptions;
+
       // 2. put available options into options-view
-      this._viewModel.availableOptions = availableOptions;
+      this._viewModel.availableOptions = this._computeAvailableOptionsFromOriginalOptions();
+
       var filterText = this._getInput().value;
       // _filterAndHighlight will return a clone of availableOptions for empty filter text
       var filteredOptions = this._filterAndHighlightOptions(filterText);
@@ -874,13 +877,20 @@
 
       // process queue data; insert into itemsView
       var selectedOptions = [];
+      var oo = this._viewModel.originalOptions;
       this._viewModel.initialValueRequestsQueue.forEach(function (request) {
         var option = {
           title: request.item.title,
           value: request.item.id,
           itemRef: request.item
         };
-        selectedOptions.push(option);
+        oo.push(option);
+
+        var io = {
+          title: option.title,
+          value: oo.length - 1
+        };
+        selectedOptions.push(io);        
       }, this);
       this.$.itemsView.set('items', selectedOptions);
 
@@ -1322,8 +1332,16 @@
         });
 
       } else {
-        // restore available options
-        filteredOptions = JSON.parse(JSON.stringify(this._viewModel.availableOptions));
+
+        var isRemoteMode = this.xurl || this.url;
+        if (isRemoteMode) {
+          filteredOptions = this._computeAvailableOptionsFromOriginalOptions();
+
+        } else {
+          // restore available options
+          filteredOptions = JSON.parse(JSON.stringify(this._viewModel.availableOptions));
+        }
+
       }
 
       // 2. highlight the options
@@ -1534,6 +1552,9 @@
       Polymer.dom(this.$.itemsView.$.dropdownArrow).classList.add('open');
 
       this._udpateOptionsViewScrollTop();
+
+      Polymer.dom().flush();
+      this.$.coreDropdown.updateContainerAndOutlineSize();
     },
 
     _closeDropdown: function() {

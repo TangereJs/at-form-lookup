@@ -209,6 +209,10 @@
 
           input.addEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
           input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+          
+          this.debounce('fire-filter-changed', function() { 
+            this.fire('filter-changed', { value: input.value }, { bubbles: false });
+          }.bind(this), 250);
         }
 
       } else if (this.multiple && keyCode === VK_LEFT) {
@@ -241,7 +245,7 @@
       this._updateFilterTextInputWidth();
       this.debounce('fire-filter-changed', function() { 
         this.fire('filter-changed', { value: this.$.filterTextInput.value }, { bubbles: false });
-      }.bind(this), 150);
+      }.bind(this), 250);
     },
 
     _updateFilterTextInputWidth: function() {
