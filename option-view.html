@@ -33,7 +33,7 @@
     -->
     <template is="dom-if" if="[[_hasHighlight(data)]]">
       <div class="title">
-        <template is="dom-repeat" items="[[data.title]]" strip-whitespace>
+        <template is="dom-repeat" items="[[data.titleArr]]" strip-whitespace>
           <template is="dom-if" if="[[_isHighlighted(item)]]">
             <span class="highlight">[[item.text]]</span>
           </template>
@@ -68,8 +68,7 @@
     _hasHighlight: function(data) {
       function isArray(obj) { return Object.prototype.toString.apply(obj) === "[object Array]"; }
 
-      var result = data && isArray(data.title)
-      // console.log(`data ${JSON.stringify(data)} has highlight ${result}`);
+      var result = data && isArray(data.titleArr) && data.titleArr.length > 0;
       return result;
     },
 

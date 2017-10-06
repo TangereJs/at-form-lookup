@@ -352,7 +352,20 @@
       _viewModel: {
         type: Object,
         value: function() {
-          return {};
+          return {
+            // original options are options given in .availble, .enum or .xvaluelist for local data
+            // or received from remoteUrl for remote data
+            // original options are used to compute .value based on selected options (in items-view.items)
+            // and to compute .selectedItems based on selected options (again items-view.items)
+            originalOptions: [],
+            // available options are options available to be displayed in dropdown
+            // available option is an object with title and value properties
+            // title is title of original option, value is index in original options array (to support computation of value and selectedItems)
+            // filtering is done on available options 
+            // selecting an option from dropdown transfers it to items-view.items
+            // removing an option from items-view moves it back to available options
+            availableOptions: []
+          };
         }
       }
 
@@ -623,8 +636,11 @@
       this._getInput().value = initialSearchTerm;
       this.$.itemsView._updateFilterTextInputWidth();
 
+      // save vmOptions as original options in _viewModel
+      this._viewModel.originalOptions = vmOptions;
+
       // save unfiltered and non highlighted options as _viewModel available options
-      this._viewModel.availableOptions = vmOptions;
+      this._viewModel.availableOptions = this._computeAvailableOptionsFromOriginalOptions();
 
       // do filter and highlight
       var filteredOptions = this._filterAndHighlightOptions(initialSearchTerm);
@@ -993,6 +1009,7 @@
           break;
 
         case VK_ENTER:
+          event.preventDefault();
         case VK_TAB:
           if (!this.$.coreDropdown.open) return;
           // select highlighted element
@@ -1047,7 +1064,7 @@
       var newOptionSelected = !originalOption;
 
       if (!this.allowNewItems) {
-        delete originalOption.selected;
+        originalOption.selected = false;
 
       } else if (!originalOption) {
         // original option doesn't exist; its should be created
@@ -1055,6 +1072,12 @@
           title: option.value, 
           value: option.value
         };
+
+        // place original option into _viewModel original options
+        this._viewModel.originalOptions.push(JSON.parse(JSON.stringify(originalOption)));
+        originalOption.value = this._viewModel.originalOptions.length-1;
+        originalOption.selected = false;
+        originalOption.titleArr = [];
       }
 
       if (!isMulti) {
@@ -1293,7 +1316,7 @@
         });
         
         var availalble = this._viewModel.availableOptions;
-        results.items.forEach(function(item){ 
+        results.items.forEach(function(item) {
           var option = availalble[item.id];
           filteredOptions.push(JSON.parse(JSON.stringify(option)));
         });
@@ -1373,6 +1396,21 @@
       return this.$.itemsView.$.filterTextInput;
     },
 
+    _computeAvailableOptionsFromOriginalOptions: function() {
+      var result = [];
+      var os = this._viewModel.originalOptions;
+      os.forEach(function(o, i) { 
+        var a = {
+          title: o.title,
+          value: i,
+          selected: false, // we use selected to mark item as selected in dropdown
+          titleArr: [] // we use titleArr to fix a bug with dom-if / dom-repeat combo, where dom-repeat is evaluated when dom-if evaluates to false
+        };
+        result.push(a);
+      }, this);
+      return result;
+    },
+
     _highlightOptions: function(options, token) {
       if (!token) return;
 
@@ -1407,15 +1445,21 @@
         return result;
       };
 
-      options.forEach(function(option, index){ 
-        option.title = highlightTitle(option.title);
+      function isArray(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Array]";
+      }
+
+      options.forEach(function(option, index) { 
+        var t = highlightTitle(option.title);
+        option.titleArr = isArray(t) ? t : [];
       });
     },
 
     _updateLookupValue: function() {
+      var os = this._viewModel.originalOptions;
       var valuesArr = [];
       this.$.itemsView.items.forEach(function(item){ 
-        valuesArr.push(item.value);
+        valuesArr.push(os[item.value].value);
       });
       var newValue = valuesArr.join(',');
 
@@ -1426,9 +1470,10 @@
     },
 
     _updateLookupSelectedItems: function(newValue) {
+      var os = this._viewModel.originalOptions;
       var selectedItems = [];
       this.$.itemsView.items.forEach(function(item) {
-        var tmp = item.itemRef ? item.itemRef : item;
+        var tmp = os[item.value];
         selectedItems.push(tmp);
       });
       this.selectedItems = selectedItems;
