@@ -660,11 +660,15 @@
       // 1. compute available options
       var remoteUrl = xurl || url;
       
-      if (!noPreload) {
-        // do not send new request if lastUsedUrl is the same as current remoteUrl
-        if (!this._lastUsedUrl || (this._lastUsedUrl !== remoteUrl)) {
-          this._lastUsedUrl = remoteUrl;
+      // do not send new request if lastUsedUrl is the same as current remoteUrl
+      if (!this._lastUsedUrl || (this._lastUsedUrl !== remoteUrl)) {
+        this._lastUsedUrl = remoteUrl;
 
+        // clear selected items from itemView
+        this.$.itemsView.set('items', []);
+        this._updateLookupValue();
+
+        if (!noPreload) {
           // preload data; go to remote url with noCredentials and params and receive results
           this._sendRequestToQueryOptions(remoteUrl, initialSearchTerm);
         }
@@ -682,13 +686,16 @@
       function isString(obj) { return Object.prototype.toString.apply(obj) === "[object String]"; }
 
       if (isString(value) && value.length) {
+        // when url changes this.value is cleared, but function is called with old value for value
+        value = this.value !== value ? this.value : value;
+
         // if current value is the same as _lastUsedValue do not send requests
         if (!this._lastUsedValue || this._lastUsedValue !== value) {
           this._lastUsedValue = value;
           var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
 
           // value is a csv string
-          var valueParts = value.split(',');
+          var valueParts = value.length ? value.split(',') : [];
           this._viewModel.initialValueRequestsQueue = [];
           this._viewModel.initialValueActivitiesQueue = [];
 
@@ -1482,6 +1489,7 @@
       var newValue = valuesArr.join(',');
 
       this._skipInitialization = true;
+      this._lastUsedValue = newValue;
       this.value = newValue;
       this.fire('value-changed', { value: newValue }, { bubbles: false});
       this._skipInitialization = false;
