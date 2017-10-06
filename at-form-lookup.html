@@ -856,7 +856,7 @@
 
       for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
         var tmpReq = this._viewModel.initialValueRequestsQueue[i];
-        ivRequest = tmpReq.requestedItemId === item.id ? tmpReq : ivRequest;
+        ivRequest = tmpReq.requestedItemId.toString() === item.id.toString() ? tmpReq : ivRequest;
       }
 
       if (!ivRequest) {
