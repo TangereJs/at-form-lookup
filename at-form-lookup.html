@@ -509,6 +509,14 @@
       // this is required when value is updated and value-changed event fired
       if (this._skipInitialization) return;
 
+      console.log(`lookup.id ${this.id}`);
+
+      // TODO(ij): value-changed should not be triggered here!
+      this.$.itemsView.set('items', []);
+      // if initialize is triggered by setting value to 'lorem ipsum'
+      // _updateLookupValue clears that value
+      this._updateLookupValue();
+
       var self = this;
       var initRemoteMode = xurl || url;
 
@@ -633,7 +641,7 @@
       }
 
       // 4. put initalSearchTerm into filterTextInput
-      this._getInput().value = initialSearchTerm;
+      this._getInput().value = initialSearchTerm;      
       this.$.itemsView._updateFilterTextInputWidth();
 
       // save vmOptions as original options in _viewModel
@@ -661,8 +669,17 @@
       var remoteUrl = xurl || url;
       
       // do not send new request if lastUsedUrl is the same as current remoteUrl
-      if (!this._lastUsedUrl || (this._lastUsedUrl !== remoteUrl)) {
-        this._lastUsedUrl = remoteUrl;
+      var currUrl = {
+        url: url,
+        xurl: xurl,
+        noCredentials: noCredentials,
+        parmas: params,
+        initialSearchTerm: initialSearchTerm
+      };
+      var currUrlStr = JSON.stringify(currUrl);
+
+      if (!this._lastUsedUrl || (this._lastUsedUrl !== currUrlStr)) {
+        this._lastUsedUrl = currUrlStr;
 
         // clear selected items from itemView
         this.$.itemsView.set('items', []);
@@ -916,13 +933,13 @@
         this.disabled = false;
       }
 
-      // TODO(ij): review and testing pending
-      this._updateLookupValue();
-      this._updateLookupSelectedItems();
-
       this.fire('at-form-lookup-initialized', {
         data: item
       });
+
+      // TODO(ij): review and testing pending
+      this._updateLookupValue();
+      this._updateLookupSelectedItems();
     },
 
     _setupEventListeners: function() {
@@ -1487,6 +1504,10 @@
         valuesArr.push(os[item.value].value);
       });
       var newValue = valuesArr.join(',');
+
+      var valueStr = JSON.stringify(this.value);
+      if (!valueStr) valueStr = new String(valueStr);
+      if (valueStr.length && !newValue.length) return;
 
       this._skipInitialization = true;
       this._lastUsedValue = newValue;

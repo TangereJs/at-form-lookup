@@ -244,11 +244,13 @@
             var invalidValue = invalidNumberValues[i];
             var expectedValue = expectedValues[i];
             var expectedDisplayValue = expectedDisplayValues[i];
-
+            debugger;
             element.value = invalidValue;
-            assert.equal(true, areEqual(expectedValue, element.value), "value is not set correctly");
+            assert.deepEqual(expectedValue, element.value, "value is not set correctly");
             assert.equal(expectedDisplayValue, displayInput.value, "display value not set correctly");
           }
+
+          // TODO(ij): for .value = fn() {} in _initialize report error and return, set value to ''
         });
 
       });
