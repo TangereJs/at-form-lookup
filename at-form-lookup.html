@@ -513,8 +513,6 @@
 
       // TODO(ij): value-changed should not be triggered here!
       this.$.itemsView.set('items', []);
-      // if initialize is triggered by setting value to 'lorem ipsum'
-      // _updateLookupValue clears that value
       this._updateLookupValue();
 
       var self = this;
@@ -1498,6 +1496,10 @@
     },
 
     _updateLookupValue: function() {
+      function isFunction(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Function]";
+      }
+
       var os = this._viewModel.originalOptions;
       var valuesArr = [];
       this.$.itemsView.items.forEach(function(item){ 
@@ -1506,7 +1508,11 @@
       var newValue = valuesArr.join(',');
 
       var valueStr = JSON.stringify(this.value);
-      if (!valueStr) valueStr = new String(valueStr);
+
+      if (isFunction(this.value)) {
+        valueStr = "";
+      }
+
       if (valueStr.length && !newValue.length) return;
 
       this._skipInitialization = true;

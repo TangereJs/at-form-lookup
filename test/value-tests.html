@@ -233,8 +233,8 @@
         }
 
         test('value set in code', function () {
-          var invalidNumberValues = [ undefined, null, "", "42", "3.14159", true, false, "true", "false", [], {}, "[]", "{}", function () { return undefined; }];
-          var expectedValues = [ undefined, null, "", "42", "3.14159", true, false, "true", "false", [], {}, "[]", "{}", function () { return undefined; }];
+          var invalidNumberValues = [ undefined, null, "", "42", "3.14159", true, false, "true", "false", [], {}, "[]", "{}"];
+          var expectedValues =      [ undefined, null, "", "42", "3.14159", true, false, "true", "false", [], {}, "[]", "{}"];
           var expectedDisplayValues = [ "", "", "", "", "", "", "", "", "", "", "", "", "", ""];
 
           var element = fixture('propertyTests');
@@ -244,13 +244,18 @@
             var invalidValue = invalidNumberValues[i];
             var expectedValue = expectedValues[i];
             var expectedDisplayValue = expectedDisplayValues[i];
-            debugger;
+            
             element.value = invalidValue;
             assert.deepEqual(expectedValue, element.value, "value is not set correctly");
             assert.equal(expectedDisplayValue, displayInput.value, "display value not set correctly");
           }
 
-          // TODO(ij): for .value = fn() {} in _initialize report error and return, set value to ''
+          var invalidValue = function() { return undefined; };
+          var expectedValue = '';
+          element.value = invalidValue;
+          assert.equal(expectedValue, element.value);
+          assert.equal('', displayInput.value);
+
         });
 
       });
