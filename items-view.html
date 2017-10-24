@@ -166,6 +166,8 @@
       var keyCode = event.keyCode;
       var input = this.$.filterTextInput;
 
+      if (event.shiftKey && keyCode === VK_TAB) return;
+
       // this prevents horizontal keyboard cursor movement when using up and down keyboard buttons
       if (keyCode === VK_UP || keyCode === VK_DOWN) { 
         event.preventDefault();

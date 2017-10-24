@@ -780,12 +780,13 @@
         try {
           var paramsObj = JSON.parse(this.params);
           var paramsObjKeys = Object.keys(paramsObj);
-          paramsObjKeys.forEach(function(paramName){ 
-            coreAjax.params[paramName] = paramsObj[paramName];
+          paramsObjKeys.forEach(function(paramName) {
+            paramName = window.encodeURIComponent(paramName);
+            coreAjax.params[paramName] = window.encodeURIComponent(paramsObj[paramName]);
           });
 
         } catch(e) {
-          console.log('params string ' + this.params + 'is not a valid json string');
+          console.log('params string ' + this.params + ' is not a valid json string');
         }
       }
 
