@@ -509,8 +509,6 @@
       // this is required when value is updated and value-changed event fired
       if (this._skipInitialization) return;
 
-      console.log(`lookup.id ${this.id}`);
-
       // TODO(ij): value-changed should not be triggered here!
       this.$.itemsView.set('items', []);
       this._updateLookupValue();
@@ -519,11 +517,13 @@
       var initRemoteMode = xurl || url;
 
       if (!initRemoteMode) {
+        if (this._lastUsedUrl) { this._lastUsedUrl = undefined; }
+
         this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems);
         this._isInitialized = true;
 
       } else {
-        this.debounce('initialize-remote', function() { 
+        this.debounce('initialize-remote', function() {
           this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
           this._isInitialized = true;
         }.bind(this), 150);
