@@ -580,6 +580,10 @@
       // 2. put available options into options-view
       // delay until value is processed, so already selected options are removed
       // delay until initialSearchTerm is processed, so that remaining items are filtered and highlighted
+      function isFunction(obj) { return Object.prototype.toString.apply(obj) === "[object Function]"; }
+      if (!isString(value)) {
+        value = isFunction(value) ? "" : String(value);
+      }
 
       // 3. compute initially selected items based on value
       if (isString(value)) {
@@ -699,6 +703,10 @@
       }
 
       function isString(obj) { return Object.prototype.toString.apply(obj) === "[object String]"; }
+      function isFunction(obj) { return Object.prototype.toString.apply(obj) === "[object Function]"; }
+      if (!isString(value)) {
+        value = isFunction(value) ? "" : String(value);
+      }
 
       if (isString(value) && value.length) {
         // when url changes this.value is cleared, but function is called with old value for value
