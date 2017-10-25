@@ -888,6 +888,8 @@
       var tmpReq;
       var ivRequest = false;
 
+      if (!item.id) { item.id = -1; }
+
       for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
         var tmpReq = this._viewModel.initialValueRequestsQueue[i];
         ivRequest = tmpReq.requestedItemId.toString() === item.id.toString() ? tmpReq : ivRequest;
@@ -1540,9 +1542,9 @@
       var selectedItems = [];
       this.$.itemsView.items.forEach(function(item) {
         var tmp = os[item.value];
-        selectedItems.push(tmp);
+        selectedItems.push(tmp.itemRef || tmp);
       });
-      this.selectedItems = selectedItems;
+      this._setSelectedItems(selectedItems);
       this.fire('selected-items-changed', { value: selectedItems }, { bubbles: false});
     },
 
