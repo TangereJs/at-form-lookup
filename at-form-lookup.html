@@ -1587,14 +1587,17 @@
       var ccWidth = 0;
       var displayValue = window.getComputedStyle(this).getPropertyValue('display');
       var isInline = /^inline/gi.test(displayValue);
+      
+      var ccClientRect = this.$.contentContainer.getBoundingClientRect();
+      ccWidth = ccClientRect.width;
+      
       if (isInline) {
-        ccWidth = 150;
+        ccWidth = ccWidth < 150 ? 150 : ccWidth;
 
       } else {
         this.classList.remove('inline-and-empty-width');
-        var ccClientRect = this.$.contentContainer.getBoundingClientRect();
-        ccWidth = ccClientRect.width;
       }
+      
       this.$.optionsView.style.width = ccWidth + 'px';
 
       this.$.coreDropdown.show(null, this.$.itemsView);
