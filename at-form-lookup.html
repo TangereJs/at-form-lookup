@@ -709,8 +709,11 @@
       }
 
       if (isString(value) && value.length) {
-        // when url changes this.value is cleared, but function is called with old value for value
-        value = this.value !== value ? this.value : value;
+        // if this.value is not string variable value already contains this.value converted to string; do not switch back to this.value
+        if (isString(this.value)) {
+          // when url changes this.value is cleared, but function is called with old value for value
+          value = this.value !== value ? this.value : value;
+        }
 
         // if current value is the same as _lastUsedValue do not send requests
         if (!this._lastUsedValue || this._lastUsedValue !== value) {
