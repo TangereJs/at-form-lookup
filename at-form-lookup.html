@@ -509,9 +509,9 @@
       // this is required when value is updated and value-changed event fired
       if (this._skipInitialization) return;
 
-      // TODO(ij): value-changed should not be triggered here!
       this.$.itemsView.set('items', []);
-      this._updateLookupValue();
+      // do not trigger value change here (skipEvent: true)
+      this._updateLookupValue(true);
 
       var self = this;
       var initRemoteMode = xurl || url;
@@ -947,8 +947,8 @@
         data: item
       });
 
-      // TODO(ij): review and testing pending
-      this._updateLookupValue();
+      // do not trigger value change here (skipEvent: true)
+      this._updateLookupValue(true);
       this._updateLookupSelectedItems();
     },
 
@@ -1507,7 +1507,7 @@
       });
     },
 
-    _updateLookupValue: function() {
+    _updateLookupValue: function(skipEvent) {
       function isFunction(obj) {
         return Object.prototype.toString.apply(obj) === "[object Function]";
       }
@@ -1530,7 +1530,9 @@
       this._skipInitialization = true;
       this._lastUsedValue = newValue;
       this.value = newValue;
-      this.fire('value-changed', { value: newValue }, { bubbles: false});
+      if (!skipEvent) {
+        this.fire('value-changed', { value: newValue }, { bubbles: false});
+      }
       this._skipInitialization = false;
     },
 
