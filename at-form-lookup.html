@@ -943,13 +943,12 @@
         this.disabled = false;
       }
 
+      this._updateLookupValue();
+      this._updateLookupSelectedItems();
+      
       this.fire('at-form-lookup-initialized', {
         data: item
       });
-
-      // do not trigger value change here (skipEvent: true)
-      this._updateLookupValue(true);
-      this._updateLookupSelectedItems();
     },
 
     _setupEventListeners: function() {
