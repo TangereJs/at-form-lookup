@@ -904,6 +904,7 @@
       if (!queueComplete) return;
 
       // process queue data; insert into itemsView
+      // TODO(ij): place data from queue into _viewModel.initialItems array
       var selectedOptions = [];
       var oo = this._viewModel.originalOptions;
       this._viewModel.initialValueRequestsQueue.forEach(function (request) {
@@ -944,6 +945,63 @@
         data: item
       });
     },
+
+    // 
+    // 
+    // 
+    // TODO(ij): finish _sync function!
+    // 
+    // 
+    // 
+
+    /*
+      When using remote data source selected items that are present in options (if any) need to be removed
+    */
+    _syncOptionsAndItemsRequests: function() {
+      // wait for all requests to complete
+      if (!this._viewModel.optionsRequestComplete && !this._viewModel.itemsRequestsComplete) return;
+
+      // original options are used for .value and .selectedItems computation
+      // when options request completes, _viewModel.originalOptions holds options from remote url
+      var originalOptions = this._viewModel.originalOptions;
+
+      // available options are used for filtering and highlighting
+      // when options request completes, _viewModel.availableOptions holds available options
+      var availableOptions = this._viewModel.availableOptions; 
+
+      // when items requests complete (there can be more than one), _viewModel
+      var initialItems = this._viewModel.initialItems;
+
+      initialItems.forEach(function(item, index) { 
+
+        // item structure is  item: { title, value, itemRef }
+        // options in original/available options have same structure
+
+        // search is done by id
+
+        // if item.id exists in original options, remove that item from available options based on index in original options
+
+        // if item.id doesn't exist in original options, it should be added to original options but not to available options
+
+        // construct object selectedItem to be given to itemsView { title, titleArr, value }
+
+      });
+
+      // update itemsView
+
+      // filter and highlight available options if necessary
+
+      // fire initialized event with last item from initialItems
+
+    },
+
+    // 
+    // 
+    // 
+    // TODO(ij): finish _sync function!
+    // 
+    // 
+    // 
 
     _setupEventListeners: function() {
       var filterTextInput = this._getInput();
