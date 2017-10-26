@@ -1511,7 +1511,7 @@
       return newValue;
     },
 
-    _updateLookupValue: function(newValue, skipEvent) {
+    _updateLookupValue: function(newValue) {
       function isFunction(obj) {
         return Object.prototype.toString.apply(obj) === "[object Function]";
       }
@@ -1528,9 +1528,7 @@
       this._skipInitialization = true;
       this._lastUsedValue = newValue;
       this.value = newValue;
-      if (!skipEvent) {
-        this.fire('value-changed', { value: newValue }, { bubbles: false});
-      }
+      this.fire('value-changed', { value: newValue }, { bubbles: false});
       this._skipInitialization = false;
     },
 
