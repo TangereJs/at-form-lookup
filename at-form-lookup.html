@@ -509,10 +509,6 @@
       // this is required when value is updated and value-changed event fired
       if (this._skipInitialization) return;
 
-      this.$.itemsView.set('items', []);
-      // do not trigger value change here (skipEvent: true)
-      this._updateLookupValue(true);
-
       var self = this;
       var initRemoteMode = xurl || url;
 
@@ -685,7 +681,7 @@
 
         // clear selected items from itemView
         this.$.itemsView.set('items', []);
-        this._updateLookupValue();
+        this._updateLookupValue('');
 
         if (!noPreload) {
           // preload data; go to remote url with noCredentials and params and receive results
@@ -710,10 +706,6 @@
 
       if (isString(value) && value.length) {
         // if this.value is not string variable value already contains this.value converted to string; do not switch back to this.value
-        if (isString(this.value)) {
-          // when url changes this.value is cleared, but function is called with old value for value
-          value = this.value !== value ? this.value : value;
-        }
 
         // if current value is the same as _lastUsedValue do not send requests
         if (!this._lastUsedValue || this._lastUsedValue !== value) {
@@ -945,7 +937,7 @@
         this.disabled = false;
       }
 
-      this._updateLookupValue();
+      this._updateLookupValue(this._computeItemsViewStrValue());
       this._updateLookupSelectedItems();
       
       this.fire('at-form-lookup-initialized', {
@@ -1199,7 +1191,7 @@
       }
 
       // update .value and fire changed event
-      this._updateLookupValue();
+      this._updateLookupValue(this._computeItemsViewStrValue());
 
       // update .selectedItems and fire changed event
       this._updateLookupSelectedItems();
@@ -1289,7 +1281,7 @@
       this.$.coreDropdown.updateDropdownPosition(this.$.itemsView);
 
       // update .value and fire changed event
-      this._updateLookupValue();
+      this._updateLookupValue(this._computeItemsViewStrValue());
 
       // update .selectedItems and fire changed event
       this._updateLookupSelectedItems();
@@ -1335,7 +1327,7 @@
       } else {
         // clear selected options because new and different items will be fetched from the remoteUrl
         this.$.itemsView.set('items', []);
-        this._updateLookupValue();
+        this._updateLookupValue('');
         this._updateLookupSelectedItems();
 
         // send new request to the server with filter text as query
@@ -1508,11 +1500,7 @@
       });
     },
 
-    _updateLookupValue: function(skipEvent) {
-      function isFunction(obj) {
-        return Object.prototype.toString.apply(obj) === "[object Function]";
-      }
-
+    _computeItemsViewStrValue: function() {
       var os = this._viewModel.originalOptions;
       var valuesArr = [];
       this.$.itemsView.items.forEach(function(item){ 
@@ -1520,13 +1508,22 @@
       });
       var newValue = valuesArr.join(',');
 
-      var valueStr = JSON.stringify(this.value);
+      return newValue;
+    },
 
-      if (isFunction(this.value)) {
-        valueStr = "";
+    _updateLookupValue: function(newValue, skipEvent) {
+      function isFunction(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Function]";
+      }
+      function isString(obj) {
+        return Object.prototype.toString.apply(obj) === "[object String]";
       }
 
-      if (valueStr.length && !newValue.length) return;
+      var valueStr = isString(newValue) ? newValue : JSON.stringify(newValue);
+
+      if (isFunction(newValue)) {
+        valueStr = "";
+      }
 
       this._skipInitialization = true;
       this._lastUsedValue = newValue;

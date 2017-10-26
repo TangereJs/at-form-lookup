@@ -251,9 +251,10 @@
           }
 
           var invalidValue = function() { return undefined; };
-          var expectedValue = '';
+          var expectedValue = function() { return undefined; };
           element.value = invalidValue;
-          assert.equal(expectedValue, element.value);
+
+          assert.equal(true, areEqual(expectedValue, element.value));
           assert.equal('', displayInput.value);
 
         });
