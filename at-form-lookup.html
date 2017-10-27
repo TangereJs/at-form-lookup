@@ -364,7 +364,8 @@
             // filtering is done on available options 
             // selecting an option from dropdown transfers it to items-view.items
             // removing an option from items-view moves it back to available options
-            availableOptions: []
+            availableOptions: [],
+            initialItems: []
           };
         }
       }
@@ -742,6 +743,7 @@
             })
           }, this);
 
+          this._viewModel.itemsRequestsComplete = false;
           this._viewModel.initialValueActivitiesQueue.forEach(function(a) {
             a.generateRequest();
           });
@@ -807,6 +809,7 @@
       // disable the lookup element
       this.disabled = true;
 
+      this._viewModel.optionsRequestComplete = false;
       coreAjax.generateRequest();
     },
 
@@ -814,6 +817,10 @@
       var q = this._viewModel.initialValueRequestsQueue;
       if (q && q.length) return;
       this.disabled = false;
+
+      // _sync options and items
+      this._viewModel.optionsRequestComplete = true;
+      this._syncOptionsAndItemsRequests();
     },
 
     _handleCoreAjaxOnResponse: function(event) {
@@ -852,6 +859,10 @@
       // 2. put available options into options-view
       this._viewModel.availableOptions = this._computeAvailableOptionsFromOriginalOptions();
 
+      // _sync options and items
+      this._viewModel.optionsRequestComplete = true;
+      this._syncOptionsAndItemsRequests();
+
       var filterText = this._getInput().value;
       // _filterAndHighlight will return a clone of availableOptions for empty filter text
       var filteredOptions = this._filterAndHighlightOptions(filterText);
@@ -871,6 +882,10 @@
     _handleInitialValueActivityError: function(event) {
       if (!this._viewModel.initialValueRequestsQueue.length) {
         this.disabled = false;
+
+        // _sync options and items
+        this._viewModel.itemsRequestsComplete = true;
+        this._syncOptionsAndItemsRequests();
       }
     },
 
@@ -905,23 +920,17 @@
 
       // process queue data; insert into itemsView
       // TODO(ij): place data from queue into _viewModel.initialItems array
-      var selectedOptions = [];
-      var oo = this._viewModel.originalOptions;
+      var initialItems = [];
       this._viewModel.initialValueRequestsQueue.forEach(function (request) {
         var option = {
           title: request.item.title,
           value: request.item.id,
           itemRef: request.item
         };
-        oo.push(option);
+        initialItems.push(option);
 
-        var io = {
-          title: option.title,
-          value: oo.length - 1
-        };
-        selectedOptions.push(io);        
       }, this);
-      this.$.itemsView.set('items', selectedOptions);
+      this._viewModel.initialItems = initialItems;
 
       // clear the queue
       this._viewModel.initialValueRequestsQueue = [];
@@ -933,6 +942,10 @@
       }.bind(this));
       // clear the coreActivities queue
       this._viewModel.initialValueActivitiesQueue = [];
+
+      // sync options and items
+      this._viewModel.itemsRequestsComplete = true;
+      this._syncOptionsAndItemsRequests();
 
       if (!this._viewModel.initialValueRequestsQueue.length) {
         this.disabled = false;
@@ -972,27 +985,76 @@
       // when items requests complete (there can be more than one), _viewModel
       var initialItems = this._viewModel.initialItems;
 
+      var selectedItems = [];
+      var index
       initialItems.forEach(function(item, index) { 
 
         // item structure is  item: { title, value, itemRef }
-        // options in original/available options have same structure
+        // original options in have same structure
 
         // search is done by id
 
         // if item.id exists in original options, remove that item from available options based on index in original options
+        var itemId = item.value;
+        var found = -1;
 
-        // if item.id doesn't exist in original options, it should be added to original options but not to available options
+        for (var i = 0; i < originalOptions.length && found < 0; i++) {
+          var oo = originalOptions[i];
+          if (oo.value == itemId) { 
+            found = i;
+          }
+        }
 
-        // construct object selectedItem to be given to itemsView { title, titleArr, value }
+        if (found > -1) {
+          var indexInAvailable = this._findIndexInArray(availableOptions, function(item) { 
+            return item.value === found;
+          });
 
-      });
+          availableOptions.splice(indexInAvailable, 1);
+          var si = {
+            title: item.title,
+            value: found,
+            titleArr: [],
+            selected: false
+          };
+
+        } else {
+          // if item.id doesn't exist in original options, it should be added to original options but not to available options
+          originalOptions.push(item);
+          
+          // construct object selectedItem to be given to itemsView { title, titleArr, value }
+          var si = {
+            title: item.title,
+            value: originalOptions.length - 1,
+            titleArr: [],
+            selected:  false
+          };
+        }
+
+        this._viewModel.availableOptions = availableOptions;
+
+        selectedItems.push(si);
+      }, this);
 
       // update itemsView
+      this.$.itemsView.set('items', selectedItems);
 
       // filter and highlight available options if necessary
+      this.$.optionsView.set('items', this._viewModel.availableOptions);
 
       // fire initialized event with last item from initialItems
 
+    },
+
+    _findIndexInArray: function(array, testFn) {
+      var result = -1;
+      
+      for (var i = 0; i < array.length; i++) {
+        var isMatch = testFn.call(null, array[i]);
+        if (isMatch) { result =i; break; }
+      }
+
+      return result;
     },
 
     // 
@@ -1502,14 +1564,24 @@
     _computeAvailableOptionsFromOriginalOptions: function() {
       var result = [];
       var os = this._viewModel.originalOptions;
-      os.forEach(function(o, i) { 
+      os.forEach(function(o, i) {
         var a = {
           title: o.title,
           value: i,
           selected: false, // we use selected to mark item as selected in dropdown
           titleArr: [] // we use titleArr to fix a bug with dom-if / dom-repeat combo, where dom-repeat is evaluated when dom-if evaluates to false
         };
-        result.push(a);
+
+        // TODO(ij): if original option is in selectedItems do not add to available
+        // debugger;
+        var indexInSelected = this._findIndexInArray(this.$.itemsView.items, function(item) { 
+          return item.value === a.value;
+        });
+        
+        if (indexInSelected < 0) {
+          result.push(a);
+        }
+
       }, this);
       return result;
     },
