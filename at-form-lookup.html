@@ -963,7 +963,9 @@
     */
     _syncOptionsAndItemsRequests: function() {
       // wait for all requests to complete
-      if (!this._viewModel.optionsRequestComplete && !this._viewModel.itemsRequestsComplete) return;
+      if (!this._viewModel.optionsRequestComplete || !this._viewModel.itemsRequestsComplete) return;
+
+      var isMulti = this._isMultiSelect();
 
       // original options are used for .value and .selectedItems computation
       // when options request completes, _viewModel.originalOptions holds options from remote url
@@ -991,8 +993,11 @@
 
         // if item.id exists in available options, remove that item from available options
         var indexInAvailable = this._findIndexOfId(availableOptions, itemId);
-        if (indexInAvailable > -1) {
+        if (isMulti && indexInAvailable > -1) {
           availableOptions.splice(indexInAvailable, 1);
+        
+        } else if (!isMulti && indexInAvailable > -1) {
+          availableOptions[indexInAvailable].selected = true;
         }
 
         // if item.id doesn't exist in original options, it should be added to original options
@@ -1006,7 +1011,7 @@
           title: item.title,
           value: itemId,
           titleArr: [],
-          selected:  false
+          selected: false
         };
 
         this._viewModel.availableOptions = availableOptions;
@@ -1018,7 +1023,8 @@
       this.$.itemsView.set('items', selectedItems);
 
       // filter and highlight available options if necessary
-      this.$.optionsView.set('items', this._viewModel.availableOptions);
+      var clone = JSON.parse(JSON.stringify(this._viewModel.availableOptions));
+      this.$.optionsView.set('items', clone);
 
       // clear initialItems as it will interfere with new values from server
       this._viewModel.initialItems = [];
