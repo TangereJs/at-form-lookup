@@ -636,11 +636,15 @@
 
         this.$.itemsView.items = selectedOptions;
 
+        this._updateLookupSelectedItems();
+
         if (this.autoValidate) { this.validate(); }
         
         this.fire('value-changed', { value: value }, { bubbles: false });
 
       } else {
+        this._updateLookupSelectedItems();
+
         // value is null, undefined or else
         if (this.autoValidate) { this.validate(); }
 
