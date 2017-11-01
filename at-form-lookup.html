@@ -515,7 +515,15 @@
 
       if (!initRemoteMode) {
         if (this._lastUsedUrl) { this._lastUsedUrl = undefined; }
-
+        
+        // 1. let url be set 
+        // 2. let value be set to lorem
+        // 3. let value be changed to ipsum
+        // 4. let url be set to ''
+        // item 3. will start the debouncer, but item 4. will switch lookup to local data source mode
+        // in this case we need to cancel the debounce
+        this.cancelDebouncer('initialize-remote');
+        
         this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems);
         this._isInitialized = true;
 
