@@ -676,6 +676,10 @@
     },
 
     _initializeRemoteDataSource: function(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems) {
+      // set inital requests completed state
+      this._viewModel.optionsRequestComplete = true;
+      this._viewModel.itemsRequestsComplete = true;
+
       // 1. compute available options
       var remoteUrl = xurl || url;
       
@@ -1396,10 +1400,19 @@
       this.$.optionsView.set('items', filteredOptions);
 
       if (itemsDeleted && itemsDeleted.length && !this.$.coreDropdown.open) {
-        // focusing the input will open the dropdown 
-        this._getInput().focus();
-        if (!this.$.coreDropdown.open) {
-          this._openDropdown();
+        var filterText = this._getInput().value;
+        if (filterText !== "") {
+          // focusing the input will open the dropdown 
+          this._getInput().focus();
+          if (!this.$.coreDropdown.open) {
+            this._openDropdown();
+          }
+
+        } else {
+          // if filterText is empty, we need all options in dropdown not just deleted ones
+          var remoteUrl = this.xurl || this.url;
+          this._sendRequestToQueryOptions(remoteUrl, filterText);
+          this._viewModel.openDropdownOnResponse = true;
         }
       }
 
