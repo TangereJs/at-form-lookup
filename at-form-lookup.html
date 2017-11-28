@@ -699,6 +699,7 @@
         // clear selected items from itemView
         this.$.itemsView.set('items', []);
         this._updateLookupValue('');
+        this._fireValueChangedEvent();
 
         if (!noPreload) {
           // preload data; go to remote url with noCredentials and params and receive results
@@ -966,9 +967,14 @@
         this.disabled = false;
       }
 
+      // we update value and selected items first 
       this._updateLookupValue(this._computeItemsViewStrValue());
       this._updateLookupSelectedItems();
       
+      // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
+      this._fireValueChangedEvent();
+      this._fireSelectedItemsChangedEvent();
+
       this.fire('at-form-lookup-initialized', {
         data: item
       });
@@ -1321,11 +1327,20 @@
         this.$.coreDropdown.updateContainerAndOutlineSize();
       }
 
-      // update .value and fire changed event
+      // update .value
       this._updateLookupValue(this._computeItemsViewStrValue());
 
-      // update .selectedItems and fire changed event
+      // update .selectedItems
       this._updateLookupSelectedItems();
+
+      // we update value and selected items first 
+      // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
+
+      // fire value-changed event
+      this._fireValueChangedEvent();
+
+      // fire selected-items-changed event
+      this._fireSelectedItemsChangedEvent();
 
       // validate
       this.validate();
@@ -1420,11 +1435,20 @@
       this.$.coreDropdown.updateContainerAndOutlineSize();
       this.$.coreDropdown.updateDropdownPosition(this.$.itemsView);
 
-      // update .value and fire changed event
+      // update .value 
       this._updateLookupValue(this._computeItemsViewStrValue());
 
-      // update .selectedItems and fire changed event
+      // update .selectedItems 
       this._updateLookupSelectedItems();
+
+      // we update value and selected items first 
+      // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
+
+      // fire value-changed event
+      this._fireValueChangedEvent();
+
+      // fire selected-items-changed event
+      this._fireSelectedItemsChangedEvent();
     },
 
     _handleOptionsViewOptionSelectedEvent: function(event) {
@@ -1682,8 +1706,11 @@
       this._skipInitialization = true;
       this._lastUsedValue = newValue;
       this.value = newValue;
-      this.fire('value-changed', { value: newValue }, { bubbles: false});
       this._skipInitialization = false;
+    },
+
+    _fireValueChangedEvent: function(newValue) {
+      this.fire('value-changed', { value: this.value }, { bubbles: false});
     },
 
     _updateLookupSelectedItems: function(newValue) {
@@ -1694,7 +1721,10 @@
         selectedItems.push(tmp.itemRef || tmp);
       }, this);
       this._setSelectedItems(selectedItems);
-      this.fire('selected-items-changed', { value: selectedItems }, { bubbles: false});
+    },
+
+    _fireSelectedItemsChangedEvent: function() {
+      this.fire('selected-items-changed', { value: this.selectedItems }, { bubbles: false});
     },
 
     // for a given url computes the base url and query params
