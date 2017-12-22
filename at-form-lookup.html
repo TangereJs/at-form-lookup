@@ -636,6 +636,10 @@
 
         this.$.itemsView.items = selectedOptions;
 
+        // NOTE(ij): we need to have originalOptions set before updating selected items becuase updating selected items requires populated original options
+        // save vmOptions as original options in _viewModel
+        this._viewModel.originalOptions = vmOptions;
+
         this._updateLookupSelectedItems();
 
         if (this.autoValidate) { this.validate(); }
@@ -643,6 +647,10 @@
         this.fire('value-changed', { value: value }, { bubbles: false });
 
       } else {
+        // NOTE(ij): we need to have originalOptions set before updating selected items becuase updating selected items requires populated original options
+        // save vmOptions as original options in _viewModel
+        this._viewModel.originalOptions = vmOptions;
+
         this._updateLookupSelectedItems();
 
         // value is null, undefined or else
@@ -654,9 +662,6 @@
       // 4. put initalSearchTerm into filterTextInput
       this._getInput().value = initialSearchTerm;      
       this.$.itemsView._updateFilterTextInputWidth();
-
-      // save vmOptions as original options in _viewModel
-      this._viewModel.originalOptions = vmOptions;
 
       // save unfiltered and non highlighted options as _viewModel available options
       this._viewModel.availableOptions = this._computeAvailableOptionsFromOriginalOptions();
