@@ -582,6 +582,10 @@
         });
       }
 
+      // NOTE(ij): we need to have originalOptions set before updating selected items becuase updating selected items requires populated original options
+      // save vmOptions as original options in _viewModel
+      this._viewModel.originalOptions = JSON.parse(JSON.stringify(vmOptions));
+
       // 2. put available options into options-view
       // delay until value is processed, so already selected options are removed
       // delay until initialSearchTerm is processed, so that remaining items are filtered and highlighted
@@ -618,27 +622,9 @@
           if (maxItems > 1) {
             selectedOptions.splice(maxItems, selectedOptions.length - maxItems);
           }
-          
-          var remainingOptions = [];
-          vmOptions.forEach(function(option) {
-            var value = option.value;
-            var found = false;
-            for (var i = 0; i < selectedOptions.length && !found; i++) {
-              var selected = selectedOptions[i];
-              found = selected.value === value;
-            }
-            if (!found) {
-              remainingOptions.push(option);
-            }
-          });
-          vmOptions = remainingOptions;
         }
 
         this.$.itemsView.items = selectedOptions;
-
-        // NOTE(ij): we need to have originalOptions set before updating selected items becuase updating selected items requires populated original options
-        // save vmOptions as original options in _viewModel
-        this._viewModel.originalOptions = vmOptions;
 
         this._updateLookupSelectedItems();
 
@@ -647,9 +633,6 @@
         this.fire('value-changed', { value: value }, { bubbles: false });
 
       } else {
-        // NOTE(ij): we need to have originalOptions set before updating selected items becuase updating selected items requires populated original options
-        // save vmOptions as original options in _viewModel
-        this._viewModel.originalOptions = vmOptions;
 
         this._updateLookupSelectedItems();
 
