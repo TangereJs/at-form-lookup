@@ -1471,8 +1471,10 @@
         } else {
           // if filterText is empty, we need all options in dropdown not just deleted ones
           var remoteUrl = this.xurl || this.url;
-          this._sendRequestToQueryOptions(remoteUrl, filterText);
-          this._viewModel.openDropdownOnResponse = true;
+          if (remoteUrl) {
+            this._sendRequestToQueryOptions(remoteUrl, filterText);
+            this._viewModel.openDropdownOnResponse = true;
+          }
         }
       }
 
