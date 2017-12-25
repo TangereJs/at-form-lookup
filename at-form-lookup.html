@@ -1636,16 +1636,33 @@
     // 
     // 
 
+    _isString: function(obj) {
+      return Object.prototype.toString.apply(obj) === "[object String]";
+    },
+    
+    // this function adds support for maxItems values as textual representation of a number
+    // this support is required by form and dashboard designers
+    _getMaxItemsAsNumber: function() {
+      var lVal = this.maxItems;
+      if (this._isString(this.maxItems)) {
+        lVal = parseInt(this.maxItems);
+        if (window.isNaN(lVal)) { lVal = 1; }
+      }
+      return lVal;
+    },
+
     // returns true if maxItems have already been selected from available options
-    _isFull: function() {     
-      return this.maxItems === 0 ? !this._viewModel.availableOptions.length : this.$.itemsView.items.length === this.maxItems;
+    _isFull: function() {
+      var maxItems = this._getMaxItemsAsNumber();
+      return maxItems === 0 ? !this._viewModel.availableOptions.length : this.$.itemsView.items.length === maxItems;
     },
 
     // returns true if user can select more than one item
     _isMultiSelect: function() {
+      var maxItems = this._getMaxItemsAsNumber();
       // if maxItems = 0 there is no limit for item selection, user can select as many items as there are available options
       // if maxItems > 1 user can select maxItems items from available options
-      return this.maxItems !== 1;
+      return maxItems !== 1;
     },
 
     _getInput: function() {
