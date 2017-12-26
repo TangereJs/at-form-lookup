@@ -754,6 +754,9 @@
           });
         }
 
+      } else if (isString(value) && !value.length) {
+        this.$.itemsView.set('items', []);
+
       } else {
         if (!isString(value)) {
           console.log('type of value is ' + (typeof value));
