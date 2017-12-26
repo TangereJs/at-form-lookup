@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+
+  <title>at-form-lookup tests</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../at-form-lookup.html">
+</head>
+<body>
+
+  <test-fixture id="bug1">
+    <template>
+      <at-form-lookup url="/test_url_1"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <script>
+
+    suite('remote data source', function() {
+      var jsonResponseHeaders = {
+        'Content-Type': 'application/json'
+      };
+      var server;
+
+      setup(function() {
+        server = sinon.fakeServer.create();
+        
+        server.respondWith(
+          'GET',
+          '/test_url_1?query=&page=1&pageSize=25',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify([
+              { "id": "id1", "value": "value1", "title": "Title 1" },
+              { "id": "id2", "value": "value2", "title": "Title 2" },
+              { "id": "id3", "value": "value3", "title": "Title 3" },
+              { "id": "id4", "value": "value4", "title": "Title 4" }
+            ])
+          ]
+        );
+
+        server.respondWith(
+          'GET',
+          '/test_url_1/id1',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(
+              { Data: { "id": "id1", "value": "value1", "title": "Title 1" } }
+            )
+          ]
+        );
+
+        server.respondWith(
+          'GET',
+          '/test_url_1/id2',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(
+              { Data: { "id": "id2", "value": "value2", "title": "Title 2" } }
+            )
+          ]
+        );
+
+        server.respondWith(
+          'GET',
+          '/test_url_1/id3',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(
+              { Data: { "id": "id3", "value": "value3", "title": "Title 3" } }
+            )
+          ]
+        );
+
+        server.respondWith(
+          'GET',
+          '/test_url_1/id4',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(
+              { Data: { "id": "id4", "value": "value4", "title": "Title 4" } }
+            )
+          ]
+        );
+
+      });
+
+      teardown(function() {
+        server.restore();
+      });
+
+      test('clear selected items with empty string as value', function(done) {
+        var elt = fixture('bug1');
+
+        elt.flushDebouncer('initialize-remote');
+        server.respond();
+
+        elt.value = "id1,id2,id3";
+        elt.flushDebouncer('initialize-remote');
+        server.respond();
+
+        function assertFirstState() {
+          assert.equal(elt.$.itemsView.items.length, 3);
+          assert.equal(elt.selectedItems.length, 3);
+
+          elt.removeEventListener('at-form-lookup-initialized', assertFirstState);
+
+          elt.value = "";
+          elt.flushDebouncer('initialize-remote');
+          
+          assert.equal(elt.$.itemsView.items.length, 0);
+          assert.equal(elt.selectedItems.length, 0);
+
+          done();
+        }
+
+        elt.addEventListener('at-form-lookup-initialized', assertFirstState);
+      });
+
+    });
+
+  </script>
+
+</body>
+</html>
