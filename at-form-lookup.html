@@ -757,6 +757,7 @@
       } else if (isString(value) && !value.length) {
         this.$.itemsView.set('items', []);
         this._updateLookupSelectedItems();
+        this._fireSelectedItemsChangedEvent();
 
       } else {
         if (!isString(value)) {
