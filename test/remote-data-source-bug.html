@@ -114,9 +114,16 @@
         elt.flushDebouncer('initialize-remote');
         server.respond();
 
+        var eventCount = 0;
+        elt.addEventListener('selected-items-changed', function() {
+          eventCount++;
+        });
+
         function assertFirstState() {
           assert.equal(elt.$.itemsView.items.length, 3);
           assert.equal(elt.selectedItems.length, 3);
+
+          assert.equal(eventCount, 1);
 
           elt.removeEventListener('at-form-lookup-initialized', assertFirstState);
 
@@ -125,6 +132,8 @@
           
           assert.equal(elt.$.itemsView.items.length, 0);
           assert.equal(elt.selectedItems.length, 0);
+
+          assert.equal(eventCount, 2);
 
           done();
         }
