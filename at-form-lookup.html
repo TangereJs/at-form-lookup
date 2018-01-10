@@ -756,14 +756,19 @@
         }
 
       } else if (isString(value) && !value.length) {
-        this.$.itemsView.set('items', []);
-        // NOTE(ij): when value is set to empty string, selected items should be cleared
-        // this is tested / confirmed with a test called remote-data-source-bug
-        this._updateLookupSelectedItems();
-        this._fireSelectedItemsChangedEvent();
-        
-        // NOTE(ij): when value is set to empty dropdown options should be unfiltered
-        this._sendRequestToQueryOptions(this.url || this.xurl, "");
+        // NOTE(ij): compare current value against _lastUsedValue to check if _init function was called due to new value being set
+        if (!this._lastUsedValue || this._lastUsedValue !== value) {
+          this._lastUsedValue = value;
+
+          this.$.itemsView.set('items', []);
+          // NOTE(ij): when value is set to empty string, selected items should be cleared
+          // this is tested / confirmed with a test called remote-data-source-bug
+          this._updateLookupSelectedItems();
+          this._fireSelectedItemsChangedEvent();
+          
+          // NOTE(ij): when value is set to empty dropdown options should be unfiltered
+          this._sendRequestToQueryOptions(this.url || this.xurl, "");
+        }
 
       } else {
         if (!isString(value)) {
