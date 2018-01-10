@@ -686,8 +686,9 @@
 
         // clear selected items from itemView
         this.$.itemsView.set('items', []);
-        this._updateLookupValue('');
-        this._fireValueChangedEvent();
+        // WIP disabled
+        // this._updateLookupValue('');
+        // this._fireValueChangedEvent();
 
         if (!noPreload) {
           // preload data; go to remote url with noCredentials and params and receive results
@@ -756,6 +757,8 @@
 
       } else if (isString(value) && !value.length) {
         this.$.itemsView.set('items', []);
+        // NOTE(ij): when value is set to empty string, selected items should be cleared
+        // this is tested / confirmed with a test called remote-data-source-bug
         this._updateLookupSelectedItems();
         this._fireSelectedItemsChangedEvent();
 
@@ -1017,12 +1020,16 @@
         this.disabled = false;
       }
 
+      // WIP disabled
       // we update value and selected items first 
-      this._updateLookupValue(this._computeItemsViewStrValue());
+      // this._updateLookupValue(this._computeItemsViewStrValue());
+      
+      // NOTE(ij): when new items are fetched from remote data source, selected items array should be updated with new items
       this._updateLookupSelectedItems();
       
       // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
-      this._fireValueChangedEvent();
+      // this._fireValueChangedEvent();
+      // NOTE(ij): and fire changed event
       this._fireSelectedItemsChangedEvent();
 
       this.fire('at-form-lookup-initialized', {
