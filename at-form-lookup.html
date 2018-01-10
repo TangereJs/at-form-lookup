@@ -761,6 +761,9 @@
         // this is tested / confirmed with a test called remote-data-source-bug
         this._updateLookupSelectedItems();
         this._fireSelectedItemsChangedEvent();
+        
+        // NOTE(ij): when value is set to empty dropdown options should be unfiltered
+        this._sendRequestToQueryOptions(this.url || this.xurl, "");
 
       } else {
         if (!isString(value)) {
