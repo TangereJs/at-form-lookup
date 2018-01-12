@@ -104,6 +104,11 @@
         display: none;
       }
 
+      #filterTextInput.disabled {
+        @apply(--at-form-disabled);
+        pointer-events: none;
+      }
+
     </style>
     
     <template is="dom-repeat" items="[[items]]">
@@ -160,6 +165,8 @@
     },
 
     _handleHostOnTap: function(event) {
+      if (this.disabled) return;
+
       // we return if mouse click happened on items or input field
       if (event.srcElement !== this.$.dropdownArrow && event.target !== event.currentTarget) return;
 
