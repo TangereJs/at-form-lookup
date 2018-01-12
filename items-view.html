@@ -112,7 +112,7 @@
         <a class="delete-button" title="Remove" on-tap="_handleRemoveOnTap">×</a>
       </div>
     </template>
-    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" disabled$="[[disabled]]" />
+    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress"/>
     <div id="dropdownArrow" class="dropdown-arrow"></div>
   </template>
 </dom-module>
@@ -138,13 +138,25 @@
       disabled: {
         type: Boolean,
         value: false,
-        reflectToAttribute: true
+        reflectToAttribute: true,
+        observer: '_disabledChanged'
       }
 
     },
 
     listeners: {
       'tap': '_handleHostOnTap'
+    },
+
+    _disabledChanged: function(newValue, oldValue) {
+      if (newValue) {
+        this.$.filterTextInput.setAttribute('tabindex', "-1");
+        this.$.filterTextInput.classList.add('disabled');
+      
+      } else {
+        this.$.filterTextInput.removeAttribute('tabindex');
+        this.$.filterTextInput.classList.remove('disabled');
+      }
     },
 
     _handleHostOnTap: function(event) {
