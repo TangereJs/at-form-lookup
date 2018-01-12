@@ -1368,22 +1368,19 @@
         }
       }
 
+      var input = this._getInput();
+      input.value = "";
+      this.$.itemsView._updateFilterTextInputWidth();
+      
       isFull = this._isFull();
       if (isFull) {
-        var input = this._getInput();
-
         if (isMulti) {
-          input.value = "";
-          this.$.itemsView._updateFilterTextInputWidth();
-
           // if maxItems have been selected in multi selection mode close the dropdown
           this._closeDropdown();
         
         } else if (newOptionSelected) {
           // when new options is selected, clear input field text and blur
-          input.value = '';
           input.blur();
-          this.$.itemsView._updateFilterTextInputWidth();
         }
 
       } else if (isMulti) {
