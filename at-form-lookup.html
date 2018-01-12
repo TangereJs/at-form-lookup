@@ -835,9 +835,9 @@
     },
 
     _handleCoreAjaxOnError: function(event) {
-      var q = this._viewModel.initialValueRequestsQueue;
-      if (q && q.length) return;
-      this.disabled = false;
+      if (this._viewModel.itemsRequestsComplete) {
+        this.disabled = false;
+      }
 
       // _sync options and items
       this._viewModel.optionsRequestComplete = true;
