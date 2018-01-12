@@ -401,6 +401,7 @@
     },
 
     ready: function() {
+      this._isReady = true;
 
       // *ij* 17.06.2016 (dd.mm.yyyy)
       // there is a requirement for 'required' at-form-*elements that they initially be displayed
@@ -458,6 +459,7 @@
     },
 
     _internalValidStateUpdate: function (required, errorMessage) {
+      if (!this._isReady) return;
       this.validate();
     },
 
