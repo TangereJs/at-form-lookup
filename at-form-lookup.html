@@ -737,6 +737,8 @@
             var partUrl = baseAndQuery.baseUrl + '/' + part;
             var partCoreActivity = document.createElement('at-core-activity');
             partCoreActivity.url = partUrl;
+            // WIP 
+            partCoreActivity.setAttribute('item-id', part);
             baseAndQuery.queryParams.forEach(function(queryParam) {
               partCoreActivity.params[queryParam.name] = queryParam.value;
             });
@@ -920,30 +922,70 @@
       return count;
     },
 
-    _handleInvalidResponse: function(response) {
+    _handleInvalidResponse: function(event) {
+      // WIP
+      var msg = event.detail.message;
+      
+      // extract error code and error message
+      // TODO(ij): we need infrastructure to provide better handling of error codes and error text
+      var errorCodeStr = 'ErrorCode: ';
+      var ecIndex = msg.indexOf(errorCodeStr);
+      var errorText;
+      if (ecIndex === -1) {
+        errorText = msg;
+
+      } else {
+        ecIndex = ecIndex + errorCodeStr.length;
+        var commaIndex = msg.indexOf(',', ecIndex);
+        var errorCodeVal = msg.substring(ecIndex, commaIndex);
+        var nextCommaIndex = msg.indexOf(',', commaIndex+1);
+        errorText = msg.substring(commaIndex + 2, nextCommaIndex);
+      }
+
+      var itemIdAttrVal = event.target.getAttribute('item-id');
+      var invalidItem = {
+        id: itemIdAttrVal,
+        title: ['itemid: ', itemIdAttrVal, ' ', errorText, '(', errorCodeVal, ')' ].join(""),
+        itemRef: event.detail
+      };
+
+      var ivRequest = false;
+
+      for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
+        var tmpReq = this._viewModel.initialValueRequestsQueue[i];
+        ivRequest = tmpReq.requestedItemId.toString() === itemIdAttrVal ? tmpReq : ivRequest;
+      }
+
+      ivRequest.isCompleted = true;
+      ivRequest.item = invalidItem;
+
       // NOTE(ij): if the returned item from server doesn't have id property, we can't use it 
       // Its nonsense that I request an item from ther server by Id and do not get that id back for cross-reference especially when I have to fetch multiple items and have to match requests and responses
       // So, I put such items into _viewMode.invalidItems;
-      if (!this._viewModel.invalidItems) this._viewModel.invalidItems = [];
-      this._viewModel.invalidItems.push(response);
+      // if (!this._viewModel.invalidItems) this._viewModel.invalidItems = [];
+      // this._viewModel.invalidItems.push(invalidItem);
 
       // NOTE cont.(ij): if count of invalid items is the same as count of incomplete requests that means 
       // that we got all responses and we should initalize with any valid data available
-      var sentRequestsQueueLength = this._viewModel.initialValueRequestsQueue.length;
-      var invalidItemsCount = this._viewModel.invalidItems.length;
+      // var sentRequestsQueueLength = this._viewModel.initialValueRequestsQueue.length;
+      // var invalidItemsCount = this._viewModel.invalidItems.length;
         
-      if (invalidItemsCount === 1 && sentRequestsQueueLength === 1) {
-        // there was only one request and that request produced invalid data in response
-        this._handleInitialRequestsQueueComplete(response);
-      
-      } else { 
-        // there are several requests
-        var incompleteRequestsCount = this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue);
+      // check if all requests are complete
+      if (this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue) > 0) return;
+      this._handleInitialRequestsQueueComplete(invalidItem);
 
-        if (invalidItemsCount === incompleteRequestsCount) {
-          this._handleInitialRequestsQueueComplete(response);
-        }
-      }
+      // if (invalidItemsCount === 1 && sentRequestsQueueLength === 1) {
+      //   // there was only one request and that request produced invalid data in response
+      //   this._handleInitialRequestsQueueComplete(invalidItem);
+      
+      // } else { 
+      //   // there are several requests
+      //   var incompleteRequestsCount = this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue);
+
+      //   if (invalidItemsCount === incompleteRequestsCount) {
+      //     this._handleInitialRequestsQueueComplete(invalidItem);
+      //   }
+      // }
     },
 
     _handleInitialValueActivityResponse: function(event) {
@@ -959,7 +1001,8 @@
         item = item.items[0];
 
       } else if (!item.id) {
-        item.id = -1;
+        var itemIdAttrVal = parseInt(event.target.getAttribute('item-id'));
+        item.id = itemIdAttrVal;
       }
 
       for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
@@ -968,7 +1011,7 @@
       }
 
       if (!ivRequest) {
-        this._handleInvalidResponse(item);
+        this._handleInvalidResponse(event);
 
         // report error in console
         console.log('lookup initialization error: request for item not found. Item id ' + item.id);
@@ -980,13 +1023,6 @@
 
       // check if all requests are complete
       if (this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue) > 0) return;
-      // TODO(ij): delete below if above works
-      // var queueComplete = true;
-      // this._viewModel.initialValueRequestsQueue.forEach(function (request) {
-      //   queueComplete = queueComplete && request.isCompleted;
-      // });
-
-      // if (!queueComplete) return;
 
       this._handleInitialRequestsQueueComplete(item);
     },
@@ -1042,9 +1078,9 @@
       // NOTE(ij): and fire changed event
       this._fireSelectedItemsChangedEvent();
 
-      this.fire('at-form-lookup-initialized', {
+      this.fire('initialized', {
         data: item
-      });
+      }, { bubbles: false});
     },
 
     /*
