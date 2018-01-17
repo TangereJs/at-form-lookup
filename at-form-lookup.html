@@ -413,6 +413,7 @@
       var focusable = this._getFocusableElement();
       if (focusable) {
         focusable.addEventListener('blur', function(event) {
+          if (event.relatedTarget && event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
           self.validate();
         });
       }
