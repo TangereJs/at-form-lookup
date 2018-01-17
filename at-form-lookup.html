@@ -1298,11 +1298,14 @@
             this._getInput().blur();
             return;
           }
-          this._selectOptionAtIndex(selectedIndex);
 
           // for keyboard input select item near to currently selected to make selecting next more user friendly
+          // NOTE(ij): do this first because _selectOptionAtIndex will restore optionsView items for single item selection mode
           if (selectedIndex === this.$.optionsView.items.length) selectedIndex-=1;
           this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
+          
+          this._selectOptionAtIndex(selectedIndex);
+
           break;
 
         case VK_UP: 
@@ -1384,6 +1387,11 @@
         this.$.itemsView._updateFilterTextInputWidth();
 
         this._closeDropdown();
+
+        // NOTE(ij): in single selection mode after selecting a filtered item restore available dropdown options
+        var filteredOptions = this._filterAndHighlightOptions(this._getInput().value);
+        this.$.optionsView.set('items', []);
+        this.$.optionsView.set('items', filteredOptions);
 
       } else {
         // remove found option from availableOptions
