@@ -707,10 +707,6 @@
         this._boundInitialValueActivityResponseHandler = this._handleInitialValueActivityResponse.bind(this);
       }
 
-      if (!this._boundInitialValueActivityErrorHanlder) {
-        this._boundInitialValueActivityErrorHanlder = this._handleInitialValueActivityError.bind(this);
-      }
-
       function isString(obj) { return Object.prototype.toString.apply(obj) === "[object String]"; }
       function isFunction(obj) { return Object.prototype.toString.apply(obj) === "[object Function]"; }
       if (!isString(value)) {
@@ -741,14 +737,14 @@
             var partUrl = baseAndQuery.baseUrl + '/' + part;
             var partCoreActivity = document.createElement('at-core-activity');
             partCoreActivity.url = partUrl;
-            // WIP 
             partCoreActivity.setAttribute('item-id', part);
+            partCoreActivity.disableErrorCodeHandler = true;
             baseAndQuery.queryParams.forEach(function(queryParam) {
               partCoreActivity.params[queryParam.name] = queryParam.value;
             });
             partCoreActivity.noCredentials = noCredentials;
             partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
-            partCoreActivity.addEventListener('error', this._boundInitialValueActivityErrorHanlder);
+            // NOTE(ij): we ignore activity error event because we set disableErrorCodeHandler to true
             this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
             this._viewModel.initialValueRequestsQueue.push({
               requestedItemId: part,
@@ -913,12 +909,6 @@
       }
     },
 
-    _handleInitialValueActivityError: function(event) {
-      // NOTE(ij): if an error occurred for a request we need to handle it in the same way
-      // as the invalid response
-      this._handleInvalidResponse(event);
-    },
-
     _isArray: function(obj) {
       return Object.prototype.toString.apply(obj) === "[object Array]";
     },
@@ -931,77 +921,42 @@
       return count;
     },
 
-    _handleInvalidResponse: function(event) {
-      // WIP
-      var msg = event.detail.message;
-      
-      // extract error code and error message
-      // TODO(ij): we need infrastructure to provide better handling of error codes and error text
-      var errorCodeStr = 'ErrorCode: ';
-      var ecIndex = msg.indexOf(errorCodeStr);
-      var errorText;
-      if (ecIndex === -1) {
-        errorText = msg;
+    // NOTE(ij): we use this function to create an item when server returns HTTP 4xx or HTTP 5xx responses
+    _handleInvalidRequest: function(itemId, request) {
+      var code = request.xhr.status;
+      var text = request.xhr.statusText;
 
-      } else {
-        ecIndex = ecIndex + errorCodeStr.length;
-        var commaIndex = msg.indexOf(',', ecIndex);
-        var errorCodeVal = msg.substring(ecIndex, commaIndex);
-        var nextCommaIndex = msg.indexOf(',', commaIndex+1);
-        errorText = msg.substring(commaIndex + 2, nextCommaIndex);
-      }
-
-      var itemIdAttrVal = event.target.getAttribute('item-id');
-      var invalidItem = {
-        id: itemIdAttrVal,
-        title: ['itemid: ', itemIdAttrVal, ' ', errorText, '(', errorCodeVal, ')' ].join(""),
-        itemRef: event.detail
+      var item = {
+        id: itemId,
+        title: ['error itemId: ', itemId, ' ', code, ' ', text ].join("")
       };
 
-      var ivRequest = false;
+      return item;
+    },
 
-      for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
-        var tmpReq = this._viewModel.initialValueRequestsQueue[i];
-        ivRequest = tmpReq.requestedItemId.toString() === itemIdAttrVal ? tmpReq : ivRequest;
-      }
-
-      ivRequest.isCompleted = true;
-      ivRequest.item = invalidItem;
-
-      // NOTE(ij): if the returned item from server doesn't have id property, we can't use it 
-      // Its nonsense that I request an item from ther server by Id and do not get that id back for cross-reference especially when I have to fetch multiple items and have to match requests and responses
-      // So, I put such items into _viewMode.invalidItems;
-      // if (!this._viewModel.invalidItems) this._viewModel.invalidItems = [];
-      // this._viewModel.invalidItems.push(invalidItem);
-
-      // NOTE cont.(ij): if count of invalid items is the same as count of incomplete requests that means 
-      // that we got all responses and we should initalize with any valid data available
-      // var sentRequestsQueueLength = this._viewModel.initialValueRequestsQueue.length;
-      // var invalidItemsCount = this._viewModel.invalidItems.length;
-        
-      // check if all requests are complete
-      if (this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue) > 0) return;
-      this._handleInitialRequestsQueueComplete(invalidItem);
-
-      // if (invalidItemsCount === 1 && sentRequestsQueueLength === 1) {
-      //   // there was only one request and that request produced invalid data in response
-      //   this._handleInitialRequestsQueueComplete(invalidItem);
-      
-      // } else { 
-      //   // there are several requests
-      //   var incompleteRequestsCount = this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue);
-
-      //   if (invalidItemsCount === incompleteRequestsCount) {
-      //     this._handleInitialRequestsQueueComplete(invalidItem);
-      //   }
-      // }
+    // NOTE(ij): we use this function to create an item when activity returns non zero error code 
+    _handleActivityError: function(itemId, item) {
+      var item = {
+        id: itemId,
+        title: ['error itemId: ', itemId, ' ', item.ErrorCode, ' ', item.Data.ErrorText ].join(""),
+      };
+      return item;
     },
 
     _handleInitialValueActivityResponse: function(event) {
-      var item = event.detail.Data;
-      var i; 
-      var tmpReq;
-      var ivRequest = false;
+
+      var item;
+      var itemIdAttrVal = event.target.getAttribute('item-id');
+
+      if (event.detail.request) {
+        item = this._handleInvalidRequest(itemIdAttrVal, event.detail.request);
+      
+      } else if (event.detail.ErrorCode !== 0) {
+        item = this._handleActivityError(itemIdAttrVal, event.detail);
+        
+      } else {
+        item = event.detail.Data;
+      }
 
       // NOTE(ij): while testing with ItemPickerField I noticed that when requesting a specific item from an url I get array with length of 1 as result
       // http://localhost:2014/api/adenin.GateKeeper.Connector/ToasterDemo/Feed/1054979 returns
@@ -1014,17 +969,11 @@
         item.id = itemIdAttrVal;
       }
 
+      var ivRequest = false;
+
       for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
         var tmpReq = this._viewModel.initialValueRequestsQueue[i];
         ivRequest = tmpReq.requestedItemId.toString() === item.id.toString() ? tmpReq : ivRequest;
-      }
-
-      if (!ivRequest) {
-        this._handleInvalidResponse(event);
-
-        // report error in console
-        console.log('lookup initialization error: request for item not found. Item id ' + item.id);
-        return;
       }
 
       ivRequest.isCompleted = true;
@@ -1059,7 +1008,6 @@
       // detach event listeners from coreActivities
       this._viewModel.initialValueActivitiesQueue.forEach(function(a){ 
         a.removeEventListener('response', this._boundInitialValueActivityResponseHandler);
-        a.removeEventListener('error', this._boundInitialValueActivityErrorHanlder);
       }.bind(this));
       // clear the coreActivities queue
       this._viewModel.initialValueActivitiesQueue = [];
