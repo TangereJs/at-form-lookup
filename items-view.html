@@ -168,7 +168,7 @@
       if (this.disabled) return;
 
       // we return if mouse click happened on items or input field
-      if (event.srcElement !== this.$.dropdownArrow && event.target !== event.currentTarget) return;
+      if (this.multiple && event.srcElement !== this.$.dropdownArrow && event.target !== event.currentTarget) return;
 
       // we focus input field otherwise
       this.$.filterTextInput.focus();
