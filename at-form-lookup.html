@@ -585,7 +585,7 @@
         });
       }
 
-      // NOTE(ij): we need to have originalOptions set before updating selected items becuase updating selected items requires populated original options
+      // we need to have originalOptions set before updating selected items becuase updating selected items requires populated original options
       // save vmOptions as original options in _viewModel
       this._viewModel.originalOptions = JSON.parse(JSON.stringify(vmOptions));
 
@@ -744,7 +744,7 @@
             });
             partCoreActivity.noCredentials = noCredentials;
             partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
-            // NOTE(ij): we ignore activity error event because we set disableErrorCodeHandler to true
+            // we ignore activity error event because we set disableErrorCodeHandler to true
             this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
             this._viewModel.initialValueRequestsQueue.push({
               requestedItemId: part,
@@ -763,17 +763,17 @@
         }
 
       } else if (isString(value) && !value.length) {
-        // NOTE(ij): compare current value against _lastUsedValue to check if _init function was called due to new value being set
+        // compare current value against _lastUsedValue to check if _init function was called due to new value being set
         if (!this._lastUsedValue || this._lastUsedValue !== value) {
           this._lastUsedValue = value;
 
           this.$.itemsView.set('items', []);
-          // NOTE(ij): when value is set to empty string, selected items should be cleared
+          // when value is set to empty string, selected items should be cleared
           // this is tested / confirmed with a test called remote-data-source-bug
           this._updateLookupSelectedItems();
           this._fireSelectedItemsChangedEvent();
           
-          // NOTE(ij): when value is set to empty dropdown options should be unfiltered
+          // when value is set to empty dropdown options should be unfiltered
           this._sendRequestToQueryOptions(this.url || this.xurl, "");
         }
 
@@ -921,7 +921,7 @@
       return count;
     },
 
-    // NOTE(ij): we use this function to create an item when server returns HTTP 4xx or HTTP 5xx responses
+    // we use this function to create an item when server returns HTTP 4xx or HTTP 5xx responses
     _handleInvalidRequest: function(itemId, request) {
       var code = request.xhr.status;
       var text = request.xhr.statusText;
@@ -934,7 +934,7 @@
       return item;
     },
 
-    // NOTE(ij): we use this function to create an item when activity returns non zero error code 
+    // we use this function to create an item when activity returns non zero error code 
     _handleActivityError: function(itemId, item) {
       var item = {
         id: itemId,
@@ -958,7 +958,7 @@
         item = event.detail.Data;
       }
 
-      // NOTE(ij): while testing with ItemPickerField I noticed that when requesting a specific item from an url I get array with length of 1 as result
+      // while testing with ItemPickerField I noticed that when requesting a specific item from an url I get array with length of 1 as result
       // http://localhost:2014/api/adenin.GateKeeper.Connector/ToasterDemo/Feed/1054979 returns
       // event.detail.Data.items.length === 1 where event.detail.Data.items[0] is the actual item requested
       if (item.items !== undefined && this._isArray(item.items) && item.items.length > 0) {
@@ -1028,12 +1028,12 @@
       // we update value and selected items first 
       // this._updateLookupValue(this._computeItemsViewStrValue());
       
-      // NOTE(ij): when new items are fetched from remote data source, selected items array should be updated with new items
+      // when new items are fetched from remote data source, selected items array should be updated with new items
       this._updateLookupSelectedItems();
       
       // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
       // this._fireValueChangedEvent();
-      // NOTE(ij): and fire changed event
+      // and fire changed event
       this._fireSelectedItemsChangedEvent();
 
       this.fire('initialized', {
@@ -1248,7 +1248,7 @@
           }
 
           // for keyboard input select item near to currently selected to make selecting next more user friendly
-          // NOTE(ij): do this first because _selectOptionAtIndex will restore optionsView items for single item selection mode
+          // do this first because _selectOptionAtIndex will restore optionsView items for single item selection mode
           if (selectedIndex === this.$.optionsView.items.length) selectedIndex-=1;
           this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
           
@@ -1336,7 +1336,7 @@
 
         this._closeDropdown();
 
-        // NOTE(ij): in single selection mode after selecting a filtered item restore available dropdown options
+        // in single selection mode after selecting a filtered item restore available dropdown options
         var filteredOptions = this._filterAndHighlightOptions(this._getInput().value);
         this.$.optionsView.set('items', []);
         this.$.optionsView.set('items', filteredOptions);
