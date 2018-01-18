@@ -423,6 +423,8 @@
 
       // reference to lookup instance is given to items view so that focus/blur handling can be turned off when moving input field left and right
       this.$.itemsView._lookupInstance = this;
+
+      this._internalValidStateUpdate(this.required, this.errorMessage);
     },
 
     attached: function() {
