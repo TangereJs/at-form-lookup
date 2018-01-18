@@ -1219,6 +1219,11 @@
 
       // if element receiving focus is outside at-form-lookup hide the dropdown
       this._closeDropdown();
+
+      // un-filter dropdown options
+      if (this._isMultiSelect()) {
+        this._sendRequestToQueryOptions(this.xurl || this.url, "");
+      }
     },
 
     _handleFilterTextInputKeydownEvent: function(event) {
