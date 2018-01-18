@@ -1247,12 +1247,13 @@
             return;
           }
 
-          // for keyboard input select item near to currently selected to make selecting next more user friendly
-          // do this first because _selectOptionAtIndex will restore optionsView items for single item selection mode
-          if (selectedIndex === this.$.optionsView.items.length) selectedIndex-=1;
-          this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
-          
           this._selectOptionAtIndex(selectedIndex);
+
+          // for keyboard input select item near to currently selected to make selecting next more user friendly
+          if (this._isMultiSelect()) {
+            if (selectedIndex === this.$.optionsView.items.length) selectedIndex-=1;
+            this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
+          }
 
           break;
 
