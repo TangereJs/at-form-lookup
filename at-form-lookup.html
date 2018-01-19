@@ -1143,12 +1143,12 @@
       if (!this._boundFilterTextInputFocusHandler) {
         this._boundFilterTextInputFocusHandler = this._handleFilterTextInputFocusEvent.bind(this);
       }
-      filterTextInput.addEventListener('focus', this._boundFilterTextInputFocusHandler);
+      filterTextInput.addEventListener('focusin', this._boundFilterTextInputFocusHandler);
 
       if (!this._boundFilterTextInputBlurHandler) {
         this._boundFilterTextInputBlurHandler = this._handleFilterTextInputBlurEvent.bind(this);
       }
-      filterTextInput.addEventListener('blur', this._boundFilterTextInputBlurHandler);
+      filterTextInput.addEventListener('focusout', this._boundFilterTextInputBlurHandler);
 
       if (!this._boundFilterTextInputKeydownHandler) {
         this._boundFilterTextInputKeydownHandler = this._handleFilterTextInputKeydownEvent.bind(this);
@@ -1174,8 +1174,8 @@
     _detachEventListeners: function() {
       var itemsView = this.$.itemsView;
       var filterTextInput = this._getInput();
-      filterTextInput.removeEventListener('focus', this._boundFilterTextInputFocusHandler);
-      filterTextInput.removeEventListener('blur', this._boundFilterTextInputBlurHandler);
+      filterTextInput.removeEventListener('focusin', this._boundFilterTextInputFocusHandler);
+      filterTextInput.removeEventListener('focusout', this._boundFilterTextInputBlurHandler);
 
       filterTextInput.removeEventListener('keydown', this._boundFilterTextInputKeydownHandler);
       
@@ -1210,6 +1210,7 @@
 
       // if element receiving focus is at-core-dropdown-impl return
       if (event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
+      if (event.relatedTarget.nodeName === "OPTIONS-VIEW") return;
       this.$.contentContainer.removeAttribute('focused');
 
       // if element receiving focus is an item in <items-view> return
@@ -1218,12 +1219,12 @@
         this._getInput().focus();
         return;
       }
-
+      
       // if element receiving focus is outside at-form-lookup hide the dropdown
       this._closeDropdown();
 
       // un-filter dropdown options
-      if (this._isMultiSelect()) {
+      if (this._isMultiSelect() && (this.xurl || this.url)) {
         this._sendRequestToQueryOptions(this.xurl || this.url, "");
       }
     },

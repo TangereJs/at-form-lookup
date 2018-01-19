@@ -242,15 +242,15 @@
 
         if (!this.items.length) {
           // move input element after template element and before dropdown arrow element
-          input.removeEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
-          input.removeEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+          input.removeEventListener('focusin', this._lookupInstance._boundFilterTextInputFocusHandler);
+          input.removeEventListener('focusout', this._lookupInstance._boundFilterTextInputBlurHandler);
 
           Polymer.dom(this.root).removeChild(input);
           Polymer.dom(this.root).insertBefore(input, this.$.toolboxContainer);
           input.focus();
 
-          input.addEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
-          input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+          input.addEventListener('focusin', this._lookupInstance._boundFilterTextInputFocusHandler);
+          input.addEventListener('focusout', this._lookupInstance._boundFilterTextInputBlurHandler);
           
           this.debounce('fire-filter-changed', function() { 
             this.fire('filter-changed', { value: input.value }, { bubbles: false });
@@ -263,15 +263,15 @@
         if (!prevSibling) return;
         if (prevSibling.nodeName === "TEMPLATE") prevSibling = prevSibling.previousElementSibling;
 
-        input.removeEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
-        input.removeEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+        input.removeEventListener('focusin', this._lookupInstance._boundFilterTextInputFocusHandler);
+        input.removeEventListener('focusout', this._lookupInstance._boundFilterTextInputBlurHandler);
 
         Polymer.dom(this.root).removeChild(input);
         Polymer.dom(this.root).insertBefore(input, prevSibling);
         input.focus();
 
-        input.addEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
-        input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+        input.addEventListener('focusin', this._lookupInstance._boundFilterTextInputFocusHandler);
+        input.addEventListener('focusout', this._lookupInstance._boundFilterTextInputBlurHandler);
 
       } else if (this.multiple && keyCode === VK_RIGHT) {
         this._moveInputFieldOnePlaceToTheRight(input);
@@ -336,15 +336,15 @@
         nextSibling = nextSibling.nextElementSibling;
       }
       
-      input.removeEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
-      input.removeEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+      input.removeEventListener('focusin', this._lookupInstance._boundFilterTextInputFocusHandler);
+      input.removeEventListener('focusout', this._lookupInstance._boundFilterTextInputBlurHandler);
 
       Polymer.dom(this.root).removeChild(input);
       Polymer.dom(this.root).insertBefore(input, nextSibling);
       input.focus();
 
-      input.addEventListener('focus', this._lookupInstance._boundFilterTextInputFocusHandler);
-      input.addEventListener('blur', this._lookupInstance._boundFilterTextInputBlurHandler);
+      input.addEventListener('focusin', this._lookupInstance._boundFilterTextInputFocusHandler);
+      input.addEventListener('focusout', this._lookupInstance._boundFilterTextInputBlurHandler);
     },
 
     ready: function () {

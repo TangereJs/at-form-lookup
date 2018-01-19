@@ -125,7 +125,7 @@
 
           assert.equal(eventCount, 1);
 
-          elt.removeEventListener('at-form-lookup-initialized', assertFirstState);
+          elt.removeEventListener('initialized', assertFirstState);
 
           elt.value = "";
           elt.flushDebouncer('initialize-remote');
@@ -138,7 +138,7 @@
           done();
         }
 
-        elt.addEventListener('at-form-lookup-initialized', assertFirstState);
+        elt.addEventListener('initialized', assertFirstState);
       });
 
     });
