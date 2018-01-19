@@ -923,19 +923,6 @@
       return count;
     },
 
-    // we use this function to create an item when server returns HTTP 4xx or HTTP 5xx responses
-    _handleInvalidRequest: function(itemId, request) {
-      var code = request.xhr.status;
-      var text = request.xhr.statusText;
-
-      var item = {
-        id: itemId,
-        title: ['error itemId: ', itemId, ' ', code, ' ', text ].join("")
-      };
-
-      return item;
-    },
-
     // we use this function to create an item when activity returns non zero error code 
     _handleActivityError: function(itemId, item) {
       var item = {
@@ -946,14 +933,10 @@
     },
 
     _handleInitialValueActivityResponse: function(event) {
-
       var item;
       var itemIdAttrVal = event.target.getAttribute('item-id');
 
-      if (event.detail.request) {
-        item = this._handleInvalidRequest(itemIdAttrVal, event.detail.request);
-      
-      } else if (event.detail.ErrorCode !== 0) {
+      if (event.detail.ErrorCode !== 0) {
         item = this._handleActivityError(itemIdAttrVal, event.detail);
         
       } else {
