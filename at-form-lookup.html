@@ -635,16 +635,12 @@
 
         if (this.autoValidate) { this.validate(); }
         
-        this.fire('value-changed', { value: value }, { bubbles: false });
-
       } else {
 
         this._updateLookupSelectedItems();
 
         // value is null, undefined or else
         if (this.autoValidate) { this.validate(); }
-
-        this.fire('value-changed', { value: value }, { bubbles: false });
       }
 
       // 4. put initalSearchTerm into filterTextInput
