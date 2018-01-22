@@ -452,9 +452,9 @@
     },
 
     _disabledChanged: function(newValue, oldValue) {
-      this.toggleClass('disabled', newValue, this.$.labelContainer);
+      this.toggleClass('disabled', newValue || this._internalDisable, this.$.labelContainer);
 
-      this.toggleAttribute('disabled', newValue, this.$.itemsView);
+      this.toggleAttribute('disabled', newValue || this._internalDisable, this.$.itemsView);
     },
 
     _hideChanged: function(newValue, oldValue) {
@@ -693,7 +693,7 @@
 
         if (!noPreload) {
           // disable the element while initial options are loaded
-          this.disabled = true;
+          this._internalDisable = true;
 
           // preload data; go to remote url with noCredentials and params and receive results
           this._sendRequestToQueryOptions(remoteUrl, initialSearchTerm);
@@ -757,7 +757,7 @@
           });
 
           // disable the element while initial values are loaded
-          this.disabled = true;
+          this._internalDisable = true;
         }
 
       } else if (isString(value) && !value.length) {
@@ -842,7 +842,7 @@
     _handleCoreAjaxOnError: function(event) {
       if (this._viewModel.itemsRequestsComplete) {
         this._showLoadingIndicator = false;
-        this.disabled = false;
+        this._internalDisable = false;
       }
 
       // _sync options and items
@@ -897,7 +897,7 @@
 
       if (!this._viewModel.initialValueRequestsQueue || !this._viewModel.initialValueRequestsQueue.length) {
         this._showLoadingIndicator = false;
-        this.disabled = false;
+        this._internalDisable = false;
 
         if (this._viewModel.openDropdownOnResponse) {
           this._viewModel.openDropdownOnResponse = false;
@@ -1001,7 +1001,7 @@
 
       if (!this._viewModel.initialValueRequestsQueue.length) {
         this._showLoadingIndicator = false;
-        this.disabled = false;
+        this._internalDisable = false;
       }
 
       // WIP disabled
