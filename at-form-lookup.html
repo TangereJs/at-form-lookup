@@ -939,15 +939,10 @@
         item = event.detail.Data;
       }
 
-      // while testing with ItemPickerField I noticed that when requesting a specific item from an url I get array with length of 1 as result
-      // http://localhost:2014/api/adenin.GateKeeper.Connector/ToasterDemo/Feed/1054979 returns
-      // event.detail.Data.items.length === 1 where event.detail.Data.items[0] is the actual item requested
-      if (item.items !== undefined && this._isArray(item.items) && item.items.length > 0) {
-        item = item.items[0];
-      }
-      
       if (!item.id) {
-        item.id = itemIdAttrVal;
+        var errorMsg = [ "Initialization error: Url ", event.target.url, " did not return item with property id present."].join("");
+        console.log(errorMsg);
+        return;
       }
 
       var ivRequest = false;
@@ -955,6 +950,12 @@
       for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
         var tmpReq = this._viewModel.initialValueRequestsQueue[i];
         ivRequest = tmpReq.requestedItemId.toString() === item.id.toString() ? tmpReq : ivRequest;
+      }
+
+      if (!ivRequest) {
+        var errorMsg = [ "Initialization error: Url ", event.target.url, " did not return item with requested id. Item with id of ", item.id, " was returned instead."].join("");
+        console.log(errorMsg);
+        return; 
       }
 
       ivRequest.isCompleted = true;
