@@ -944,8 +944,9 @@
       // event.detail.Data.items.length === 1 where event.detail.Data.items[0] is the actual item requested
       if (item.items !== undefined && this._isArray(item.items) && item.items.length > 0) {
         item = item.items[0];
-
-      } else if (!item.id) {
+      }
+      
+      if (!item.id) {
         item.id = itemIdAttrVal;
       }
 
