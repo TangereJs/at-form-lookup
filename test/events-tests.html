@@ -51,7 +51,7 @@
         Polymer.dom(input).setAttribute('value', 'demo value');
 
         flush(function () {
-          assert.equal(eventCount, 1, 'value-changed event was fired');
+          assert.equal(eventCount, 0, 'value-changed event was fired');
           done();
         });
       });
