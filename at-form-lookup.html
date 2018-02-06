@@ -4,12 +4,9 @@
 <link rel="import" href="../at-form-behaviors/at-form-behaviors.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html" />
 <link rel="import" href="../iron-label/iron-label.html">
-<link rel="import" href="../at-core-view/at-core-view.html">
 <link rel="import" href="../at-core-dropdown/at-core-dropdown.html" />
 <link rel="import" href="at-form-lookup-input-validation-behavior.html">
 <link rel="import" href="at-form-lookup-styles.html">
-<link rel="import" href="../at-core-spinner/at-core-spinner.html" />
-<link rel="import" href="../at-carbon-message/at-carbon-message.html" />
 <link rel="import" href="items-view.html" />
 <link rel="import" href="options-view.html" />
 
@@ -32,10 +29,8 @@
     </style>
     
     <at-core-activity id="coreAjax" url="[[url]]" on-response="_handleCoreAjaxOnResponse" on-error="_handleCoreAjaxOnError"></at-core-activity>
-    <at-core-spinner id="coreSpinner"></at-core-spinner>
-    <at-carbon-message id="carbonMessage" type="info"></at-carbon-message>
     
-    <div id="atContainer" class="at-container" hidden>
+    <div id="atContainer" class="at-container">
         <!--
         Introduced label container as a workaround for a bug with opacity calculation in polymer-js
         Right now, if opacity is changed via js by setting a disabled class on iron-label, iron-label is not styled correctly
@@ -654,13 +649,7 @@
       var filteredOptions = this._filterAndHighlightOptions(initialSearchTerm);
       this.$.optionsView.items = filteredOptions;
 
-      // 5. hide the spinner
-      this.$.coreSpinner.display = 'none';
-
-      // 6. show the element
-      this.$.atContainer.removeAttribute('hidden');
-
-      // 7. attach relevant events
+      // 5. attach relevant events
       this._setupEventListeners();
     },
 
@@ -785,13 +774,7 @@
       this._getInput().value = initialSearchTerm;
       this.$.itemsView._updateFilterTextInputWidth();
 
-      // 5. hide the spinner
-      this.$.coreSpinner.display = 'none';
-
-      // 6. show the element
-      this.$.atContainer.removeAttribute('hidden');
-
-      // 7. attach relevant events
+      // 5. attach relevant events
       this._setupEventListeners();
     },
 
