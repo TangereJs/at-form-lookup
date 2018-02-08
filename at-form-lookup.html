@@ -1674,7 +1674,7 @@
 
         // if original option is in selectedItems do not add to available
         var indexInSelected = this._findIndexOfId(this.$.itemsView.items, a.value);
-        if (indexInSelected < 0) {
+        if (indexInSelected < 0 || (indexInSelected > -1 && !this._isMultiSelect())) {
           result.push(a);
         }
 
