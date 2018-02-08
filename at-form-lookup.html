@@ -1189,6 +1189,7 @@
       var keyCode = event.keyCode;
 
       var VK_BACKSPACE = 8;
+      var VK_DELETE = 46;
       var VK_TAB = 9;
       var VK_ENTER = 13;
       var VK_UP = 38;
@@ -1231,6 +1232,7 @@
           this._highlightNext(this.$.optionsView.items);
           break;
 
+        case VK_DELETE:
         case VK_BACKSPACE:
           if (this._isFull()) return;
           this._openDropdown();
@@ -1669,7 +1671,13 @@
           selected: false, // we use selected to mark item as selected in dropdown
           titleArr: [] // we use titleArr to fix a bug with dom-if / dom-repeat combo, where dom-repeat is evaluated when dom-if evaluates to false
         };
-        result.push(a);
+
+        // if original option is in selectedItems do not add to available
+        var indexInSelected = this._findIndexOfId(this.$.itemsView.items, a.value);
+        if (indexInSelected < 0) {
+          result.push(a);
+        }
+
       }, this);
       return result;
     },
