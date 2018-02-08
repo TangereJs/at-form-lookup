@@ -676,9 +676,6 @@
 
         // clear selected items from itemView
         this.$.itemsView.set('items', []);
-        // WIP disabled
-        // this._updateLookupValue('');
-        // this._fireValueChangedEvent();
 
         if (!noPreload) {
           // disable the element while initial options are loaded
@@ -989,10 +986,6 @@
         this._internalDisabled = false;
       }
 
-      // WIP disabled
-      // we update value and selected items first 
-      // this._updateLookupValue(this._computeItemsViewStrValue());
-      
       // when new items are fetched from remote data source, selected items array should be updated with new items
       this._updateLookupSelectedItems();
       
@@ -1676,18 +1669,7 @@
           selected: false, // we use selected to mark item as selected in dropdown
           titleArr: [] // we use titleArr to fix a bug with dom-if / dom-repeat combo, where dom-repeat is evaluated when dom-if evaluates to false
         };
-
-        // if original option is in selectedItems do not add to available
-        var indexInSelected = this._findIndexOfId(this.$.itemsView.items, a.value);
-        if (indexInSelected < 0) {
-          result.push(a);
-        
-        // but in single select mode add original option to results and mark it as selected
-        } else if (!isMulti) {
-          a.selected = true;
-          result.push(a);
-        }
-
+        result.push(a);
       }, this);
       return result;
     },
@@ -1820,6 +1802,19 @@
     },
 
     _openDropdown: function() {
+      if (this.$.itemsView.items.length > 0 && this.$.optionsView.items.length > 0) {
+        // highlight last element in itemsView
+        var selectedItem = this.$.itemsView.items[this.$.itemsView.items.length-1];
+        var indexToHighlight = this._findIndexOfId(this.$.optionsView.items, selectedItem.value);
+        if (indexToHighlight > -1) {
+          this.$.optionsView.set('items.' + indexToHighlight +'.selected', true);
+        
+        } else {
+          // highlight first option
+          this.$.optionsView.set('items.0.selected', true);
+        }
+      }
+
       var ccWidth = 0;
       var displayValue = window.getComputedStyle(this).getPropertyValue('display');
       var isInline = /^inline/gi.test(displayValue);
