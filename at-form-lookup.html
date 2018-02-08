@@ -1443,6 +1443,9 @@
         }.bind(this));
       }
 
+      // QOL set lastDeletedItem so that this item can be highlighted when dropdown is open
+      this._viewModel.lastDeletedItem = itemsDeleted[itemsDeleted.length -1];
+
       var filteredOptions = this._filterAndHighlightOptions(this._getInput().value);
       this.$.optionsView.set('items', []);
       this.$.optionsView.set('items', filteredOptions);
@@ -1809,19 +1812,30 @@
       return result;
     },
 
-    _openDropdown: function() {
-      if (this.$.itemsView.items.length > 0 && this.$.optionsView.items.length > 0) {
-        // highlight last element in itemsView
+    _highlightDropdownOption: function() {
+      var selectedIndex = this._findSelectedIndex(this.$.optionsView.items);
+      if (selectedIndex > -1) return;
+      if (!this.$.itemsView.items.length) return;
+      if (!this.$.optionsView.items.length) return;
+
+      if (this._isMultiSelect()) {
+        var indexToHighlight = 0;
+        
+        if (this._viewModel.lastDeletedItem) {
+          indexToHighlight = this._findIndexOfId(this.$.optionsView.items, this._viewModel.lastDeletedItem.value);
+        }
+
+        this.$.optionsView.set('items.' + indexToHighlight +'.selected', true);
+
+      } else {
         var selectedItem = this.$.itemsView.items[this.$.itemsView.items.length-1];
         var indexToHighlight = this._findIndexOfId(this.$.optionsView.items, selectedItem.value);
-        if (indexToHighlight > -1) {
-          this.$.optionsView.set('items.' + indexToHighlight +'.selected', true);
-        
-        } else {
-          // highlight first option
-          this.$.optionsView.set('items.0.selected', true);
-        }
+        this.$.optionsView.set('items.' + indexToHighlight +'.selected', true);
       }
+    },
+
+    _openDropdown: function() {
+      this._highlightDropdownOption();
 
       var ccWidth = 0;
       var displayValue = window.getComputedStyle(this).getPropertyValue('display');
