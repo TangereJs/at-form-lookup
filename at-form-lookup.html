@@ -986,14 +986,6 @@
         this._internalDisabled = false;
       }
 
-      // when new items are fetched from remote data source, selected items array should be updated with new items
-      this._updateLookupSelectedItems();
-      
-      // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
-      // this._fireValueChangedEvent();
-      // and fire changed event
-      this._fireSelectedItemsChangedEvent();
-
       this.fire('initialized', {
         data: item
       }, { bubbles: false});
@@ -1069,6 +1061,11 @@
 
       // clear initialItems as it will interfere with new values from server
       this._viewModel.initialItems = [];
+
+      // when new items are fetched from remote data source, selected items array should be updated with new items
+      this._updateLookupSelectedItems();
+      // and fire changed event
+      this._fireSelectedItemsChangedEvent();
     },
 
     _findIndexOfId: function(array, id) {
