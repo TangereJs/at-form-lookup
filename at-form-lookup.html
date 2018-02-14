@@ -19,12 +19,16 @@
         box-sizing: border-box;
       }
 
-      .at-content-container {
+      .items-view {
         @apply(--at-form-input-common);
       }
 
-      [focused].at-content-container {
+      [focused].items-view {
         @apply(--at-form-input-focus);
+      }
+
+      #labelContainer {
+        height: 18px;
       }
     </style>
     
@@ -42,10 +46,10 @@
       </div>
       
       <div id="contentContainer" class="at-content-container">
-        <items-view id="itemsView" multiple$="[[_computeMultiple(maxItems)]]" show-loading-indicator$="[[_showLoadingIndicator]]"></items-view>
+        <items-view id="itemsView" class="items-view" multiple$="[[_computeMultiple(maxItems)]]" show-loading-indicator$="[[_showLoadingIndicator]]"></items-view>
       </div>
 
-      <at-core-dropdown id="coreDropdown" no-mask y-offset="7">
+      <at-core-dropdown id="coreDropdown" no-mask y-offset="0">
         <options-view id="optionsView" item-view="[[itemView]]"></options-view>
       </at-core-dropdown>
 
@@ -1140,7 +1144,7 @@
     },
 
     _handleFilterTextInputFocusEvent: function(event) {
-      this.$.contentContainer.setAttribute('focused', '');
+      this.$.itemsView.setAttribute('focused', '');
 
       var isFull = this._isFull();
       var isMulti = this._isMultiSelect();
@@ -1155,7 +1159,7 @@
     _handleFilterTextInputBlurEvent: function(event) {
 
       if (!event.relatedTarget) {
-        this.$.contentContainer.removeAttribute('focused');
+        this.$.itemsView.removeAttribute('focused');
         // if focus didn't transfer to any other element hide the dropdown
         this._closeDropdown();
         return;
@@ -1164,7 +1168,7 @@
       // if element receiving focus is at-core-dropdown-impl return
       if (event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
       if (event.relatedTarget.nodeName === "OPTIONS-VIEW") return;
-      this.$.contentContainer.removeAttribute('focused');
+      this.$.itemsView.removeAttribute('focused');
 
       // if element receiving focus is an item in <items-view> return
       var rt = event.relatedTarget;
@@ -1498,7 +1502,7 @@
       if (this._isMultiSelect()) {
         this._getInput().focus();
       } else {
-        this.$.contentContainer.removeAttribute('focused');
+        this.$.itemsView.removeAttribute('focused');
       }      
     },
 
