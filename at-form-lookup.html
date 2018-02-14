@@ -1856,7 +1856,7 @@
 
       this.$.coreDropdown.show(null, this.$.itemsView);
 
-      Polymer.dom(this.$.itemsView.$.dropdownArrow).classList.add('open');
+      Polymer.dom(this.$.itemsView.$.dropdownArrow).textContent = "\u25B2";
 
       this._udpateOptionsViewScrollTop();
 
@@ -1866,7 +1866,7 @@
 
     _closeDropdown: function() {
       this.$.coreDropdown.hide();
-      Polymer.dom(this.$.itemsView.$.dropdownArrow).classList.remove('open');
+      Polymer.dom(this.$.itemsView.$.dropdownArrow).textContent = "\u25BC";
     }
   });
 
