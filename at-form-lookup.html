@@ -639,6 +639,10 @@
         if (this.autoValidate) { this.validate(); }
       }
 
+      if (this._isReady) {
+        this._fireValueChangedEvent();
+      }
+
       // 4. put initalSearchTerm into filterTextInput
       this._getInput().value = initialSearchTerm;
       this.$.itemsView._updateFilterTextInputWidth();
@@ -745,6 +749,10 @@
 
           // disable the element while initial values are loaded
           this._internalDisabled = true;
+
+          if (this._isReady) {
+            this._fireValueChangedEvent();
+          }
         }
 
       } else if (isString(value) && !value.length) {
@@ -760,11 +768,19 @@
 
           // when value is set to empty dropdown options should be unfiltered
           this._sendRequestToQueryOptions(this.url || this.xurl, "");
+
+          if (this._isReady) {
+            this._fireValueChangedEvent();
+          }
         }
 
       } else {
         if (!isString(value)) {
           console.log('type of value is ' + (typeof value));
+        }
+
+        if (this._isReady) {
+          this._fireValueChangedEvent();
         }
       }
 
