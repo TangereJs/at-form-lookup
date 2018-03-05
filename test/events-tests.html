@@ -30,6 +30,19 @@
     </template>
   </test-fixture>
 
+  <test-fixture id="rdsValueChangedAttr">
+    <template>
+      <at-form-lookup url="localhost:2014" value="lorem ipsum"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="rdsValueChangedProp">
+    <template>
+      <at-form-lookup url="localhost:2014"></at-form-lookup>
+    </template>
+  </test-fixture>
+
+
   <script>
 
     suite('events tests', function() {
@@ -70,6 +83,48 @@
           done();
         });
       });
+
+    });
+
+    suite('remote data source tests', function() {
+
+      test("setting value as attribute does not trigger value-changed event in remote data source", function(done) {
+        var input = fixture('rdsValueChangedAttr');
+        assert.equal(input.value, 'lorem ipsum', 'initial value not set correctly');
+
+        var eventCount = 0;
+        input.addEventListener('value-changed', function(event) {
+          eventCount += 1;
+        });
+
+        flush(function () {
+          assert.equal(eventCount, 0, 'value-changed event was fired');
+          done();
+        });
+      });
+
+      test('setting .value triggers value-changed event in remote data source', function(done) {
+        var input = fixture('valueChanged');
+        assert.equal(input.value, '', 'initial value not set correctly');
+
+        var eventCount = 0;
+        input.addEventListener('value-changed', function(event) {
+          assert.equal(event.detail.value, 'demo value', 'event detail value not set correctly');
+          assert.equal(input.value, 'demo value', 'event detail value not set correctly');
+          eventCount += 1;
+        });
+
+        input.value = 'demo value';
+        Polymer.dom(input).setAttribute('value', 'demo value');
+        input.value = 'demo value';
+        Polymer.dom(input).setAttribute('value', 'demo value');
+
+        flush(function () {
+          assert.equal(eventCount, 1, 'value-changed event was fired');
+          done();
+        });
+      });
+
 
     });
   </script>
