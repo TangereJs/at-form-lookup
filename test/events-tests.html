@@ -104,7 +104,7 @@
       });
 
       test('setting .value triggers value-changed event in remote data source', function(done) {
-        var input = fixture('valueChanged');
+        var input = fixture('rdsValueChangedProp');
         assert.equal(input.value, '', 'initial value not set correctly');
 
         var eventCount = 0;
@@ -115,9 +115,16 @@
         });
 
         input.value = 'demo value';
+        input.flushDebouncer('initialize-remote');
+
         Polymer.dom(input).setAttribute('value', 'demo value');
+        input.flushDebouncer('initialize-remote');
+
         input.value = 'demo value';
+        input.flushDebouncer('initialize-remote');
+
         Polymer.dom(input).setAttribute('value', 'demo value');
+        input.flushDebouncer('initialize-remote');
 
         flush(function () {
           assert.equal(eventCount, 1, 'value-changed event was fired');
