@@ -28,9 +28,9 @@
         padding: 2px 0;
       }
     </style>
-    
+
     <at-core-activity id="coreAjax" url="[[url]]" on-response="_handleCoreAjaxOnResponse" on-error="_handleCoreAjaxOnError"></at-core-activity>
-    
+
     <div id="atContainer" class="at-container">
         <!--
         Introduced label container as a workaround for a bug with opacity calculation in polymer-js
@@ -41,7 +41,7 @@
       <div id="labelContainer">
         <iron-label id="label" on-tap="focus">{{label}}</iron-label>
       </div>
-      
+
       <div id="contentContainer" class="at-content-container">
         <items-view id="itemsView" class="items-view" multiple$="[[_computeMultiple(maxItems)]]" show-loading-indicator$="[[_showLoadingIndicator]]"></items-view>
       </div>
@@ -325,7 +325,7 @@
 
       /**
        * Liquid template to render options in the dropdown with
-       * 
+       *
        * @property itemView
        * @type String
        * @default ''
@@ -340,7 +340,7 @@
 
       /**
        * view model objects that holds internal state of the element
-       * 
+       *
        * @property _viewModel
        * @type Object
        * @default {}
@@ -357,7 +357,7 @@
             // available options are options available to be displayed in dropdown
             // available option is an object with title and value properties
             // title is title of original option, value is index in original options array (to support computation of value and selectedItems)
-            // filtering is done on available options 
+            // filtering is done on available options
             // selecting an option from dropdown transfers it to items-view.items
             // removing an option from items-view moves it back to available options
             availableOptions: [],
@@ -516,15 +516,15 @@
 
       if (!initRemoteMode) {
         if (this._lastUsedUrl) { this._lastUsedUrl = undefined; }
-        
-        // 1. let url be set 
+
+        // 1. let url be set
         // 2. let value be set to lorem
         // 3. let value be changed to ipsum
         // 4. let url be set to ''
         // item 3. will start the debouncer, but item 4. will switch lookup to local data source mode
         // in this case we need to cancel the debounce
         this.cancelDebouncer('initialize-remote');
-        
+
         this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems);
         this._isInitialized = true;
 
@@ -538,7 +538,7 @@
 
     _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems) {
 
-      // 1. compute available options      
+      // 1. compute available options
       var availableOptions = [];
       if (xvaluelist && xvaluelist.length) {
         availableOptions = xvaluelist;
@@ -574,7 +574,7 @@
 
       } else if (isCommaSeparated(availableOptions)) {
         availableOptions = availableOptions.split(',');
-        availableOptions.forEach(function(option) { 
+        availableOptions.forEach(function(option) {
           option = option.trim();
           vmOptions.push({
             title: option,
@@ -600,7 +600,7 @@
         // value is a csv string
         var valueParts = value.split(',');
         var selectedOptions = [];
-        
+
         for (var i = 0; i < valueParts.length; i++) {
           var vmOption = null;
           var valuePart = valueParts[i];
@@ -618,7 +618,7 @@
 
         if (maxItems === 1) {
           selectedOptions.splice(1);
-          
+
         } else {
           if (maxItems > 1) {
             selectedOptions.splice(maxItems, selectedOptions.length - maxItems);
@@ -630,7 +630,7 @@
         this._updateLookupSelectedItems();
 
         if (this.autoValidate) { this.validate(); }
-        
+
       } else {
 
         this._updateLookupSelectedItems();
@@ -640,7 +640,7 @@
       }
 
       // 4. put initalSearchTerm into filterTextInput
-      this._getInput().value = initialSearchTerm;      
+      this._getInput().value = initialSearchTerm;
       this.$.itemsView._updateFilterTextInputWidth();
 
       // save unfiltered and non highlighted options as _viewModel available options
@@ -661,7 +661,7 @@
 
       // 1. compute available options
       var remoteUrl = xurl || url;
-      
+
       // do not send new request if lastUsedUrl is the same as current remoteUrl
       var currUrl = {
         url: url,
@@ -711,10 +711,10 @@
           this._viewModel.initialValueRequestsQueue = [];
           this._viewModel.initialValueActivitiesQueue = [];
 
-          valueParts.forEach(function(part, index) { 
+          valueParts.forEach(function(part, index) {
             part = part.trim();
             // ignore empty parts
-            if (!part) { 
+            if (!part) {
               console.log('initial value csv string has empty value at zero-based index of ' + index);
               return;
             }
@@ -757,7 +757,7 @@
           // this is tested / confirmed with a test called remote-data-source-bug
           this._updateLookupSelectedItems();
           this._fireSelectedItemsChangedEvent();
-          
+
           // when value is set to empty dropdown options should be unfiltered
           this._sendRequestToQueryOptions(this.url || this.xurl, "");
         }
@@ -900,7 +900,7 @@
       return count;
     },
 
-    // we use this function to create an item when activity returns non zero error code 
+    // we use this function to create an item when activity returns non zero error code
     _handleActivityError: function(itemId, item) {
       var item = {
         id: itemId,
@@ -915,7 +915,7 @@
 
       if (event.detail.ErrorCode !== 0) {
         item = this._handleActivityError(itemIdAttrVal, event.detail);
-        
+
       } else {
         item = event.detail.Data;
       }
@@ -936,7 +936,7 @@
       if (!ivRequest) {
         var errorMsg = [ "Initialization error: Url ", event.target.url, " did not return item with requested id. Item with id of ", item.id, " was returned instead."].join("");
         console.log(errorMsg);
-        return; 
+        return;
       }
 
       ivRequest.isCompleted = true;
@@ -969,7 +969,7 @@
       this._viewModel.initialValueRequestsQueue = [];
 
       // detach event listeners from coreActivities
-      this._viewModel.initialValueActivitiesQueue.forEach(function(a){ 
+      this._viewModel.initialValueActivitiesQueue.forEach(function(a){
         a.removeEventListener('response', this._boundInitialValueActivityResponseHandler);
       }.bind(this));
       // clear the coreActivities queue
@@ -1007,7 +1007,7 @@
 
       // available options are used for filtering and highlighting
       // when options request completes, _viewModel.availableOptions holds available options
-      var availableOptions = this._viewModel.availableOptions; 
+      var availableOptions = this._viewModel.availableOptions;
 
       // when items requests complete (there can be more than one), _viewModel
       var initialItems = this._viewModel.initialItems;
@@ -1017,7 +1017,7 @@
 
       var selectedItems = [];
 
-      initialItems.forEach(function(item, index) { 
+      initialItems.forEach(function(item, index) {
 
         // item structure is  item: { title, value, itemRef }
         // original options in have same structure
@@ -1029,7 +1029,7 @@
         var indexInAvailable = this._findIndexOfId(availableOptions, itemId);
         if (isMulti && indexInAvailable > -1) {
           availableOptions.splice(indexInAvailable, 1);
-        
+
         } else if (!isMulti && indexInAvailable > -1) {
           availableOptions[indexInAvailable].selected = true;
         }
@@ -1039,7 +1039,7 @@
         if (indexInOriginal < 0) {
           originalOptions.push(item);
         }
-          
+
         // construct object selectedItem to be given to itemsView { title, titleArr, value }
         var si = {
           title: item.title,
@@ -1071,7 +1071,7 @@
 
     _findIndexOfId: function(array, id) {
       var result = -1;
-      
+
       for (var i = 0; i < array.length && result < 0; i++) {
         var item = array[i];
         result = item.value === id ? i : result;
@@ -1082,7 +1082,7 @@
 
     _findItemWithId: function(array, id) {
       var result = undefined;
-      
+
       for (var i = 0; i < array.length && !result; i++) {
         var item = array[i];
         result = item.value === id ? item : result;
@@ -1132,7 +1132,7 @@
       filterTextInput.removeEventListener('focusout', this._boundFilterTextInputBlurHandler);
 
       filterTextInput.removeEventListener('keydown', this._boundFilterTextInputKeydownHandler);
-      
+
       itemsView.removeEventListener('items-deleted', this._boundItemsViewItemsDeletedHandler);
 
       this.$.optionsView.removeEventListener('option-selected', this._boundOptionsViewOptionSelectedHadler);
@@ -1145,7 +1145,7 @@
 
       var isFull = this._isFull();
       var isMulti = this._isMultiSelect();
-      
+
       if (isFull && isMulti) return;
 
       if (!this.$.optionsView.items.length) return;
@@ -1173,7 +1173,7 @@
         this._getInput().focus();
         return;
       }
-      
+
       // if element receiving focus is outside at-form-lookup hide the dropdown
       this._closeDropdown();
 
@@ -1220,13 +1220,13 @@
 
           break;
 
-        case VK_UP: 
-          // highlight previous element 
+        case VK_UP:
+          // highlight previous element
           this._highlightPrevious(this.$.optionsView.items);
           break;
 
-        case VK_DOWN: 
-          // highlight next element 
+        case VK_DOWN:
+          // highlight next element
           this._highlightNext(this.$.optionsView.items);
           break;
 
@@ -1249,7 +1249,7 @@
     _selectOptionAtIndex: function(selectedIndex) {
       var isFull = this._isFull();
       var isMulti = this._isMultiSelect();
-      
+
       if (isFull && isMulti) return;
 
       var option = this.$.optionsView.items[selectedIndex];
@@ -1264,7 +1264,7 @@
       } else if (!originalOption) {
         // original option doesn't exist; its should be created
         originalOption = {
-          title: option.value, 
+          title: option.value,
           value: option.value
         };
 
@@ -1313,7 +1313,7 @@
 
         // add selected option to the items view, to the left of input field
         var indexOfInput = this.$.itemsView._getInputIndex();
-        
+
         var len = this.$.itemsView.items.length;
         if (!len) {
           // insert when empty
@@ -1322,7 +1322,7 @@
         } else if (len && indexOfInput < len) {
           // insert when not empty at the begining or middle
           this.$.itemsView.splice('items', indexOfInput, 0, originalOption);
-  
+
         } else {
           // insert when not empty at the end
           this.$.itemsView.push('items', originalOption);
@@ -1340,13 +1340,13 @@
       var input = this._getInput();
       input.value = "";
       this.$.itemsView._updateFilterTextInputWidth();
-      
+
       isFull = this._isFull();
       if (isFull) {
         if (isMulti) {
           // if maxItems have been selected in multi selection mode close the dropdown
           this._closeDropdown();
-        
+
         } else if (newOptionSelected) {
           // when new options is selected, clear input field text and blur
           input.blur();
@@ -1364,7 +1364,7 @@
       // update .selectedItems
       this._updateLookupSelectedItems();
 
-      // we update value and selected items first 
+      // we update value and selected items first
       // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
 
       // fire value-changed event
@@ -1407,13 +1407,13 @@
       var ovcc = this.$.optionsView.getBoundingClientRect();
       var ovHeight = ovcc.height;
       var ovTop = ovcc.top;
-      
+
       var currentTop = this.$.optionsView.scrollTop;
       var topDiff = Math.abs(soTop - ovTop + currentTop);
 
       if (topDiff < currentTop) {
         this.$.optionsView.scrollTop = topDiff;
-        
+
       } else if (topDiff >= (ovHeight+currentTop)) {
         var topVal = topDiff - ovHeight + sobcr.height;
         this.$.optionsView.scrollTop = topVal;
@@ -1422,14 +1422,14 @@
 
     _handleItemsViewItemsDeletedEvent: function(event) {
       var itemsDeleted = event.detail.value;
-      
+
       if (this._isMultiSelect()) {
         // return deleted items to available options
         itemsDeleted.forEach(function(item) {
           this._viewModel.availableOptions.push(item);
         }.bind(this));
 
-        this._viewModel.availableOptions.sort(function(i1, i2) {  
+        this._viewModel.availableOptions.sort(function(i1, i2) {
           if (i1.value === i2.value) return 0;
           return i1.value > i2.value ? 1 : -1;
         });
@@ -1451,7 +1451,7 @@
       if (itemsDeleted && itemsDeleted.length && !this.$.coreDropdown.open) {
         var filterText = this._getInput().value;
         if (filterText !== "") {
-          // focusing the input will open the dropdown 
+          // focusing the input will open the dropdown
           this._getInput().focus();
           if (!this.$.coreDropdown.open) {
             this._openDropdown();
@@ -1471,13 +1471,13 @@
       this.$.coreDropdown.updateContainerAndOutlineSize();
       this.$.coreDropdown.updateDropdownPosition(this.$.itemsView);
 
-      // update .value 
+      // update .value
       this._updateLookupValue(this._computeItemsViewStrValue());
 
-      // update .selectedItems 
+      // update .selectedItems
       this._updateLookupSelectedItems();
 
-      // we update value and selected items first 
+      // we update value and selected items first
       // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
 
       // fire value-changed event
@@ -1500,7 +1500,7 @@
         this._getInput().focus();
       } else {
         this.$.itemsView.removeAttribute('focused');
-      }      
+      }
     },
 
     _handleItemsViewFilterChangedEvent: function(event) {
@@ -1516,7 +1516,7 @@
         // filter text input has focus, but if initially dropdown was empty and allowNewItems is true
         // new item is added to options; we should open the dropdown
         Polymer.dom.flush();
-        if (!this.$.coreDropdown.open && this.allowNewItems) { 
+        if (!this.$.coreDropdown.open && this.allowNewItems) {
           this._openDropdown();
 
         } else {
@@ -1541,7 +1541,7 @@
     _filterAndHighlightOptions: function(filterText) {
       var filteredOptions = [];
 
-      // 1. filter the options 
+      // 1. filter the options
       if (filterText) {
         var sifter = new window.atFormLookup.Sifter(this._viewModel.availableOptions);
         var results = sifter.search(filterText, {
@@ -1553,7 +1553,7 @@
             }
           })
         });
-        
+
         var availalble = this._viewModel.availableOptions;
         results.items.forEach(function(item) {
           var option = availalble[item.id];
@@ -1619,18 +1619,18 @@
       return focusable;
     },
 
-    // 
-    // 
-    // 
+    //
+    //
+    //
     // HELPER FUNCTIONS
-    // 
-    // 
-    // 
+    //
+    //
+    //
 
     _isString: function(obj) {
       return Object.prototype.toString.apply(obj) === "[object String]";
     },
-    
+
     // this function adds support for maxItems values as textual representation of a number
     // this support is required by form and dashboard designers
     _getMaxItemsAsNumber: function() {
@@ -1695,7 +1695,7 @@
         var pos = titleLowerCase.indexOf(tokenLowerCase, prev);
 
         if (pos < 0) return title;
-        
+
         while (pos > -1) {
           var textBefore = title.slice(prev, pos);
           if (textBefore.length) {
@@ -1721,7 +1721,7 @@
         return Object.prototype.toString.apply(obj) === "[object Array]";
       }
 
-      options.forEach(function(option, index) { 
+      options.forEach(function(option, index) {
         var t = highlightTitle(option.title);
         option.titleArr = isArray(t) ? t : [];
       });
@@ -1729,7 +1729,7 @@
 
     _computeItemsViewStrValue: function() {
       var valuesArr = [];
-      this.$.itemsView.items.forEach(function(item){ 
+      this.$.itemsView.items.forEach(function(item){
         valuesArr.push(item.value);
       });
       var newValue = valuesArr.join(',');
@@ -1818,7 +1818,7 @@
 
       if (this._isMultiSelect()) {
         var indexToHighlight = 0;
-        
+
         if (this._viewModel.lastDeletedItem) {
           indexToHighlight = this._findIndexOfId(this.$.optionsView.items, this._viewModel.lastDeletedItem.value);
         }
@@ -1838,17 +1838,17 @@
       var ccWidth = 0;
       var displayValue = window.getComputedStyle(this).getPropertyValue('display');
       var isInline = /^inline/gi.test(displayValue);
-      
+
       var ccClientRect = this.$.contentContainer.getBoundingClientRect();
       ccWidth = ccClientRect.width;
-      
+
       if (isInline) {
         ccWidth = ccWidth < 150 ? 150 : ccWidth;
 
       } else {
         this.classList.remove('inline-and-empty-width');
       }
-      
+
       this.$.optionsView.style.width = ccWidth + 'px';
 
       this.$.coreDropdown.show(null, this.$.itemsView);
@@ -2372,7 +2372,7 @@
    * 2) provide adequate value for value from item <br/>
    * 3) assign item (or any parts of it) to itemRef <br/>
    * in selectedItems you will get what was placed in itemRef <br/>
-   * 
+   *
    * @event at-form-lookup-afterAjax
-   */ 
+   */
 </script>
