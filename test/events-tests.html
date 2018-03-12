@@ -90,17 +90,20 @@
 
       test("setting value as attribute does not trigger value-changed event in remote data source", function(done) {
         var input = fixture('rdsValueChangedAttr');
-        assert.equal(input.value, 'lorem ipsum', 'initial value not set correctly');
+        var debouncerActive = input.isDebouncerActive('initialize-remote');
 
         var eventCount = 0;
         input.addEventListener('value-changed', function(event) {
           eventCount += 1;
+          assert.equal(input.value, 'lorem ipsum', 'initial value not set correctly');
+          assert.equal(true, false, 'should not execute');
         });
 
-        flush(function () {
+        setTimeout(function() {
           assert.equal(eventCount, 0, 'value-changed event was fired');
+          assert.equal(debouncerActive, false);
           done();
-        });
+        }, 150);
       });
 
       test('setting .value triggers value-changed event in remote data source', function(done) {
