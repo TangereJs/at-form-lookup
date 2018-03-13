@@ -32,13 +32,13 @@
 
   <test-fixture id="initialRemote">
     <template>
-      <lookup-test-helper url="localhost:2014"></lookup-test-helper>
+      <lookup-test-helper url="/eventurl"></lookup-test-helper>
     </template>
   </test-fixture>
 
   <test-fixture id="valueAsAttrRemote">
     <template>
-      <lookup-test-helper url="localhost:2014" value="v1"></lookup-test-helper>
+      <lookup-test-helper url="/eventurl" value="v1"></lookup-test-helper>
     </template>
   </test-fixture>
 
@@ -77,11 +77,10 @@
           },
 
           _handleSelectedItemsChangedEvent: function(event, detail) {
-            assert.deepEqual(detail.value, expectedValue);
-            assert.deepEqual(event.target.value, expectedValue);
-
             assert.deepEqual(detail.value, expectedSelectedItems);
             assert.deepEqual(event.target.selectedItems, expectedSelectedItems);
+
+            assert.deepEqual(event.target.value, expectedValue);
 
             selectedItemsEventCount += 1;
           }
@@ -258,12 +257,10 @@
           },
 
           _handleSelectedItemsChangedEvent: function(event, detail) {
-            assert.deepEqual(detail.value, expectedValue);
-            assert.deepEqual(event.target.value, expectedValue);
-
             assert.deepEqual(detail.value, expectedSelectedItems);
             assert.deepEqual(event.target.selectedItems, expectedSelectedItems);
 
+            assert.deepEqual(event.target.value, expectedValue);
             selectedItemsEventCount += 1;
           }
         });
@@ -282,10 +279,139 @@
     });
 
 
+    //
+    //
+    //
+    // Remote data source tests
+    //
+    //
+    //
 
+    suite('initial remote data', function() {
+      var valueEventCount;
+      var selectedItemsEventCount;
 
+      var expectedValue;
+      var expectedSelectedItems;
 
+      var jsonResponseHeaders;
+      var server;
+      var remoteUrl = '/eventurl';
+      var responseItems = [
+        { title: "t1", value: "v1" },
+        { title: "t2", value: "v2" },
+        { title: "t3", value: "v3" },
+        { title: "t4", value: "v4" },
+        { title: "t5", value: "v5" }
+      ];
 
+      setup(function() {
+        valueEventCount = 0;
+        selectedItemsEventCount = 0;
+
+        expectedValue = '';
+        expectedSelectedItems = [];
+
+        stub('lookup-test-helper', {
+
+          _handleValueChangedEvent: function(event, detail) {
+            assert.deepEqual(detail.value, expectedValue);
+            assert.deepEqual(event.target.value, expectedValue);
+
+            valueEventCount += 1;
+          },
+
+          _handleSelectedItemsChangedEvent: function(event, detail) {
+            assert.deepEqual(detail.value, expectedSelectedItems);
+            assert.deepEqual(event.target.selectedItems, expectedSelectedItems);
+
+            assert.deepEqual(event.target.value, expectedValue);
+            selectedItemsEventCount += 1;
+          }
+        });
+
+        jsonResponseHeaders = {
+          'Content-Type': 'application/json'
+        };
+        server = sinon.fakeServer.create();
+        server.respondWith(
+          'GET',
+          '/eventurl',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(responseItems)
+          ]
+        );
+        server.respondWith(
+          'GET',
+          '/eventurl/v1',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(responseItems[0])
+          ]
+        );
+        server.respondWith(
+          'GET',
+          '/eventurl/v2',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(responseItems[1])
+          ]
+        );
+        server.respondWith(
+          'GET',
+          '/eventurl/v3',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(responseItems[2])
+          ]
+        );
+        server.respondWith(
+          'GET',
+          '/eventurl/v4',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(responseItems[3])
+          ]
+        );
+        server.respondWith(
+          'GET',
+          '/eventurl/v5',
+          [
+            200,
+            jsonResponseHeaders,
+            JSON.stringify(responseItems[4])
+          ]
+        );
+      });
+
+      teardown(function() {
+        server.restore();
+      });
+
+      test('initial remote', function(done) {
+        var elt = fixture('initialRemote');
+
+        setTimeout(function() {
+          server.respond();
+
+          assert.equal(elt.value, expectedValue);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+
+          assert.equal(valueEventCount, 0);
+          assert.equal(selectedItemsEventCount, 0);
+
+          done();
+        }, 150);
+
+      });
+
+    });
 
 
 
@@ -301,3 +427,4 @@
 
 </body>
 </html>
+
