@@ -14,129 +14,289 @@
   <script src="../../iron-test-helpers/test-helpers.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
 
-  <link rel="import" href="../at-form-lookup.html">
+  <link rel="import" href="lookup-test-helper.html">
 </head>
 <body>
 
-  <test-fixture id="valueChanged">
+  <test-fixture id="initialLocal">
     <template>
-      <at-form-lookup></at-form-lookup>
+      <lookup-test-helper></lookup-test-helper>
     </template>
   </test-fixture>
 
-  <test-fixture id="valueAsAttrTextFixture">
+  <test-fixture id="valueAsAttrLocal">
     <template>
-      <at-form-lookup value="lorem ipsum"></at-form-lookup>
+      <lookup-test-helper value="v1"></lookup-test-helper>
     </template>
   </test-fixture>
 
-  <test-fixture id="rdsValueChangedAttr">
+  <test-fixture id="initialRemote">
     <template>
-      <at-form-lookup url="localhost:2014" value="lorem ipsum"></at-form-lookup>
+      <lookup-test-helper url="localhost:2014"></lookup-test-helper>
     </template>
   </test-fixture>
 
-  <test-fixture id="rdsValueChangedProp">
+  <test-fixture id="valueAsAttrRemote">
     <template>
-      <at-form-lookup url="localhost:2014"></at-form-lookup>
+      <lookup-test-helper url="localhost:2014" value="v1"></lookup-test-helper>
     </template>
   </test-fixture>
-
 
   <script>
+    //
+    //
+    //
+    // TODO: add fixture with xvalue list
+    // selected-items-changed can be fired when xvaluelist is not empty
+    // otherwise its not fired
+    //
+    //
+    //
+    suite('initial local data', function() {
 
-    suite('events tests', function() {
+      var valueEventCount;
+      var selectedItemsEventCount;
 
-      test('setting .value trigger value-changed event', function(done) {
-        var input = fixture('valueChanged');
-        assert.equal(input.value, '', 'initial value not set correctly');
+      var expectedValue;
+      var expectedSelectedItems;
 
-        var eventCount = 0;
-        input.addEventListener('value-changed', function(event) {
-          assert.equal(event.detail.value, 'demo value', 'event detail value not set correctly');
-          assert.equal(input.value, 'demo value', 'event detail value not set correctly');
-          eventCount += 1;
-        });
+      setup(function() {
+        valueEventCount = 0;
+        selectedItemsEventCount = 0;
 
-        input.value = 'demo value';
-        Polymer.dom(input).setAttribute('value', 'demo value');
-        input.value = 'demo value';
-        Polymer.dom(input).setAttribute('value', 'demo value');
+        expectedValue = '';
+        expectedSelectedItems = [];
 
-        flush(function () {
-          assert.equal(eventCount, 1, 'value-changed event was fired');
-          done();
+        stub('lookup-test-helper', {
+
+          _handleValueChangedEvent: function(event, detail) {
+            assert.deepEqual(detail.value, expectedValue);
+            assert.deepEqual(event.target.value, expectedValue);
+
+            valueEventCount += 1;
+          },
+
+          _handleSelectedItemsChangedEvent: function(event, detail) {
+            assert.deepEqual(detail.value, expectedValue);
+            assert.deepEqual(event.target.value, expectedValue);
+
+            assert.deepEqual(detail.value, expectedSelectedItems);
+            assert.deepEqual(event.target.selectedItems, expectedSelectedItems);
+
+            selectedItemsEventCount += 1;
+          }
         });
       });
 
-      test('setting value attribute doesn\'t trigger value-changed event', function(done) {
-        var input = fixture('valueAsAttrTextFixture');
-        assert.equal(input.value, 'lorem ipsum', 'initial value not set correctly');
+      test('initial', function() {
+        var elt = fixture('initialLocal');
 
-        var eventCount = 0;
-        input.addEventListener('value-changed', function(event) {
-          eventCount += 1;
-        });
+        assert.equal(elt.value, expectedValue);
+        assert.deepEqual(elt.selectedItems, expectedSelectedItems);
 
-        flush(function () {
-          assert.equal(eventCount, 0, 'value-changed event was fired');
-          done();
-        });
+        assert.equal(valueEventCount, 0);
+        assert.equal(selectedItemsEventCount, 0);
+      });
+
+      test('count events when value changes as attribute', function() {
+        var elt = fixture('initialLocal');
+
+        actualValue = "v1";
+        expectedValue = "v1";
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.setAttribute('value', actualValue);
+          assert.equal(valueEventCount, 1);
+          assert.equal(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+        actualValue = "v2";
+        expectedValue = "v2";
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.setAttribute('value', actualValue);
+          assert.equal(valueEventCount, 2);
+          assert.equal(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+        actualValue = "v3";
+        expectedValue = "v3";
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.setAttribute('value', actualValue);
+          assert.equal(valueEventCount, 3);
+          assert.equal(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+      });
+
+      test('count events when value changes as property', function() {
+        var elt = fixture('initialLocal');
+
+        actualValue = "v1";
+        expectedValue = "v1";
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.value = actualValue;
+          assert.equal(valueEventCount, 1);
+          assert.equal(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+        actualValue = {};
+        expectedValue = {};
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.value = actualValue;
+          assert.equal(valueEventCount, 2);
+          assert.deepEqual(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+        actualValue = "v2";
+        expectedValue = "v2";
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.value = actualValue;
+          assert.equal(valueEventCount, 3);
+          assert.equal(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+        actualValue = [];
+        expectedValue = [];
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.value = actualValue;
+          assert.equal(valueEventCount, 4);
+          assert.deepEqual(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+        actualValue = "v3";
+        expectedValue = "v3";
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.value = actualValue;
+          assert.equal(valueEventCount, 5);
+          assert.equal(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+        actualValue = null;
+        expectedValue = null;
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.value = actualValue;
+          assert.equal(valueEventCount, 6);
+          assert.equal(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
+
+        actualValue = "v4";
+        expectedValue = "v4";
+        expectedSelectedItems = [];
+        for (var i = 0; i < 3; i++) {
+          elt.value = actualValue;
+          assert.equal(valueEventCount, 7);
+          assert.equal(elt.value, expectedValue);
+
+          assert.equal(selectedItemsEventCount, 0);
+          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+        }
       });
 
     });
 
-    suite('remote data source tests', function() {
+    //
+    // local data value set as attr
+    //
 
-      test("setting value as attribute does not trigger value-changed event in remote data source", function(done) {
-        var input = fixture('rdsValueChangedAttr');
-        var debouncerActive = input.isDebouncerActive('initialize-remote');
+    suite('value as attr local data', function() {
 
-        var eventCount = 0;
-        input.addEventListener('value-changed', function(event) {
-          eventCount += 1;
-          assert.equal(input.value, 'lorem ipsum', 'initial value not set correctly');
-          assert.equal(true, false, 'should not execute');
-        });
+      var valueEventCount;
+      var selectedItemsEventCount;
 
-        setTimeout(function() {
-          assert.equal(eventCount, 0, 'value-changed event was fired');
-          assert.equal(debouncerActive, false);
-          done();
-        }, 150);
-      });
+      var expectedValue;
+      var expectedSelectedItems;
 
-      test('setting .value triggers value-changed event in remote data source', function(done) {
-        var input = fixture('rdsValueChangedProp');
-        assert.equal(input.value, '', 'initial value not set correctly');
+      setup(function() {
+        valueEventCount = 0;
+        selectedItemsEventCount = 0;
 
-        var eventCount = 0;
-        input.addEventListener('value-changed', function(event) {
-          assert.equal(event.detail.value, 'demo value', 'event detail value not set correctly');
-          assert.equal(input.value, 'demo value', 'event detail value not set correctly');
-          eventCount += 1;
-        });
+        expectedValue = 'v1';
+        expectedSelectedItems = [];
 
-        input.value = 'demo value';
-        input.flushDebouncer('initialize-remote');
+        stub('lookup-test-helper', {
 
-        Polymer.dom(input).setAttribute('value', 'demo value');
-        input.flushDebouncer('initialize-remote');
+          _handleValueChangedEvent: function(event, detail) {
+            assert.deepEqual(detail.value, expectedValue);
+            assert.deepEqual(event.target.value, expectedValue);
 
-        input.value = 'demo value';
-        input.flushDebouncer('initialize-remote');
+            valueEventCount += 1;
+          },
 
-        Polymer.dom(input).setAttribute('value', 'demo value');
-        input.flushDebouncer('initialize-remote');
+          _handleSelectedItemsChangedEvent: function(event, detail) {
+            assert.deepEqual(detail.value, expectedValue);
+            assert.deepEqual(event.target.value, expectedValue);
 
-        flush(function () {
-          assert.equal(eventCount, 1, 'value-changed event was fired');
-          done();
+            assert.deepEqual(detail.value, expectedSelectedItems);
+            assert.deepEqual(event.target.selectedItems, expectedSelectedItems);
+
+            selectedItemsEventCount += 1;
+          }
         });
       });
 
+      test('value as attr', function() {
+        var elt = fixture('valueAsAttrLocal');
+
+        assert.equal(elt.value, expectedValue);
+        assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+
+        assert.equal(valueEventCount, 0);
+        assert.equal(selectedItemsEventCount, 0);
+      });
 
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   </script>
 
 </body>
