@@ -529,17 +529,10 @@
         this._isInitialized = true;
 
       } else {
-        if (this._isReady) {
-          this.debounce('initialize-remote', function() {
-            this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
-            this._isInitialized = true;
-          }.bind(this), 150);
-
-        } else {
+        this.debounce('initialize-remote', function() {
           this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
           this._isInitialized = true;
-        }
-
+        }.bind(this), 150);
       }
     },
 
