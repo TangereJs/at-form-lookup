@@ -1,0 +1,195 @@
+<link rel="import" href="../../tangere/tangere.html" />
+<link rel="import" href="../at-form-lookup.html" />
+
+<dom-module id="lookup-test-helper">
+  <template>
+    <style>
+      :host {
+        display: block;
+        box-sizing: border-box;
+      }
+    </style>
+
+    <at-form-lookup
+      id="internalLookup"
+      label="[[label]]"
+      hide-label="[[hideLabel]]"
+      disabled="[[disabled]]"
+      hide="[[hide]]"
+      required="[[required]]"
+      available="[[available]]"
+      enum="[[enum]]"
+      xvaluelist="[[xvaluelist]]"
+      value="{{value}}"
+      initial-search-term="[[initialSearchTerm]]"
+      selected-items="{{selectedItems}}"
+      no-credentials="[[noCredentials]]"
+      no-preload="[[noPreload]]"
+      url="[[url]]"
+      xurl="[[xurl]]"
+      params="[[params]]"
+      allow-new-items="[[allowNewItems]]"
+      max-items="[[maxItems]]"
+      item-view="[[itemView]]"
+      on-value-changed="_handleValueChangedEvent"
+      on-selected-items-changed="_handleSelectedItemsChangedEvent"
+    ></at-form-lookup>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "lookup-test-helper",
+    properties: {
+
+      label: {
+        type: String,
+        value: '',
+        title: 'Label'
+      },
+
+      hideLabel: {
+        type: Boolean,
+        value: false,
+        title: 'Do not show the label'
+      },
+
+      disabled: {
+        type: Boolean,
+        value: false,
+        title: 'Field value can not be changed'
+      },
+
+      hide: {
+        type: Boolean,
+        value: false,
+        title: 'Field is invisible'
+      },
+
+      required: {
+        type: Boolean,
+        value: false,
+        title: 'Input required'
+      },
+
+      available: {
+        type: String,
+        value: ''
+      },
+
+      xvaluelist: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+        schema: {
+          items: {
+            type: "object",
+            properties: {
+              title: {
+                "type": "string"
+              },
+              value: {
+                type: "string"
+              }
+            }
+          }
+        },
+        layout: 'horizontal',
+        xgridcols: '12',
+        title: 'Value List'
+      },
+
+      enum: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+        schema: {
+          items: {
+            type: "string",
+            properties: {
+              value: {
+                type: "string"
+              }
+            }
+          }
+        },
+        layout: 'horizontal',
+        title: 'Values'
+      },
+
+      value: {
+        type: String,
+        value: '',
+        title: 'Value'
+      },
+
+      initialSearchTerm: {
+        type: String,
+        value: "",
+        title: 'Initial Search Term'
+      },
+
+      selectedItems: {
+        type: Array,
+        value: function () {
+          return [];
+        }
+      },
+
+      noCredentials: {
+        type: Boolean,
+        value: false
+      },
+
+      noPreload: {
+        type: Boolean,
+        value: false
+      },
+
+      url: {
+        type: String,
+        value: '',
+        title: 'Url'
+      },
+
+      xurl: {
+        type: String,
+        value: ''
+      },
+
+      params: {
+        type: String,
+        value: ''
+      },
+
+      allowNewItems: {
+        type: Boolean,
+        value: false,
+        title: 'Allow new entries'
+      },
+
+      maxItems: {
+        type: Number,
+        value: 1,
+        title: 'Maximum number of selectable items'
+      },
+
+      itemView: {
+        type: String,
+        title: "Item view",
+        value: '',
+        xtype: "code",
+        mode: "carbon"
+      }
+    },
+
+    _handleValueChangedEvent: function(event) {},
+
+    _handleSelectedItemsChangedEvent: function(event) {},
+
+    ready: function () {
+
+    }
+  });
+</script>
