@@ -34,7 +34,7 @@
 
       setup(function() {
         server = sinon.fakeServer.create();
-        
+
         server.respondWith(
           'GET',
           '/test_url_1?query=&page=1&pageSize=25',
@@ -129,13 +129,16 @@
 
           elt.value = "";
           elt.flushDebouncer('initialize-remote');
-          
-          assert.equal(elt.$.itemsView.items.length, 0);
-          assert.equal(elt.selectedItems.length, 0);
+          server.respond();
 
-          assert.equal(eventCount, 2);
+          flush(function() {
+            assert.equal(elt.$.itemsView.items.length, 0);
+            assert.equal(elt.selectedItems.length, 0);
 
-          done();
+            assert.equal(eventCount, 2);
+
+            done();
+          });
         }
 
         elt.addEventListener('initialized', assertFirstState);
