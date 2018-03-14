@@ -608,11 +608,7 @@
 
         this._fireValueChangedEvent(value);
 
-        // @FIXME this is way to complicated just to know if selected-items changed should be fired
-        var prevSelectedItemsStr = JSON.stringify(this.selectedItems);
-        this._updateLookupSelectedItems();
-        var selectedItemsStr = JSON.stringify(this.selectedItems);
-        if (prevSelectedItemsStr !== selectedItemsStr) {
+        if (this._updateLookupSelectedItems()) {
           this._fireSelectedItemsChangedEvent();
         }
       }
@@ -1073,13 +1069,8 @@
       // clear initialItems as it will interfere with new values from server
       this._viewModel.initialItems = [];
 
-      // when new items are fetched from remote data source, selected items array should be updated with new items
-      // @FIXME
-      var prevSelectedItemsStr = JSON.stringify(this.selectedItems);
-      this._updateLookupSelectedItems();
-      var selectedItemsStr = JSON.stringify(this.selectedItems);
-      // and fire changed event
-      if (prevSelectedItemsStr !== selectedItemsStr) {
+      // when new items are fetched from remote data source, selected items array should be updated with new items and fire changed event
+      if (this._updateLookupSelectedItems()) {
         this._fireSelectedItemsChangedEvent();
       }
     },
@@ -1376,17 +1367,10 @@
       // update .value
       this._updateLookupValue(this._computeItemsViewStrValue());
 
-      // update .selectedItems
-      this._updateLookupSelectedItems();
-
-      // we update value and selected items first
-      // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
-
-      // fire value-changed event
-      this._fireValueChangedEvent(this.value);
-
-      // fire selected-items-changed event
-      this._fireSelectedItemsChangedEvent();
+      // update .selectedItems and fire selected-items-changed event
+      if (this._updateLookupSelectedItems()) {
+        this._fireSelectedItemsChangedEvent();
+      }
 
       // validate
       this.validate();
@@ -1489,17 +1473,10 @@
       // update .value
       this._updateLookupValue(this._computeItemsViewStrValue());
 
-      // update .selectedItems
-      this._updateLookupSelectedItems();
-
-      // we update value and selected items first
-      // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
-
-      // fire value-changed event
-      this._fireValueChangedEvent(this.value);
-
-      // fire selected-items-changed event
-      this._fireSelectedItemsChangedEvent();
+      // update .selectedItems and fire selected-items-changed event
+      if (this._updateLookupSelectedItems()) {
+        this._fireSelectedItemsChangedEvent();
+      }
     },
 
     _handleOptionsViewOptionSelectedEvent: function(event) {
@@ -1540,13 +1517,6 @@
         }
 
       } else {
-        // if (!filterText.length) {
-        //   // clear selected options because new and different items will be fetched from the remoteUrl
-        //   this.$.itemsView.set('items', []);
-        //   this._updateLookupValue('');
-        //   this._updateLookupSelectedItems();
-        // }
-
         // send new request to the server with filter text as query
         this._sendRequestToQueryOptions(remoteUrl, filterText);
         this._viewModel.openDropdownOnResponse = true;
@@ -1792,6 +1762,8 @@
       this._lastUsedValue = newValue;
       this.value = newValue;
       this._skipInitialization = false;
+
+      this._fireValueChangedEvent(this.value);
     },
 
     _updateLookupSelectedItems: function(newValue) {
@@ -1801,7 +1773,14 @@
         var tmp = this._findItemWithId(os, item.value);
         selectedItems.push(tmp.itemRef || tmp);
       }, this);
+
+      var prevSelectedItemsStr = JSON.stringify(this.selectedItems);
+      var selectedItemsStr = JSON.stringify(selectedItems);
+      var didChange = prevSelectedItemsStr !== selectedItemsStr;
+
       this._setSelectedItems(selectedItems);
+
+      return didChange;
     },
 
     _fireSelectedItemsChangedEvent: function() {

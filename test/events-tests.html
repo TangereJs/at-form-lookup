@@ -530,7 +530,6 @@
           server.respond();
           var context = this;
           flush(function() {
-            console.log(`value ${elt.value}`);
             assert.deepEqual(elt.value, context.expectedValue);
             assert.deepEqual(elt.selectedItems, context.expectedSelectedItems);
 
