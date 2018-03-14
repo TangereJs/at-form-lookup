@@ -590,57 +590,31 @@
       // 2. put available options into options-view
       // delay until value is processed, so already selected options are removed
       // delay until initialSearchTerm is processed, so that remaining items are filtered and highlighted
-      function isFunction(obj) { return Object.prototype.toString.apply(obj) === "[object Function]"; }
-      if (!isString(value)) {
-        value = isFunction(value) ? "" : String(value);
-      }
 
       // 3. compute initially selected items based on value
-      if (isString(value)) {
-        // value is a csv string
-        var valueParts = value.split(',');
-        var selectedOptions = [];
+      if (!this.hasOwnProperty('_lastUsedValue')) {
+        // this branch path will be executed when value set as attribute or with at-form-lookup.properties.value.value
+        this._lastUsedValue = value;
 
-        for (var i = 0; i < valueParts.length; i++) {
-          var vmOption = null;
-          var valuePart = valueParts[i];
-          valuePart = valuePart.trim();
-          var found = false;
-          for (var j = 0; j < vmOptions.length && !found; j++) {
-            vmOption = vmOptions[j];
-            found = String(vmOption.value) === valuePart;
-          }
-
-          if (found) {
-            selectedOptions.push(vmOption);
-          }
-        }
-
-        if (maxItems === 1) {
-          selectedOptions.splice(1);
-
-        } else {
-          if (maxItems > 1) {
-            selectedOptions.splice(maxItems, selectedOptions.length - maxItems);
-          }
-        }
-
-        this.$.itemsView.items = selectedOptions;
+        this._processValueForLocalDataSourceMode(value, vmOptions, maxItems);
 
         this._updateLookupSelectedItems();
 
-        if (this.autoValidate) { this.validate(); }
+      } else if (this._isValueDifferent(value, this._lastUsedValue)) {
+        // this branch path will be executed when value set as attribute or property after initial execution
+        this._lastUsedValue = value;
 
-      } else {
+        this._processValueForLocalDataSourceMode(value, vmOptions, maxItems);
 
+        this._fireValueChangedEvent(value);
+
+        // @FIXME this is way to complicated just to know if selected-items changed should be fired
+        var prevSelectedItemsStr = JSON.stringify(this.selectedItems);
         this._updateLookupSelectedItems();
-
-        // value is null, undefined or else
-        if (this.autoValidate) { this.validate(); }
-      }
-
-      if (this._isReady) {
-        this._fireValueChangedEvent(this.value);
+        var selectedItemsStr = JSON.stringify(this.selectedItems);
+        if (prevSelectedItemsStr !== selectedItemsStr) {
+          this._fireSelectedItemsChangedEvent();
+        }
       }
 
       // 4. put initalSearchTerm into filterTextInput
@@ -656,6 +630,43 @@
 
       // 5. attach relevant events
       this._setupEventListeners();
+    },
+
+    _processValueForLocalDataSourceMode: function(value, vmOptions, maxItems) {
+      if (!this._isString(value)) {
+        if (this.autoValidate) { this.validate(); }
+        return;
+      }
+
+      // value is a csv string
+      var valueParts = value.split(',');
+      var selectedOptions = [];
+
+      for (var i = 0; i < valueParts.length; i++) {
+        var vmOption = null;
+        var valuePart = valueParts[i];
+        valuePart = valuePart.trim();
+        var found = false;
+        for (var j = 0; j < vmOptions.length && !found; j++) {
+          vmOption = vmOptions[j];
+          found = String(vmOption.value) === valuePart;
+        }
+
+        if (found) {
+          selectedOptions.push(vmOption);
+        }
+      }
+
+      if (maxItems === 1) {
+        selectedOptions.splice(1);
+
+      } else if (maxItems > 1) {
+        selectedOptions.splice(maxItems, selectedOptions.length - maxItems);
+      }
+
+      this.$.itemsView.items = selectedOptions;
+
+      if (this.autoValidate) { this.validate(); }
     },
 
     _initializeRemoteDataSource: function(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems) {
@@ -750,9 +761,8 @@
           // disable the element while initial values are loaded
           this._internalDisabled = true;
 
-          if (this._isReady) {
-            this._fireValueChangedEvent(this.value);
-          }
+          // @change
+          this._fireValueChangedEvent(this.value);
         }
 
       } else if (isString(value) && !value.length) {
@@ -769,9 +779,8 @@
           // when value is set to empty dropdown options should be unfiltered
           this._sendRequestToQueryOptions(this.url || this.xurl, "");
 
-          if (this._isReady) {
-            this._fireValueChangedEvent(this.value);
-          }
+          // @change
+          this._fireValueChangedEvent(this.value);
         }
 
       } else {
@@ -779,9 +788,8 @@
           console.log('type of value is ' + (typeof value));
         }
 
-        if (this._isReady) {
-          this._fireValueChangedEvent(this.value);
-        }
+        // @change
+        this._fireValueChangedEvent(this.value);
       }
 
       // 4. put initalSearchTerm into filterTextInput
@@ -1645,6 +1653,28 @@
 
     _isString: function(obj) {
       return Object.prototype.toString.apply(obj) === "[object String]";
+    },
+
+    _computeTypeString: function(obj) {
+      return Object.prototype.toString.call(obj);
+    },
+
+    _isValueDifferent: function(value, other) {
+      var valueType = this._computeTypeString(value);
+      var otherValueType = this._computeTypeString(other);
+
+      // if current value and other are of different types return true
+      var result = valueType !== otherValueType;
+
+      // when types are same result is false, compare values instead
+      result = !result ? value !== other : result;
+
+      // NOTE if .value is set to a reference type ({} or [])
+      // each time .value memory address is different, even when object's content is the same
+      // this function will return true
+      // function can be changed to compare reference type value (json.stringify comes to mind),
+      // but this will 1) be a performance penalty and 2) its not lookup's responsibility to do so
+      return result;
     },
 
     // this function adds support for maxItems values as textual representation of a number
