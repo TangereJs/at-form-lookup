@@ -640,7 +640,7 @@
       }
 
       if (this._isReady) {
-        this._fireValueChangedEvent();
+        this._fireValueChangedEvent(this.value);
       }
 
       // 4. put initalSearchTerm into filterTextInput
@@ -751,7 +751,7 @@
           this._internalDisabled = true;
 
           if (this._isReady) {
-            this._fireValueChangedEvent();
+            this._fireValueChangedEvent(this.value);
           }
         }
 
@@ -770,7 +770,7 @@
           this._sendRequestToQueryOptions(this.url || this.xurl, "");
 
           if (this._isReady) {
-            this._fireValueChangedEvent();
+            this._fireValueChangedEvent(this.value);
           }
         }
 
@@ -780,7 +780,7 @@
         }
 
         if (this._isReady) {
-          this._fireValueChangedEvent();
+          this._fireValueChangedEvent(this.value);
         }
       }
 
@@ -1384,7 +1384,7 @@
       // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
 
       // fire value-changed event
-      this._fireValueChangedEvent();
+      this._fireValueChangedEvent(this.value);
 
       // fire selected-items-changed event
       this._fireSelectedItemsChangedEvent();
@@ -1497,7 +1497,7 @@
       // and fire events next, because its expected that both value and selectedItems be up to date when events are fired
 
       // fire value-changed event
-      this._fireValueChangedEvent();
+      this._fireValueChangedEvent(this.value);
 
       // fire selected-items-changed event
       this._fireSelectedItemsChangedEvent();
@@ -1773,10 +1773,6 @@
       this._skipInitialization = false;
     },
 
-    _fireValueChangedEvent: function(newValue) {
-      this.fire('value-changed', { value: this.value }, { bubbles: false});
-    },
-
     _updateLookupSelectedItems: function(newValue) {
       var os = this._viewModel.originalOptions;
       var selectedItems = [];
@@ -1788,7 +1784,7 @@
     },
 
     _fireSelectedItemsChangedEvent: function() {
-      this.fire('selected-items-changed', { value: this.selectedItems }, { bubbles: false});
+      this.fire('selected-items-changed', { value: this.selectedItems }, { bubbles: false });
     },
 
     // for a given url computes the base url and query params
