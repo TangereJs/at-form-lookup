@@ -2376,6 +2376,22 @@
   }));
 
   /**
+   * Fired when .value property changes <br/>
+   * Change can come from user interaction and from setting the .value property outside of at-form-lookup <br/>
+   * At the time the event fires value of .selectedItems property is invalid. To inspect the value of  .selectedItems property listen to selected-items-changed event <br/>
+   *
+   * @event value-changed
+   */
+
+  /**
+   * Fired when .selectedItems property changes <br/>
+   * Change can come from user interaction and from setting the .value property outside of at-form-lookup <br/>
+   * At the time the event fires value of both .value and .selectedItems properties are valid.
+   *
+   * @event selected-items-changed
+   */
+
+  /**
    * For at-form-lookup-afterAjax event <br/>
    * event.detail.response holds data received from the server <br/>
    * transform the each item in data as follows <br/>
@@ -2387,4 +2403,5 @@
    *
    * @event at-form-lookup-afterAjax
    */
+
 </script>
