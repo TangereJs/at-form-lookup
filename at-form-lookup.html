@@ -707,89 +707,17 @@
         this._boundInitialValueActivityResponseHandler = this._handleInitialValueActivityResponse.bind(this);
       }
 
-      function isString(obj) { return Object.prototype.toString.apply(obj) === "[object String]"; }
-      function isFunction(obj) { return Object.prototype.toString.apply(obj) === "[object Function]"; }
-      if (!isString(value)) {
-        value = isFunction(value) ? "" : String(value);
-      }
+      if (!this.hasOwnProperty('_lastUsedValue')) {
+        this._lastUsedValue = value;
 
-      if (isString(value) && value.length) {
-        // if this.value is not string variable value already contains this.value converted to string; do not switch back to this.value
+        this._processValueForRemoteDataSourceMode(value, remoteUrl, noCredentials, true);
 
-        // if current value is the same as _lastUsedValue do not send requests
-        if (!this._lastUsedValue || this._lastUsedValue !== value) {
-          this._lastUsedValue = value;
-          var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
+      } else if (this._isValueDifferent(value, this._lastUsedValue)) {
+        this._lastUsedValue = value;
 
-          // value is a csv string
-          var valueParts = value.length ? value.split(',') : [];
-          this._viewModel.initialValueRequestsQueue = [];
-          this._viewModel.initialValueActivitiesQueue = [];
+        this._processValueForRemoteDataSourceMode(value, remoteUrl, noCredentials);
 
-          valueParts.forEach(function(part, index) {
-            part = part.trim();
-            // ignore empty parts
-            if (!part) {
-              console.log('initial value csv string has empty value at zero-based index of ' + index);
-              return;
-            }
-
-            var partUrl = baseAndQuery.baseUrl + '/' + part;
-            var partCoreActivity = document.createElement('at-core-activity');
-            partCoreActivity.url = partUrl;
-            partCoreActivity.setAttribute('item-id', part);
-            partCoreActivity.disableErrorCodeHandler = true;
-            baseAndQuery.queryParams.forEach(function(queryParam) {
-              partCoreActivity.params[queryParam.name] = queryParam.value;
-            });
-            partCoreActivity.noCredentials = noCredentials;
-            partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
-            // we ignore activity error event because we set disableErrorCodeHandler to true
-            this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
-            this._viewModel.initialValueRequestsQueue.push({
-              requestedItemId: part,
-              isCompleted: false,
-              item: undefined
-            })
-          }, this);
-
-          this._viewModel.itemsRequestsComplete = false;
-          this._viewModel.initialValueActivitiesQueue.forEach(function(a) {
-            a.generateRequest();
-          });
-
-          // disable the element while initial values are loaded
-          this._internalDisabled = true;
-
-          // @change
-          this._fireValueChangedEvent(this.value);
-        }
-
-      } else if (isString(value) && !value.length) {
-        // compare current value against _lastUsedValue to check if _init function was called due to new value being set
-        if (!this._lastUsedValue || this._lastUsedValue !== value) {
-          this._lastUsedValue = value;
-
-          this.$.itemsView.set('items', []);
-          // when value is set to empty string, selected items should be cleared
-          // this is tested / confirmed with a test called remote-data-source-bug
-          this._updateLookupSelectedItems();
-          this._fireSelectedItemsChangedEvent();
-
-          // when value is set to empty dropdown options should be unfiltered
-          this._sendRequestToQueryOptions(this.url || this.xurl, "");
-
-          // @change
-          this._fireValueChangedEvent(this.value);
-        }
-
-      } else {
-        if (!isString(value)) {
-          console.log('type of value is ' + (typeof value));
-        }
-
-        // @change
-        this._fireValueChangedEvent(this.value);
+        this._fireValueChangedEvent(value);
       }
 
       // 4. put initalSearchTerm into filterTextInput
@@ -798,6 +726,64 @@
 
       // 5. attach relevant events
       this._setupEventListeners();
+    },
+
+    _processValueForRemoteDataSourceMode: function(value, remoteUrl, noCredentials, ignoreInitialRequest) {
+      if (!this._isString(value)) {
+        console.log('type of value is ' + (typeof value));
+        return;
+      }
+
+      if (value.length) {
+        var baseAndQuery = this._computeBaseUrlAndQueryParams(remoteUrl);
+
+        // value is a csv string
+        var valueParts = value.length ? value.split(',') : [];
+        this._viewModel.initialValueRequestsQueue = [];
+        this._viewModel.initialValueActivitiesQueue = [];
+
+        valueParts.forEach(function(part, index) {
+          part = part.trim();
+          // ignore empty parts
+          if (!part) {
+            console.log('initial value csv string has empty value at zero-based index of ' + index);
+            return;
+          }
+
+          var partUrl = baseAndQuery.baseUrl + '/' + part;
+          var partCoreActivity = document.createElement('at-core-activity');
+          partCoreActivity.url = partUrl;
+          partCoreActivity.setAttribute('item-id', part);
+          partCoreActivity.disableErrorCodeHandler = true;
+          baseAndQuery.queryParams.forEach(function(queryParam) {
+            partCoreActivity.params[queryParam.name] = queryParam.value;
+          });
+          partCoreActivity.noCredentials = noCredentials;
+          partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
+          // we ignore activity error event because we set disableErrorCodeHandler to true
+          this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
+          this._viewModel.initialValueRequestsQueue.push({
+            requestedItemId: part,
+            isCompleted: false,
+            item: undefined
+          })
+        }, this);
+
+        this._viewModel.itemsRequestsComplete = false;
+        this._viewModel.initialValueActivitiesQueue.forEach(function(a) {
+          a.generateRequest();
+        });
+
+        // disable the element while initial values are loaded
+        this._internalDisabled = true;
+
+      } else {
+        this.$.itemsView.set('items', []);
+
+        // when value is set to empty dropdown options should be unfiltered
+        if (ignoreInitialRequest) return;
+        this._sendRequestToQueryOptions(remoteUrl, "");
+      }
     },
 
     _sendRequestToQueryOptions: function(remoteUrl, query) {
@@ -1088,9 +1074,14 @@
       this._viewModel.initialItems = [];
 
       // when new items are fetched from remote data source, selected items array should be updated with new items
+      // @FIXME
+      var prevSelectedItemsStr = JSON.stringify(this.selectedItems);
       this._updateLookupSelectedItems();
+      var selectedItemsStr = JSON.stringify(this.selectedItems);
       // and fire changed event
-      this._fireSelectedItemsChangedEvent();
+      if (prevSelectedItemsStr !== selectedItemsStr) {
+        this._fireSelectedItemsChangedEvent();
+      }
     },
 
     _findIndexOfId: function(array, id) {
