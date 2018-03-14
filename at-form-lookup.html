@@ -545,35 +545,30 @@
         availableOptions = xvaluelist;
       } else if (enumarr && enumarr.length) {
         availableOptions = enumarr;
-      } else if (isString(available) && available.length) {
+      } else if (this._isString(available) && available.length) {
         availableOptions = available;
       }
 
       var vmOptions = [];
 
-      function isArray(obj) { return Object.prototype.toString.apply(obj) === "[object Array]"; }
-      function isString(obj) { return Object.prototype.toString.apply(obj) === "[object String]"; }
-      function isObject(obj) { return Object.prototype.toString.apply(obj) === "[object Object]"; }
-      function isCommaSeparated(obj) { return isString(obj) && obj.indexOf(',') > -1; }
-
-      if (isArray(availableOptions)) {
+      if (this._isArray(availableOptions)) {
         availableOptions.forEach(function(option) {
-          if (isString(option)) {
+          if (this._isString(option)) {
             option = option.trim();
             vmOptions.push({
               title: option,
               value: option
             });
-          } else if (isObject(option)) {
+          } else if (this._isObject(option)) {
             vmOptions.push({
               title: option.title ? option.title : option.value,
               value: option.value,
               itemRef: option
             });
           }
-        });
+        }, this);
 
-      } else if (isCommaSeparated(availableOptions)) {
+      } else if (this._isCommaSeparated(availableOptions)) {
         availableOptions = availableOptions.split(',');
         availableOptions.forEach(function(option) {
           option = option.trim();
@@ -1617,6 +1612,22 @@
       return Object.prototype.toString.apply(obj) === "[object String]";
     },
 
+    _isArray: function(obj) {
+      return Object.prototype.toString.apply(obj) === "[object Array]";
+    },
+
+    _isObject: function(obj) {
+      return Object.prototype.toString.apply(obj) === "[object Object]";
+    },
+
+    _isCommaSeparated: function(obj) {
+      return this._isString(obj) && obj.indexOf(',') > -1;
+    },
+
+    _isFunction: function(obj) {
+      return Object.prototype.toString.apply(obj) === "[object Function]";
+    },
+
     _computeTypeString: function(obj) {
       return Object.prototype.toString.call(obj);
     },
@@ -1725,14 +1736,10 @@
         return result;
       };
 
-      function isArray(obj) {
-        return Object.prototype.toString.apply(obj) === "[object Array]";
-      }
-
       options.forEach(function(option, index) {
         var t = highlightTitle(option.title);
-        option.titleArr = isArray(t) ? t : [];
-      });
+        option.titleArr = this._isArray(t) ? t : [];
+      }, this);
     },
 
     _computeItemsViewStrValue: function() {
@@ -1746,16 +1753,11 @@
     },
 
     _updateLookupValue: function(newValue) {
-      function isFunction(obj) {
-        return Object.prototype.toString.apply(obj) === "[object Function]";
-      }
-      function isString(obj) {
-        return Object.prototype.toString.apply(obj) === "[object String]";
-      }
+      var valueStr = this._isString(newValue) ? newValue : JSON.stringify(newValue);
 
-      var valueStr = isString(newValue) ? newValue : JSON.stringify(newValue);
-
-      if (isFunction(newValue)) {
+      if (this._isFunction(newValue)) {
+        // @WTF who and where is setting the value to function
+        // console.trace();
         valueStr = "";
       }
 
