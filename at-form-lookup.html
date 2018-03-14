@@ -13,7 +13,7 @@
   <template>
     <style include="at-form-common"></style>
     <style>
-      :host {
+       :host {
         @apply(--at-form-host);
         box-sizing: border-box;
       }
@@ -27,12 +27,13 @@
         @apply(--at-form-input-focus);
         padding: 2px 0;
       }
+
     </style>
 
     <at-core-activity id="coreAjax" url="[[url]]" on-response="_handleCoreAjaxOnResponse" on-error="_handleCoreAjaxOnError"></at-core-activity>
 
     <div id="atContainer" class="at-container">
-        <!--
+      <!--
         Introduced label container as a workaround for a bug with opacity calculation in polymer-js
         Right now, if opacity is changed via js by setting a disabled class on iron-label, iron-label is not styled correctly
         And changing its text also doesn't work correctly when disabled class is set
@@ -58,7 +59,7 @@
   'use strict';
   Polymer({
     is: 'at-form-lookup',
-    behaviors: [ Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric, Tangere.behaviors.AtFormLookupInputValidation ],
+    behaviors: [Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric, Tangere.behaviors.AtFormLookupInputValidation],
 
     properties: {
       /**
@@ -236,7 +237,7 @@
        */
       selectedItems: {
         type: Array,
-        value: function () {
+        value: function() {
           return [];
         },
         xtype: 'json',
@@ -457,12 +458,12 @@
       this.toggleClass('hidden', newValue, this.$.atContainer);
     },
 
-    _internalValidStateUpdate: function (required, errorMessage) {
+    _internalValidStateUpdate: function(required, errorMessage) {
       if (!this._isReady) return;
       this.validate();
     },
 
-    validate: function (showError) {
+    validate: function(showError) {
       if (showError === undefined) { showError = this.autoValidate; }
 
       var validationResult = this._validateBaseData();
@@ -472,7 +473,7 @@
       }
 
       validationResult = this._validateData(this, this.value, this.T.bind(this));
-      if(showError) this._handleValidationResult(validationResult);
+      if (showError) this._handleValidationResult(validationResult);
       if (!validationResult.isValid) {
         return validationResult.isValid;
       }
@@ -803,7 +804,7 @@
             coreAjax.params[paramName] = window.encodeURIComponent(paramsObj[paramName]);
           });
 
-        } catch(e) {
+        } catch (e) {
           console.log('params string ' + this.params + ' is not a valid json string');
         }
       }
@@ -910,7 +911,7 @@
     _handleActivityError: function(itemId, item) {
       var item = {
         id: itemId,
-        title: ['error itemId: ', itemId, ' ', item.ErrorCode, ' ', item.Data.ErrorText ].join(""),
+        title: ['error itemId: ', itemId, ' ', item.ErrorCode, ' ', item.Data.ErrorText].join(""),
       };
       return item;
     },
@@ -927,7 +928,7 @@
       }
 
       if (!item.id) {
-        var errorMsg = [ "Initialization error: Url ", event.target.url, " did not return item with property id present."].join("");
+        var errorMsg = ["Initialization error: Url ", event.target.url, " did not return item with property id present."].join("");
         console.log(errorMsg);
         return;
       }
@@ -940,7 +941,7 @@
       }
 
       if (!ivRequest) {
-        var errorMsg = [ "Initialization error: Url ", event.target.url, " did not return item with requested id. Item with id of ", item.id, " was returned instead."].join("");
+        var errorMsg = ["Initialization error: Url ", event.target.url, " did not return item with requested id. Item with id of ", item.id, " was returned instead."].join("");
         console.log(errorMsg);
         return;
       }
@@ -957,7 +958,7 @@
     _handleInitialRequestsQueueComplete: function(item) {
       // place data from queue into _viewModel.initialItems array
       var initialItems = [];
-      this._viewModel.initialValueRequestsQueue.forEach(function (request) {
+      this._viewModel.initialValueRequestsQueue.forEach(function(request) {
         // skip incomplete requests
         if (!request.isCompleted) return;
 
@@ -975,7 +976,7 @@
       this._viewModel.initialValueRequestsQueue = [];
 
       // detach event listeners from coreActivities
-      this._viewModel.initialValueActivitiesQueue.forEach(function(a){
+      this._viewModel.initialValueActivitiesQueue.forEach(function(a) {
         a.removeEventListener('response', this._boundInitialValueActivityResponseHandler);
       }.bind(this));
       // clear the coreActivities queue
@@ -995,7 +996,7 @@
 
       this.fire('initialized', {
         data: item
-      }, { bubbles: false});
+      }, { bubbles: false });
     },
 
     /*
@@ -1220,7 +1221,7 @@
 
           // for keyboard input select item near to currently selected to make selecting next more user friendly
           if (this._isMultiSelect()) {
-            if (selectedIndex === this.$.optionsView.items.length) selectedIndex-=1;
+            if (selectedIndex === this.$.optionsView.items.length) selectedIndex -= 1;
             this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
           }
 
@@ -1388,10 +1389,10 @@
 
     _highlightNext: function(options) {
       var selectedIndex = this._findSelectedIndex(options);
-      if (selectedIndex > -1 && selectedIndex < options.length-1) {
+      if (selectedIndex > -1 && selectedIndex < options.length - 1) {
         this.$.optionsView.set('items.' + selectedIndex + '.selected', false);
       }
-      selectedIndex +=1;
+      selectedIndex += 1;
       if (selectedIndex > options.length) return;
       this.$.optionsView.set('items.' + selectedIndex + '.selected', true);
       this._udpateOptionsViewScrollTop();
@@ -1413,7 +1414,7 @@
       if (topDiff < currentTop) {
         this.$.optionsView.scrollTop = topDiff;
 
-      } else if (topDiff >= (ovHeight+currentTop)) {
+      } else if (topDiff >= (ovHeight + currentTop)) {
         var topVal = topDiff - ovHeight + sobcr.height;
         this.$.optionsView.scrollTop = topVal;
       }
@@ -1441,7 +1442,7 @@
       }
 
       // QOL set lastDeletedItem so that this item can be highlighted when dropdown is open
-      this._viewModel.lastDeletedItem = itemsDeleted[itemsDeleted.length -1];
+      this._viewModel.lastDeletedItem = itemsDeleted[itemsDeleted.length - 1];
 
       var filteredOptions = this._filterAndHighlightOptions(this._getInput().value);
       this.$.optionsView.set('items', []);
@@ -1599,7 +1600,7 @@
     // behavior can not know when element gained focus
     // but if gived focusable element it can attach to its focus event
     // it should return focusable element if available or null if focusable element doesn't exist
-    _getFocusableElement: function () {
+    _getFocusableElement: function() {
       var focusable = this.$.itemsView.$.filterTextInput;
       return focusable;
     },
@@ -1709,9 +1710,9 @@
             result.push(textBefore);
           }
 
-          var titlePart = title.slice(pos, pos+tokenLen);
+          var titlePart = title.slice(pos, pos + tokenLen);
           result.push({ text: titlePart });
-          pos+= tokenLen;
+          pos += tokenLen;
           prev = pos;
           pos = titleLowerCase.indexOf(tokenLowerCase, pos);
         }
@@ -1736,7 +1737,7 @@
 
     _computeItemsViewStrValue: function() {
       var valuesArr = [];
-      this.$.itemsView.items.forEach(function(item){
+      this.$.itemsView.items.forEach(function(item) {
         valuesArr.push(item.value);
       });
       var newValue = valuesArr.join(',');
@@ -1798,13 +1799,13 @@
       result.baseUrl = urlParts[0];
       var urlQueryString = urlParts.length > 1 ? urlParts[1] : '';
       var queryParams = urlQueryString.split('&');
-      queryParams.forEach(function(queryParam){
+      queryParams.forEach(function(queryParam) {
         queryParam = queryParam.trim();
         // skip empty params
         if (!queryParam) return;
 
         // skip malformed queryparams
-        if (queryParam.indexOf('=') === -1)  {
+        if (queryParam.indexOf('=') === -1) {
           console.log('query parameter ' + queryParam + ' is invalid');
           return;
         }
@@ -1835,12 +1836,12 @@
           indexToHighlight = this._findIndexOfId(this.$.optionsView.items, this._viewModel.lastDeletedItem.value);
         }
 
-        this.$.optionsView.set('items.' + indexToHighlight +'.selected', true);
+        this.$.optionsView.set('items.' + indexToHighlight + '.selected', true);
 
       } else {
-        var selectedItem = this.$.itemsView.items[this.$.itemsView.items.length-1];
+        var selectedItem = this.$.itemsView.items[this.$.itemsView.items.length - 1];
         var indexToHighlight = this._findIndexOfId(this.$.optionsView.items, selectedItem.value);
-        this.$.optionsView.set('items.' + indexToHighlight +'.selected', true);
+        this.$.optionsView.set('items.' + indexToHighlight + '.selected', true);
       }
     },
 
