@@ -298,11 +298,11 @@
       var server;
       var remoteUrl = '/eventurl';
       var responseItems = [
-        { title: "t1", value: "v1" },
-        { title: "t2", value: "v2" },
-        { title: "t3", value: "v3" },
-        { title: "t4", value: "v4" },
-        { title: "t5", value: "v5" }
+        { title: "t1", id: "v1" },
+        { title: "t2", id: "v2" },
+        { title: "t3", id: "v3" },
+        { title: "t4", id: "v4" },
+        { title: "t5", id: "v5" }
       ];
 
       setup(function() {
@@ -336,7 +336,7 @@
         server = sinon.fakeServer.create();
         server.respondWith(
           'GET',
-          '/eventurl',
+          '/eventurl?query=&page=1&pageSize=25',
           [
             200,
             jsonResponseHeaders,
@@ -349,7 +349,7 @@
           [
             200,
             jsonResponseHeaders,
-            JSON.stringify(responseItems[0])
+            JSON.stringify({ ErrorCode: 0, Data: responseItems[0] })
           ]
         );
         server.respondWith(
@@ -358,7 +358,7 @@
           [
             200,
             jsonResponseHeaders,
-            JSON.stringify(responseItems[1])
+            JSON.stringify({ ErrorCode: 0, Data: responseItems[1] })
           ]
         );
         server.respondWith(
@@ -367,7 +367,7 @@
           [
             200,
             jsonResponseHeaders,
-            JSON.stringify(responseItems[2])
+            JSON.stringify({ ErrorCode: 0, Data: responseItems[2] })
           ]
         );
         server.respondWith(
@@ -376,7 +376,7 @@
           [
             200,
             jsonResponseHeaders,
-            JSON.stringify(responseItems[3])
+            JSON.stringify({ ErrorCode: 0, Data: responseItems[3] })
           ]
         );
         server.respondWith(
@@ -385,7 +385,7 @@
           [
             200,
             jsonResponseHeaders,
-            JSON.stringify(responseItems[4])
+            JSON.stringify({ ErrorCode: 0, Data: responseItems[4] })
           ]
         );
       });
@@ -403,9 +403,8 @@
           assert.equal(elt.value, expectedValue);
           assert.deepEqual(elt.selectedItems, expectedSelectedItems);
 
-          // @debug revert event count to 0
-          assert.equal(valueEventCount, 1);
-          assert.equal(selectedItemsEventCount, 1);
+          assert.equal(valueEventCount, 0);
+          assert.equal(selectedItemsEventCount, 0);
 
           done();
         }, 150);
@@ -416,53 +415,68 @@
         var elt = fixture('initialRemote');
 
         var states = [
-          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", value: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
-          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", value: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
-          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", value: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
-          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", value: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", value: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", value: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", value: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
-          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", value: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
-          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", value: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
+          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
+          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
+          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
+          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
+          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
+          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
+          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
+          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
+          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
         ];
 
+        // we use setTimeout to wait for debouncer timeout to expire
         setTimeout(function() {
           server.respond();
 
-          assert.equal(elt.value, expectedValue);
-          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+          // we use flush to wait for internal core-ajax events to complete so that we assert against updated state
+          flush(function() {
+            assert.equal(elt.value, expectedValue);
+            assert.deepEqual(elt.selectedItems, expectedSelectedItems);
 
-          assert.equal(valueEventCount, 0);
-          assert.equal(selectedItemsEventCount, 0);
+            assert.equal(valueEventCount, 0);
+            assert.equal(selectedItemsEventCount, 0);
 
-          var nextState = states.shift();
-          Polymer.dom(elt).setAttribute('value', nextState.actualValue);
-          setTimeout(assertNextState.bind(nextState));
+            var nextState = states.shift();
+            expectedValue = nextState.expectedValue;
+            expectedSelectedItems = nextState.expectedSelectedItems;
+
+            Polymer.dom(elt).setAttribute('value', nextState.actualValue);
+            setTimeout(assertNextState.bind(nextState), 150);
+          });
         }, 150);
 
         function assertNextState() {
           server.respond();
+          var context = this;
 
-          assert.equal(elt.value, this.expectedValue);
-          assert.deepEqual(elt.selectedItems, this.expectedSelectedItems);
+          flush(function(){
+            assert.equal(elt.value, context.expectedValue);
+            assert.deepEqual(elt.selectedItems, context.expectedSelectedItems);
 
-          assert.equal(valueEventCount, this.expectedValueEventCount);
-          assert.equal(selectedItemsEventCount, this.expectedSelectedItemsEventCount);
+            assert.equal(valueEventCount, context.expectedValueEventCount);
+            assert.equal(selectedItemsEventCount, context.expectedSelectedItemsEventCount);
 
-          var nextState = states.shift();
-          if (!nextState) { done(); }
-          Polymer.dom(elt).setAttribute('value', nextState.actualValue);
-
-          while(this.actualValue === nextState.actualValue) {
-            var debouncerActive = elt.isDebouncerActive('initialize-remote');
-            assert.isFalse(debouncerActive);
-
-            nextState = states.shift();
+            var nextState = states.shift();
+            if (!nextState) { done(); return; }
+            expectedValue = nextState.expectedValue;
+            expectedSelectedItems = nextState.expectedSelectedItems;
             Polymer.dom(elt).setAttribute('value', nextState.actualValue);
-          }
 
-          setTimeout(assertNextState.bind(nextState), 150);
+            while(context.actualValue === nextState.actualValue) {
+              var debouncerActive = elt.isDebouncerActive('initialize-remote');
+              assert.isFalse(debouncerActive);
+
+              nextState = states.shift();
+              if (!nextState) { done(); return; }
+              expectedValue = nextState.expectedValue;
+              expectedSelectedItems = nextState.expectedSelectedItems;
+              Polymer.dom(elt).setAttribute('value', nextState.actualValue);
+            }
+
+            setTimeout(assertNextState.bind(nextState), 150);
+          });
         }
       });
 
@@ -470,65 +484,78 @@
         var elt = fixture('initialRemote');
 
         var states = [
-          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", value: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
-          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", value: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
-          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", value: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
-          { actualValue: {}, expectedValue: {}, expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: {}, expectedValue: {}, expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: {}, expectedValue: {}, expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", value: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", value: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", value: "v2" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: [], expectedValue: [], expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: [], expectedValue: [], expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: [], expectedValue: [], expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", value: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
-          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", value: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
-          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", value: "v3" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
-          { actualValue: null, expectedValue: null, expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: null, expectedValue: null, expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: null, expectedValue: null, expectedSelectedItems: [], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 2 },
-          { actualValue: "v4", expectedValue: "v4", expectedSelectedItems: [{ title: "t4", value: "v4" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
-          { actualValue: "v4", expectedValue: "v4", expectedSelectedItems: [{ title: "t4", value: "v4" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
-          { actualValue: "v4", expectedValue: "v4", expectedSelectedItems: [{ title: "t4", value: "v4" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 3 },
+          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
+          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
+          { actualValue: "v1", expectedValue: "v1", expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 1, expectedSelectedItemsEventCount: 1 },
+          { actualValue: {}, expectedValue: {}, expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 2, expectedSelectedItemsEventCount: 1 },
+          { actualValue: {}, expectedValue: {}, expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 3, expectedSelectedItemsEventCount: 1 },
+          { actualValue: {}, expectedValue: {}, expectedSelectedItems: [{ title: "t1", id: "v1" }], expectedValueEventCount: 4, expectedSelectedItemsEventCount: 1 },
+          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 5, expectedSelectedItemsEventCount: 2 },
+          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 5, expectedSelectedItemsEventCount: 2 },
+          { actualValue: "v2", expectedValue: "v2", expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 5, expectedSelectedItemsEventCount: 2 },
+          { actualValue: [], expectedValue: [], expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 6, expectedSelectedItemsEventCount: 2 },
+          { actualValue: [], expectedValue: [], expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 7, expectedSelectedItemsEventCount: 2 },
+          { actualValue: [], expectedValue: [], expectedSelectedItems: [{ title: "t2", id: "v2" }], expectedValueEventCount: 8, expectedSelectedItemsEventCount: 2 },
+          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 9, expectedSelectedItemsEventCount: 3 },
+          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 9, expectedSelectedItemsEventCount: 3 },
+          { actualValue: "v3", expectedValue: "v3", expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 9, expectedSelectedItemsEventCount: 3 },
+          { actualValue: null, expectedValue: null, expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 10, expectedSelectedItemsEventCount: 3 },
+          { actualValue: null, expectedValue: null, expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 10, expectedSelectedItemsEventCount: 3 },
+          { actualValue: null, expectedValue: null, expectedSelectedItems: [{ title: "t3", id: "v3" }], expectedValueEventCount: 10, expectedSelectedItemsEventCount: 3 },
+          { actualValue: "v4", expectedValue: "v4", expectedSelectedItems: [{ title: "t4", id: "v4" }], expectedValueEventCount: 11, expectedSelectedItemsEventCount: 4 },
+          { actualValue: "v4", expectedValue: "v4", expectedSelectedItems: [{ title: "t4", id: "v4" }], expectedValueEventCount: 11, expectedSelectedItemsEventCount: 4 },
+          { actualValue: "v4", expectedValue: "v4", expectedSelectedItems: [{ title: "t4", id: "v4" }], expectedValueEventCount: 11, expectedSelectedItemsEventCount: 4 },
         ];
 
         setTimeout(function() {
           server.respond();
 
-          assert.equal(elt.value, expectedValue);
-          assert.deepEqual(elt.selectedItems, expectedSelectedItems);
+          flush(function() {
+            assert.equal(elt.value, expectedValue);
+            assert.deepEqual(elt.selectedItems, expectedSelectedItems);
 
-          assert.equal(valueEventCount, 0);
-          assert.equal(selectedItemsEventCount, 0);
+            assert.equal(valueEventCount, 0);
+            assert.equal(selectedItemsEventCount, 0);
 
-          var nextState = states.shift();
-          elt.value = nextState.actualValue;
-          setTimeout(assertNextState.bind(nextState));
+            var nextState = states.shift();
+            expectedValue = nextState.expectedValue;
+            expectedSelectedItems = nextState.expectedSelectedItems;
+
+            elt.value = nextState.actualValue;
+            setTimeout(assertNextState.bind(nextState), 150);
+          });
         }, 150);
 
         function assertNextState() {
           server.respond();
+          var context = this;
+          flush(function() {
+            console.log(`value ${elt.value}`);
+            assert.deepEqual(elt.value, context.expectedValue);
+            assert.deepEqual(elt.selectedItems, context.expectedSelectedItems);
 
-          assert.equal(elt.value, this.expectedValue);
-          assert.deepEqual(elt.selectedItems, this.expectedSelectedItems);
+            assert.equal(valueEventCount, context.expectedValueEventCount, 'value-changed event count is incorrect');
+            assert.equal(selectedItemsEventCount, context.expectedSelectedItemsEventCount, 'selected-items-changed event count is incorrect');
 
-          assert.equal(valueEventCount, this.expectedValueEventCount);
-          assert.equal(selectedItemsEventCount, this.expectedSelectedItemsEventCount);
+            var nextState = states.shift();
+            if (!nextState) { done(); return; }
+            expectedValue = nextState.expectedValue;
+            expectedSelectedItems = nextState.expectedSelectedItems;
+            elt.value = nextState.actualValue;
 
-          var nextState = states.shift();
-          if (!nextState) { done(); }
-          elt.value = nextState.actualValue;
+            while(context.actualValue === nextState.actualValue) {
+              var debouncerActive = elt.isDebouncerActive('initialize-remote');
+              assert.isFalse(debouncerActive);
 
-          while(this.actualValue === nextState.actualValue) {
-            var debouncerActive = elt.isDebouncerActive('initialize-remote');
-            assert.isFalse(debouncerActive);
+              nextState = states.shift();
+              if (!nextState) { done(); return; }
+              expectedValue = nextState.expectedValue;
+              expectedSelectedItems = nextState.expectedSelectedItems;
+              elt.value = nextState.actualValue;
+            }
 
-            nextState = states.shift();
-            Polymer.dom(elt).setAttribute('value', nextState.actualValue);
-          }
-
-          setTimeout(assertNextState.bind(nextState), 150);
+            setTimeout(assertNextState.bind(nextState), 150);
+          });
         }
 
       });
