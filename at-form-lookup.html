@@ -698,6 +698,9 @@
       if (!this._boundInitialValueActivityResponseHandler) {
         this._boundInitialValueActivityResponseHandler = this._handleInitialValueActivityResponse.bind(this);
       }
+      if (!this._boundInitialValueActivityErrorHandler) {
+        this._boundInitialValueActivityErrorHandler = this._handleInitialValueActivityError.bind(this);
+      }
 
       if (!this.hasOwnProperty('_lastUsedValue')) {
         this._lastUsedValue = value;
@@ -746,13 +749,16 @@
           var partCoreActivity = document.createElement('at-core-activity');
           partCoreActivity.url = partUrl;
           partCoreActivity.setAttribute('item-id', part);
+          // disableErrorCodeHandler is true because we want at-core-activity to give us UI friendly server side activity error messages to process in response
           partCoreActivity.disableErrorCodeHandler = true;
           baseAndQuery.queryParams.forEach(function(queryParam) {
             partCoreActivity.params[queryParam.name] = queryParam.value;
           });
           partCoreActivity.noCredentials = noCredentials;
+          // response handler is used to process server side activity results and errors
           partCoreActivity.addEventListener('response', this._boundInitialValueActivityResponseHandler);
-          // we ignore activity error event because we set disableErrorCodeHandler to true
+          // error handler is used to process request errors (ie, when server is shut down)
+          partCoreActivity.addEventListener('error', this._boundInitialValueActivityErrorHandler);
           this._viewModel.initialValueActivitiesQueue.push(partCoreActivity);
           this._viewModel.initialValueRequestsQueue.push({
             requestedItemId: part,
@@ -890,10 +896,6 @@
       }
     },
 
-    _isArray: function(obj) {
-      return Object.prototype.toString.apply(obj) === "[object Array]";
-    },
-
     _countIncompleteRequests: function(requestsQueue) {
       var count = 0;
       requestsQueue.forEach(function(req) {
@@ -902,13 +904,23 @@
       return count;
     },
 
-    // we use this function to create an item when activity returns non zero error code
-    _handleActivityError: function(itemId, item) {
+    _handleInitialValueActivityError: function(event) {
+      // disableErrorCodeHandler is set to true which gives event.detail.handler.ignoreData = false here
+      // when server side activity error occurs both error handler and response handler will be called
+      // in error handler we want to process only request errors (ie, server is shutdown/unreachable) and not http or activity errors
+      // if request error occurs event.detail.handler is undefined
+      if (event.detail.handler && !event.detail.handler.ignoreData) return;
+
+      var itemUrl = event.target.url;
+      console.log('Request failed for url ' + itemUrl);
+
+      var itemId = event.target.getAttribute('item-id');
       var item = {
         id: itemId,
-        title: ['error itemId: ', itemId, ' ', item.ErrorCode, ' ', item.Data.ErrorText].join(""),
+        title: ['itemId: ', itemId, ' request failed.'].join("")
       };
-      return item;
+
+      this._handleInitialValueResponseItem(item);
     },
 
     _handleInitialValueActivityResponse: function(event) {
@@ -916,7 +928,10 @@
       var itemIdAttrVal = event.target.getAttribute('item-id');
 
       if (event.detail.ErrorCode !== 0) {
-        item = this._handleActivityError(itemIdAttrVal, event.detail);
+        item = {
+          id: itemIdAttrVal,
+          title: ['error itemId: ', itemIdAttrVal, ' ', event.detail.ErrorCode, ' ', event.detail.Data.ErrorText].join("")
+        };
 
       } else {
         item = event.detail.Data;
@@ -928,6 +943,10 @@
         return;
       }
 
+      this._handleInitialValueResponseItem(item);
+    },
+
+    _handleInitialValueResponseItem: function(item) {
       var ivRequest = false;
 
       for (var i = 0; i < this._viewModel.initialValueRequestsQueue.length && !ivRequest; i++) {
@@ -941,8 +960,8 @@
         return;
       }
 
-      ivRequest.isCompleted = true;
       ivRequest.item = item;
+      ivRequest.isCompleted = true;
 
       // check if all requests are complete
       if (this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue) > 0) return;
@@ -973,6 +992,7 @@
       // detach event listeners from coreActivities
       this._viewModel.initialValueActivitiesQueue.forEach(function(a) {
         a.removeEventListener('response', this._boundInitialValueActivityResponseHandler);
+        a.removeEventListener('error', this._boundInitialValueActivityErrorHandler);
       }.bind(this));
       // clear the coreActivities queue
       this._viewModel.initialValueActivitiesQueue = [];
