@@ -15,7 +15,7 @@
 
       :host([disabled]) {
         @apply(--at-form-disabled);
-        pointer-events: none;        
+        pointer-events: none;
       }
 
       .item {
@@ -117,7 +117,7 @@
         pointer-events: none;
       }
     </style>
-    
+
     <template is="dom-repeat" items="[[items]]">
       <div class="item" index$="[[index]]" value$="[[item.value]]" tabindex="0">
         <div class="item-title">[[item.title]]</div>
@@ -135,7 +135,7 @@
   Polymer({
     is: "items-view",
     properties: {
-      
+
       items: {
         type: Array,
         value: function() {
@@ -173,7 +173,7 @@
       if (newValue) {
         this.$.filterTextInput.setAttribute('tabindex', "-1");
         this.$.filterTextInput.classList.add('disabled');
-      
+
       } else {
         this.$.filterTextInput.removeAttribute('tabindex');
         this.$.filterTextInput.classList.remove('disabled');
@@ -204,7 +204,7 @@
       if (event.shiftKey && keyCode === VK_TAB) return;
 
       // this prevents horizontal keyboard cursor movement when using up and down keyboard buttons
-      if (keyCode === VK_UP || keyCode === VK_DOWN) { 
+      if (keyCode === VK_UP || keyCode === VK_DOWN) {
         event.preventDefault();
         return;
       }
@@ -247,8 +247,8 @@
 
           input.addEventListener('focusin', this._lookupInstance._boundFilterTextInputFocusHandler);
           input.addEventListener('focusout', this._lookupInstance._boundFilterTextInputBlurHandler);
-          
-          this.debounce('fire-filter-changed', function() { 
+
+          this.debounce('fire-filter-changed', function() {
             this.fire('filter-changed', { value: input.value }, { bubbles: false });
           }.bind(this), 250);
         }
@@ -273,7 +273,7 @@
         this._moveInputFieldOnePlaceToTheRight(input);
       }
 
-      if (keyCode !== VK_TAB && !this.multiple && this.items.length === 1) { 
+      if (keyCode !== VK_TAB && !this.multiple && this.items.length === 1) {
         event.preventDefault();
         return;
       }
@@ -281,7 +281,7 @@
 
     _handleFilterTextInputKeypress: function(event) {
       this._updateFilterTextInputWidth();
-      this.debounce('fire-filter-changed', function() { 
+      this.debounce('fire-filter-changed', function() {
         this.fire('filter-changed', { value: this.$.filterTextInput.value }, { bubbles: false });
       }.bind(this), 250);
     },
@@ -331,7 +331,7 @@
         // if next sibling is TEMPLATE we move to the right because we need input to be after template element
         nextSibling = nextSibling.nextElementSibling;
       }
-      
+
       input.removeEventListener('focusin', this._lookupInstance._boundFilterTextInputFocusHandler);
       input.removeEventListener('focusout', this._lookupInstance._boundFilterTextInputBlurHandler);
 
@@ -383,7 +383,7 @@
       measurementDiv.style.fontFamily = fontFamily;
       measurementDiv.style.fontSize = fontSize;
       measurementDiv.style.left = '-1000px';
-      
+
       measurementDiv.textContent = str;
 
       document.body.appendChild(measurementDiv);
