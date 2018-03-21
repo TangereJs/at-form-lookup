@@ -5,13 +5,14 @@
   <meta charset="UTF-8">
   <title>&lt;at-form-lookup&gt;</title>
   <script src="../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../at-theme/at-theme.html">
+  <link rel="import" href="../at-core-style-classes/at-core-style-classes.html" />
   <link rel="import" href="at-form-lookup.html">
+  <style is="custom-style" include="at-core-style-classes"></style>
 </head>
 
-<body class="layout horizontal">
-  <div class="flex-3"></div>
-  <div class="layout vertical flex-6">
+<body class="layout-horizontal">
+  <div class="layout-flex-3"></div>
+  <div class="layout-vertical layout-flex-6">
     <div>
       <at-form-lookup label="Dropdown demo:" id="ddLookup" available="neat,awesome,peka,mika,zika" value="mika"></at-form-lookup>
     </div>
@@ -19,7 +20,7 @@
       <at-form-lookup id="ddLookupProg" label="Dropdown demo (programatic initialization):"></at-form-lookup>
     </div>
   </div>
-  <div class="flex-3"></div>
+  <div class="layout-flex-3"></div>
 
   <script>
     window.addEventListener('WebComponentsReady', function () {
