@@ -1526,7 +1526,7 @@
         // filter text input has focus, but if initially dropdown was empty and allowNewItems is true
         // new item is added to options; we should open the dropdown
         Polymer.dom.flush();
-        if (!this.$.coreDropdown.open && this.allowNewItems) {
+        if (!this.$.coreDropdown.open) {
           this._openDropdown();
 
         } else {
