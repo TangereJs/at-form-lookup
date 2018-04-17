@@ -13,7 +13,7 @@
   <template>
     <style include="at-form-common"></style>
     <style>
-       :host {
+      :host {
         @apply(--at-form-host);
         box-sizing: border-box;
       }
@@ -27,7 +27,6 @@
         @apply(--at-form-input-focus);
         padding: 2px 0;
       }
-
     </style>
 
     <at-core-activity id="coreAjax" url="[[url]]" on-response="_handleCoreAjaxOnResponse" on-error="_handleCoreAjaxOnError"></at-core-activity>
@@ -1606,7 +1605,7 @@
     },
 
     // this function is here to avoid console errors with setting selectedItems because its readonly
-    set selectedItems(newValue) {},
+    set selectedItems(newValue) { },
 
     focus: function() {
       this._getFocusableElement().focus();
