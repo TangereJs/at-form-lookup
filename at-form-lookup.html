@@ -626,6 +626,10 @@
     },
 
     _processValueForLocalDataSourceMode: function(value, vmOptions, maxItems) {
+      if (this._isNumber(value)) {
+        value = value.toString();
+      }
+
       if (!this._isString(value)) {
         if (this.autoValidate) { this.validate(); }
         return;
@@ -725,6 +729,10 @@
     },
 
     _processValueForRemoteDataSourceMode: function(value, remoteUrl, noCredentials, ignoreInitialRequest) {
+      if (this._isNumber(value)) {
+        value = value.toString();
+      }
+
       if (!this._isString(value)) {
         console.log('type of value is ' + (typeof value));
         return;
@@ -1631,6 +1639,10 @@
 
     _isString: function(obj) {
       return Object.prototype.toString.apply(obj) === "[object String]";
+    },
+
+    _isNumber: function(obj) {
+      return Object.prototype.toString.call(obj) === "[object Number]";
     },
 
     _isArray: function(obj) {
