@@ -121,7 +121,7 @@
         <div class="delete-button" title="Remove" on-tap="_handleRemoveOnTap">&#x2A2F;</div>
       </div>
     </template>
-    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress"/>
+    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" on-change="_handleFilterTextInputChange" />
     <div id="toolboxContainer" class="toolbox-container">
       <at-core-spinner type="spinner" class="loading-indicator" hidden$="[[!showLoadingIndicator]]"></at-core-spinner>
       <div id="dropdownArrow" class="dropdown-arrow"><span>&#x25BC;</span></div>
@@ -281,6 +281,11 @@
       this.debounce('fire-filter-changed', function() {
         this.fire('filter-changed', { value: this.$.filterTextInput.value }, { bubbles: false });
       }.bind(this), 250);
+    },
+
+    _handleFilterTextInputChange: function(event) {
+      // we stop propagation of change event because bubbling change event from at-form-lookup doesn't make sense accross shady dom boundaries
+      event.stopPropagation();
     },
 
     _updateFilterTextInputWidth: function() {
