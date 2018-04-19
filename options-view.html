@@ -62,6 +62,8 @@
       var index = event.currentTarget.getAttribute('index');
       index = parseInt(index);
       var option = this.items[index];
+      // ignore clicks on more... item
+      if (option.value === "more_records_found") return;
       this.fire('option-selected', { index: index, value: option }, { bubbles: false });
     }
 

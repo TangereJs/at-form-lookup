@@ -821,7 +821,8 @@
 
       coreAjax.params["query"] = query;
       coreAjax.params["page"] = 1;
-      coreAjax.params["pageSize"] = 25;
+      // increate pageSize to 25+1 to support the "more ..." option
+      coreAjax.params["pageSize"] = 26;
 
       coreAjax.noCredentials = this.noCredentials;
 
@@ -877,6 +878,25 @@
       } else {
         // use data that 3rd party provided
         var availableOptions = eventObject.returnData;
+      }
+
+      // set page size to default value
+      var actPageSize = 25;
+      var params = event.target.params;
+      if (this._isObject(params) && params.hasOwnProperty('pageSize')) {
+        actPageSize = params.pageSize;
+        if (this._isString(actPageSize) || this._isNumber(actPageSize)) {
+          actPageSize = parseInt(actPageSize);
+          actPageSize -= 1;
+        }
+      }
+
+      if (availableOptions.length > actPageSize) {
+        var last = availableOptions.pop();
+        availableOptions.push({
+          title: "More records found. Please enter more character(s) to refine your search.",
+          value: "more_records_found"
+        });
       }
 
       this._viewModel.originalOptions = availableOptions;
@@ -1284,6 +1304,8 @@
       if (isFull && isMulti) return;
 
       var option = this.$.optionsView.items[selectedIndex];
+      // if "more ..." option is selected ignore it
+      if (option.value === "more_records_found") return;
 
       // based on selected option value, find the original option in available options and push that option into itemsView.items
       var originalOption = this._findItemWithId(this._viewModel.availableOptions, option.value);
