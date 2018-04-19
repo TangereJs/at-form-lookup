@@ -11,7 +11,7 @@
         display: block;
         box-sizing: border-box;
         /* 5 items * (2*10px for padding + 22px for line height) per item */
-        max-height: 210px; 
+        max-height: 210px;
         overflow-y: auto;
         outline: none;
       }
@@ -20,13 +20,13 @@
         @apply(--at-text-primary-selected);
       }
     </style>
-    
+
     <template is="dom-repeat" items="[[items]]">
       <template is="dom-if" if="[[!itemView]]">
         <option-view class="option" data="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
       </template>
       <template is="dom-if" if="[[itemView]]">
-        <at-core-view class="option" view="[[itemView]]" model="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
+        <at-core-view class="option" view="[[itemView]]" model="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></at-core-view>
       </template>
     </template>
   </template>
@@ -35,7 +35,7 @@
   Polymer({
     is: "options-view",
     properties: {
-      
+
       items: {
         type: Array,
         value: function() {
@@ -45,7 +45,7 @@
 
       itemView: {
         type: String,
-        value: ''        
+        value: ''
       },
 
     },
@@ -54,7 +54,7 @@
       tabindex: "0"
     },
 
-    ready: function () {
+    ready: function() {
 
     },
 
