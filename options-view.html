@@ -17,16 +17,20 @@
       }
 
       .option[selected] {
-        @apply(--at-text-primary-selected);
+        @apply --at-text-primary-selected;
+      }
+
+      .more-option {
+        font-style: italic;
       }
     </style>
 
     <template is="dom-repeat" items="[[items]]">
       <template is="dom-if" if="[[!itemView]]">
-        <option-view class="option" data="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
+        <option-view class$="option [[_computeExtraClasses(item)]]" data="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
       </template>
       <template is="dom-if" if="[[itemView]]">
-        <at-core-view class="option" view="[[itemView]]" model="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></at-core-view>
+        <at-core-view class$="option [[_computeExtraClasses(item)]]" view="[[itemView]]" model="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></at-core-view>
       </template>
     </template>
   </template>
@@ -54,8 +58,10 @@
       tabindex: "0"
     },
 
-    ready: function() {
+    ready: function() { },
 
+    _computeExtraClasses: function(item) {
+      return item.value === "more_records_found" ? "more-option" : "";
     },
 
     _handleOptionOnTap: function(event) {
