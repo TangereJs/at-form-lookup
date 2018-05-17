@@ -693,6 +693,7 @@
         if (!noPreload) {
           // disable the element while initial options are loaded
           this._internalDisabled = true;
+          this.$.itemsView.disabled = this._internalDisabled;
 
           // preload data; go to remote url with noCredentials and params and receive results
           this._sendRequestToQueryOptions(remoteUrl, initialSearchTerm);
@@ -783,6 +784,7 @@
 
         // disable the element while initial values are loaded
         this._internalDisabled = true;
+        this.$.itemsView.disabled = this._internalDisabled;
 
       } else {
         this.$.itemsView.set('items', []);
@@ -842,6 +844,7 @@
       if (this._viewModel.itemsRequestsComplete) {
         this._showLoadingIndicator = false;
         this._internalDisabled = false;
+        this.$.itemsView.disabled = this._internalDisabled;
       }
 
       // _sync options and items
@@ -916,6 +919,7 @@
       if (!this._viewModel.initialValueRequestsQueue || !this._viewModel.initialValueRequestsQueue.length) {
         this._showLoadingIndicator = false;
         this._internalDisabled = false;
+        this.$.itemsView.disabled = this._internalDisabled;
 
         if (this._viewModel.openDropdownOnResponse) {
           this._viewModel.openDropdownOnResponse = false;
@@ -1036,6 +1040,7 @@
       if (!this._viewModel.initialValueRequestsQueue.length) {
         this._showLoadingIndicator = false;
         this._internalDisabled = false;
+        this.$.itemsView.disabled = this._internalDisabled;
       }
 
       this.fire('initialized', {
