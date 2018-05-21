@@ -789,6 +789,7 @@
         // disable the element while initial values are loaded
         this._internalDisabled = true;
         this.$.itemsView.disabled = this._internalDisabled;
+        this._showLoadingIndicator = true;
 
       } else {
         this.$.itemsView.set('items', []);
@@ -1658,6 +1659,7 @@
     set selectedItems(newValue) { },
 
     focus: function() {
+      if (this.disabled || this._internalDisabled) return;
       this._getFocusableElement().focus();
     },
 
