@@ -23,6 +23,10 @@
         padding: 2px 0;
       }
 
+      #label {
+        outline: none;
+      }
+
       [focused].items-view {
         @apply(--at-form-input-focus);
         padding: 2px 0;
@@ -39,7 +43,7 @@
         In the workaround, disabled class is set on the container.
       -->
       <div id="labelContainer">
-        <iron-label id="label" on-tap="focus">{{label}}</iron-label>
+        <iron-label id="label" on-tap="focus" tabindex="0">{{label}}</iron-label>
       </div>
 
       <div id="contentContainer" class="at-content-container">
@@ -1206,7 +1210,12 @@
 
       if (!this.$.optionsView.items.length) return;
 
-      this._openDropdown();
+      if (this.$.coreDropdown.open) {
+        this._closeDropdown();
+
+      } else {
+        this._openDropdown();
+      }
     },
 
     _handleFilterTextInputBlurEvent: function(event) {
@@ -1221,7 +1230,6 @@
       // if element receiving focus is at-core-dropdown-impl return
       if (event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
       if (event.relatedTarget.nodeName === "OPTIONS-VIEW") return;
-      this.$.itemsView.removeAttribute('focused');
 
       // if element receiving focus is an item in <items-view> return
       var rt = event.relatedTarget;
@@ -1229,7 +1237,14 @@
         this._getInput().focus();
         return;
       }
-
+      
+      // clicking on these elements should not close the dropdown
+      var elts = [this.$.itemsView, this.$.label, this.$.itemsView.$.dropdownArrow];
+      if (elts.indexOf(rt) > -1) {
+        return;
+      }
+      
+      this.$.itemsView.removeAttribute('focused');
       // if element receiving focus is outside at-form-lookup hide the dropdown
       this._closeDropdown();
 

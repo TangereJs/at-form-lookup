@@ -64,6 +64,7 @@
         box-sizing: border-box;
         font-size: 12px;
         cursor: pointer;
+        outline: none;
       }
 
       .loading-indicator {
@@ -125,13 +126,16 @@
     <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" on-change="_handleFilterTextInputChange" />
     <div id="toolboxContainer" class="toolbox-container">
       <at-core-spinner type="spinner" class="loading-indicator" hidden$="[[!showLoadingIndicator]]"></at-core-spinner>
-      <div id="dropdownArrow" class="dropdown-arrow"><span>&#x25BC;</span></div>
+      <div id="dropdownArrow" class="dropdown-arrow" tabindex="0"><span>&#x25BC;</span></div>
     </div>
   </template>
 </dom-module>
 <script>
   Polymer({
     is: "items-view",
+    hostAttributes: {
+      tabindex: 0
+    },
     properties: {
 
       items: {
