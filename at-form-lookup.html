@@ -502,7 +502,49 @@
       }
       if (showError) this._handleValidationResult(validationResult);
 
+      this._validateProcessRemoteDataSourceErrors();
+
+      if (this._rdsOptionsError) {
+        this._rdsOptionsError = false;
+        // send request to query options
+        this._sendRequestToQueryOptions(this.xurl || this.url, "");
+      }
+
+      if (this._rdsItemError) {
+        if (this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue) == 0) {
+          this._rdsItemError = false;
+          // send requests to query individual items
+          this._processValueForRemoteDataSourceMode(this.value, this.xurl || this.url, this.noCredentials, false);    
+
+        } else {
+          // we have to wait for all requests to complete before restarting
+          setTimeout(this._validateProcessValueHelper.bind(this), 200);
+        }
+      }
+
       return validationResult.isValid;
+    },
+
+    _validateProcessRemoteDataSourceErrors: function(showError) {
+      var validationResult = {
+        isValid: true,
+        errorMessage: ''
+      };
+      validationResult.isValid = !this._rdsOptionsError && !this._rdsItemError;
+      if (!validationResult.isValid) {
+        validationResult.errorMessage = "Lookup got errors from remote data source";
+      }
+      if (showError) this._handleValidationResult(validationResult);
+    },
+
+    _validateProcessValueHelper: function() {
+      if (this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue) > 0) {
+        setTimeout(this._validateProcessValueHelper.bind(this), 200);
+        return;
+      }
+      this._rdsItemError = false;
+      // send requests to query individual items
+      this._processValueForRemoteDataSourceMode(this.value, this.xurl || this.url, this.noCredentials, false);
     },
 
     _updateUIValidState: function(isValid) {
@@ -699,6 +741,8 @@
           this._internalDisabled = true;
           this.$.itemsView.disabled = this._internalDisabled;
 
+          // NOTE this flag is true when remote data source returns an error
+          this._rdsOptionsError = false;
           // preload data; go to remote url with noCredentials and params and receive results
           this._sendRequestToQueryOptions(remoteUrl, initialSearchTerm);
         }
@@ -786,6 +830,9 @@
           a.generateRequest();
         });
 
+        // NOTE this flag is true when remote data source returns an error
+        this._rdsItemError = false;
+
         // disable the element while initial values are loaded
         this._internalDisabled = true;
         this.$.itemsView.disabled = this._internalDisabled;
@@ -796,6 +843,8 @@
 
         // when value is set to empty dropdown options should be unfiltered
         if (ignoreInitialRequest) return;
+        // NOTE this flag is true when remote data source returns an error
+        this._rdsOptionsError = false;
         this._sendRequestToQueryOptions(remoteUrl, "");
       }
     },
@@ -846,6 +895,9 @@
     },
 
     _handleCoreAjaxOnError: function(event) {
+      // NOTE this flag is true when remote data source returns an error
+      this._rdsOptionsError = true;
+
       if (this._viewModel.itemsRequestsComplete) {
         this._showLoadingIndicator = false;
         this._internalDisabled = false;
@@ -943,6 +995,7 @@
     },
 
     _handleInitialValueActivityError: function(event) {
+      this._rdsItemError = true;
       // disableErrorCodeHandler is set to true which gives event.detail.handler.ignoreData = false here
       // when server side activity error occurs both error handler and response handler will be called
       // in error handler we want to process only request errors (ie, server is shutdown/unreachable) and not http or activity errors
@@ -966,6 +1019,7 @@
       var itemIdAttrVal = event.target.getAttribute('item-id');
 
       if (event.detail.ErrorCode !== 0) {
+        this._rdsItemError = true;
         item = {
           id: itemIdAttrVal,
           title: ['error itemId: ', itemIdAttrVal, ' ', event.detail.ErrorCode, ' ', event.detail.Data.ErrorText].join("")
@@ -1124,6 +1178,9 @@
       // clear initialItems as it will interfere with new values from server
       this._viewModel.initialItems = [];
 
+      // we need to process data source errors only 
+      this._validateProcessRemoteDataSourceErrors(this.autoValidate);
+
       // when new items are fetched from remote data source, selected items array should be updated with new items and fire changed event
       if (this._updateLookupSelectedItems()) {
         this._fireSelectedItemsChangedEvent();
@@ -1238,19 +1295,21 @@
         this._getInput().focus();
         return;
       }
-      
+
       // clicking on these elements should not close the dropdown
       var elts = [this.$.itemsView, this.$.label, this.$.itemsView.$.dropdownArrow];
       if (elts.indexOf(rt) > -1) {
         return;
       }
-      
+
       this.$.itemsView.removeAttribute('focused');
       // if element receiving focus is outside at-form-lookup hide the dropdown
       this._closeDropdown();
 
       // un-filter dropdown options
       if (this._isMultiSelect() && (this.xurl || this.url)) {
+        // NOTE this flag is true when remote data source returns an error
+        this._rdsOptionsError = false;
         this._sendRequestToQueryOptions(this.xurl || this.url, "");
       }
     },
@@ -1528,6 +1587,8 @@
           // if filterText is empty, we need all options in dropdown not just deleted ones
           var remoteUrl = this.xurl || this.url;
           if (remoteUrl) {
+            // NOTE this flag is true when remote data source returns an error
+            this._rdsOptionsError = false;
             this._sendRequestToQueryOptions(remoteUrl, filterText);
             this._viewModel.openDropdownOnResponse = true;
           }
@@ -1585,6 +1646,8 @@
         }
 
       } else {
+        // NOTE this flag is true when remote data source returns an error
+        this._rdsOptionsError = false;
         // send new request to the server with filter text as query
         this._sendRequestToQueryOptions(remoteUrl, filterText);
         this._viewModel.openDropdownOnResponse = true;
