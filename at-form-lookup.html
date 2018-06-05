@@ -548,6 +548,8 @@
     },
 
     _updateUIValidState: function(isValid) {
+      if (!this.$) return;
+      
       var label = this.$.label;
       this.toggleClass('error', !isValid, label);
       var contentContainer = this.$.contentContainer;

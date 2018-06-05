@@ -45,8 +45,14 @@
     </template>
   </test-fixture>
 
+  <test-fixture id="propertyTests">
+    <template>
+      <at-form-lookup></at-form-lookup>
+    </template>
+  </test-fixture>
+
   <script>
-    suite('null value tests', function() {
+    suite('null tests, value set as attribute', function() {
 
       test('attribute value set to null', function(done) {
         var input = fixture('attrNullValue');
@@ -147,13 +153,11 @@
           done();
         });
       });
+    });
 
-      /********************************************************************************/
-      /* Property value tests
-      /********************************************************************************/
-
+    suite('null tests, value set as property', function() {
       test('property value set to null', function(done) {
-        var input = document.createElement('at-form-lookup');
+        var input = fixture('propertyTests');
         input.value = null;
 
         assert.equal(input.value, null, 'value not set correctly');
@@ -179,7 +183,7 @@
       });
 
       test('property value set to "null"', function(done) {
-        var input = document.createElement('at-form-lookup');
+        var input = fixture('propertyTests');
         input.value = "null";
 
         assert.equal(input.value, "null", 'value not set correctly');
@@ -205,7 +209,7 @@
       });
 
       test('property value set to null and required', function(done) {
-        var input = document.createElement('at-form-lookup');
+        var input = fixture('propertyTests');
         input.required = true;
         input.value = null;
 
@@ -232,7 +236,7 @@
       });
 
       test('property value set to "null" and required', function(done) {
-        var input = document.createElement('at-form-lookup');
+        var input = fixture('propertyTests');
         input.required = true;
         input.value = "null";
 
@@ -259,7 +263,7 @@
       });
 
       test('property value set to null and user input is empty string', function(done) {
-        var input = document.createElement('at-form-lookup');
+        var input = fixture('propertyTests');
         input.value = null;
 
         assert.equal(input.value, null, 'value not set correctly');
@@ -285,7 +289,7 @@
       });
 
       test('property value set to null and user input is non empty string', function(done) {
-        var input = document.createElement('at-form-lookup');
+        var input = fixture('propertyTests');
         input.value = null;
 
         assert.equal(input.value, null, 'value not set correctly');
