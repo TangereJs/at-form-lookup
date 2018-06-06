@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>placeholder demo page</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../at-theme/at-theme.html">
+  <link rel="import" href="../at-form-lookup.html">
+
+  <style>
+    .container {
+      padding: 8px;
+      margin: 32px 25% 0 25%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h4>Items url is http://localhost:2014/api/adenin.GateKeeper.Content/role</h4>
+    <at-form-lookup max-items="1" label="Placeholder is set to None" xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'
+      placeholder="None"></at-form-lookup>
+  </div>
+
+  <div class="container">
+      <h4>Items url is http://localhost:2014/api/adenin.GateKeeper.Content/role</h4>
+    <at-form-lookup max-items="1" url="http://localhost:2014/api/adenin.GateKeeper.Content/role" label="Placeholder is set to All roles"
+      placeholder="All roles"></at-form-lookup>
+  </div>
+  </body>
+
+</html>

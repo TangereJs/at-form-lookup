@@ -343,6 +343,18 @@
       },
 
       /**
+      * Element's placeholder
+      * @property placeholder
+      * @type String
+      * @default ""
+      */
+      placeholder: {
+        type: String,
+        title: 'Placeholder',
+        value: ''
+      },
+
+      /**
        * view model objects that holds internal state of the element
        *
        * @property _viewModel
@@ -386,7 +398,7 @@
 
     observers: [
       '_internalValidStateUpdate(required, errorMessage)',
-      '_initializeLookup(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems, _viewModel)'
+      '_initializeLookup(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems, placeholder, _viewModel)'
     ],
 
     _hideLabelChanged: function(newValue, oldValue) {
@@ -557,7 +569,7 @@
     },
 
     // this function can not be called _initialize because in at-i18n-behavior there is a function called _initialize. if this function is called _initialize then at-i18n will call this function instead of at-i18n initialize
-    _initializeLookup: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems) {
+    _initializeLookup: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems, placeholder) {
       // this is required when value is updated and value-changed event fired
       if (this._skipInitialization) return;
 
@@ -575,18 +587,18 @@
         // in this case we need to cancel the debounce
         this.cancelDebouncer('initialize-remote');
 
-        this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems);
+        this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems, placeholder);
         this._isInitialized = true;
 
       } else {
         this.debounce('initialize-remote', function() {
-          this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
+          this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems, placeholder);
           this._isInitialized = true;
         }.bind(this), 150);
       }
     },
 
-    _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems) {
+    _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems, placeholder) {
 
       // 1. compute available options
       var availableOptions = [];
@@ -599,6 +611,13 @@
       }
 
       var vmOptions = [];
+
+      if (this._isString(placeholder) && placeholder.length > 0) {
+        vmOptions.push({
+          title: placeholder,
+          value: ''
+        });
+      }
 
       if (this._isArray(availableOptions)) {
         availableOptions.forEach(function(option) {
@@ -962,6 +981,13 @@
       }
 
       this._viewModel.originalOptions = availableOptions;
+      
+      if (this._isString(this.placeholder) && this.placeholder.length > 0) {
+        this._viewModel.originalOptions.unshift({
+          title: this.placeholder,
+          value: ''
+        });
+      }
 
       // 2. put available options into options-view
       this._viewModel.availableOptions = this._computeAvailableOptionsFromOriginalOptions();
@@ -1130,6 +1156,13 @@
       var initialItems = this._viewModel.initialItems;
       if (!initialItems.length) {
         initialItems = JSON.parse(JSON.stringify(this.$.itemsView.items));
+
+        if (initialItems.length == 0 && this.placeholder.length > 0 && this.value.length == 0 && this._viewModel.lastDeletedItem == undefined) {
+          initialItems.push({
+            title: this.placeholder,
+            value: this.value
+          });
+        }
       }
 
       var selectedItems = [];
@@ -1147,7 +1180,7 @@
         if (isMulti && indexInAvailable > -1) {
           availableOptions.splice(indexInAvailable, 1);
 
-        } else if (!isMulti && indexInAvailable > -1) {
+        } else if (!isMulti && indexInAvailable > -1 && itemId.length > 0) {
           availableOptions[indexInAvailable].selected = true;
         }
 
@@ -1984,8 +2017,10 @@
 
       } else {
         var selectedItem = this.$.itemsView.items[this.$.itemsView.items.length - 1];
-        var indexToHighlight = this._findIndexOfId(this.$.optionsView.items, selectedItem.value);
-        this.$.optionsView.set('items.' + indexToHighlight + '.selected', true);
+        if (selectedItem.value.length > 0) {
+          var indexToHighlight = this._findIndexOfId(this.$.optionsView.items, selectedItem.value);
+          this.$.optionsView.set('items.' + indexToHighlight + '.selected', true);
+        }
       }
     },
 
