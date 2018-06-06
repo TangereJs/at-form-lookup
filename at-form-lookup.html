@@ -1417,10 +1417,29 @@
       var isMulti = this._isMultiSelect();
 
       if (isFull && isMulti) return;
+      
+      // if first item is placeholder option that means that user is selecting a new option after lookup has initially loaded
+      // clear placeholder option from itemsView
+      var placeholderOption = this.$.itemsView.items[0];
+      if (placeholderOption && placeholderOption.value == '') {
+        this.$.itemsView.set('items', []);
+      }
 
       var option = this.$.optionsView.items[selectedIndex];
       // if "more ..." option is selected ignore it
       if (option.value === "more_records_found") return;
+
+      // when user selects the placeholder option all currently selected options are removed from itemsView
+      if (option.value == "") {
+        var currentlySelectedItems = this.$.itemsView.items;
+        this.$.itemsView.set('items', []);
+        while(currentlySelectedItems.length > 0) {
+          var item = currentlySelectedItems.shift();
+          
+          this._viewModel.availableOptions.push(item);
+          this.$.optionsView.items.push(item);
+        }
+      }
 
       // based on selected option value, find the original option in available options and push that option into itemsView.items
       var originalOption = this._findItemWithId(this._viewModel.availableOptions, option.value);
@@ -1496,8 +1515,27 @@
           this.$.itemsView.push('items', originalOption);
         }
 
+        // since placeholder option is always looked at index of zero, it may not be an actual placeholder option, so we check the value.length to confirm
+        // placeholder option is selected and we need to remove it from availableOptions
+        if (placeholderOption && placeholderOption.value.length == 0) {
+          this._viewModel.availableOptions.unshift(placeholderOption);
+        }
+
         var optionsItems = JSON.parse(JSON.stringify(this.$.optionsView.items));
         optionsItems.splice(selectedIndex, 1);
+
+        // since placeholder option is always looked at index of zero, it may not be an actual placeholder option, so we check the value.length to confirm
+        // placeholder option is selected and we need to remove it from optionsView items
+        if (placeholderOption && placeholderOption.value.length == 0) {
+          optionsItems.unshift(placeholderOption);
+        }
+
+        // sort the options view because we want nice ordering
+        optionsItems.sort(function(i1, i2) {
+          if (i1.value === i2.value) return 0;
+          return i1.value > i2.value ? 1 : -1;
+        });
+
         this.$.optionsView.set('items', []);
         this.$.optionsView.set('items', optionsItems);
         if (!this.$.optionsView.items.length) {
