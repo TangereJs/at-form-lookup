@@ -532,7 +532,7 @@
       };
       validationResult.isValid = !this._rdsOptionsError && !this._rdsItemError;
       if (!validationResult.isValid) {
-        validationResult.errorMessage = "Remote data source returned an error";
+        validationResult.errorMessage = "Lookup got errors from remote data source";
       }
       if (showError) this._handleValidationResult(validationResult);
     },
