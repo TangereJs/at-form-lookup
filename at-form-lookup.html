@@ -514,7 +514,7 @@
         if (this._countIncompleteRequests(this._viewModel.initialValueRequestsQueue) == 0) {
           this._rdsItemError = false;
           // send requests to query individual items
-          this._processValueForRemoteDataSourceMode(this.value, this.xurl || this.url, this.noCredentials, false);    
+          this._processValueForRemoteDataSourceMode(this.value, this.xurl || this.url, this.noCredentials, false);
 
         } else {
           // we have to wait for all requests to complete before restarting
@@ -549,7 +549,7 @@
 
     _updateUIValidState: function(isValid) {
       if (!this.$) return;
-      
+
       var label = this.$.label;
       this.toggleClass('error', !isValid, label);
       var contentContainer = this.$.contentContainer;
