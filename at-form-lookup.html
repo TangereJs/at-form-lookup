@@ -47,7 +47,7 @@
       </div>
 
       <div id="contentContainer" class="at-content-container">
-        <items-view id="itemsView" class="items-view" multiple$="[[_computeMultiple(maxItems)]]" placeholder$="[[_computePlaceholder(placeholder, value)]]" show-loading-indicator$="[[_showLoadingIndicator]]"></items-view>
+        <items-view id="itemsView" class="items-view" multiple$="[[_computeMultiple(maxItems)]]" placeholder$="[[_computePlaceholder(placeholder, value, selectedItems)]]" show-loading-indicator$="[[_showLoadingIndicator]]"></items-view>
       </div>
 
       <at-core-dropdown id="coreDropdown" no-mask y-offset="0">
@@ -426,9 +426,10 @@
       return value !== 1;
     },
 
-    _computePlaceholder: function(placeholder, value) {
+    _computePlaceholder: function(placeholder, value, selectedItems) {
       if (placeholder.length == 0) return '';
       if (value.length > 0) return '';
+      if (selectedItems.length > 0) return '';
       return placeholder;
     },
 
