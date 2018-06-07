@@ -123,7 +123,7 @@
         <div class="delete-button" title="Remove" on-tap="_handleRemoveOnTap">&#x2A2F;</div>
       </div>
     </template>
-    <input id="filterTextInput" class="filter-text-input" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" on-change="_handleFilterTextInputChange" />
+    <input id="filterTextInput" class="filter-text-input" placeholder$="[[placeholder]]" on-keydown="_handleFilterTextInputKeydown" on-input="_handleFilterTextInputKeypress" on-change="_handleFilterTextInputChange" />
     <div id="toolboxContainer" class="toolbox-container">
       <at-core-spinner type="spinner" class="loading-indicator" hidden$="[[!showLoadingIndicator]]"></at-core-spinner>
       <div id="dropdownArrow" class="dropdown-arrow" tabindex="0"><span>&#x25BC;</span></div>
@@ -162,8 +162,13 @@
         type: Boolean,
         value: false,
         reflectToAttribute: true
-      }
+      },
 
+      placeholder: {
+        type: String,
+        value: '',
+        observer: '_placeholderChanged'
+      }
     },
 
     listeners: {
@@ -292,12 +297,26 @@
       event.stopPropagation();
     },
 
+    _placeholderChanged: function(newValue, oldValue) {
+      if (!this.$) return;
+
+      if (newValue.length == 0) return;
+      var self = this;
+      this.async(function() {
+        self._updateFilterTextInputWidth();
+      }, 10);
+    },
+
     _updateFilterTextInputWidth: function() {
       var filterTextInput = this.$.filterTextInput;
       var minWidth = window.getComputedStyle(filterTextInput).getPropertyValue('min-width');
       var minWidth = parseInt(minWidth);
-
-      var newWidth = this._measureString(filterTextInput.value, filterTextInput);
+      
+      var cValue = filterTextInput.value;
+      var newWidth = cValue.length > 0 ? 
+        this._measureString(cValue, filterTextInput) : 
+        this._measureString(this.placeholder, filterTextInput);
+      
       newWidth = newWidth < minWidth ? minWidth : newWidth;
       filterTextInput.style.width = Math.ceil(newWidth+1) + 'px';
     },

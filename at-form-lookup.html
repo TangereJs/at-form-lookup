@@ -47,7 +47,7 @@
       </div>
 
       <div id="contentContainer" class="at-content-container">
-        <items-view id="itemsView" class="items-view" multiple$="[[_computeMultiple(maxItems)]]" show-loading-indicator$="[[_showLoadingIndicator]]"></items-view>
+        <items-view id="itemsView" class="items-view" multiple$="[[_computeMultiple(maxItems)]]" placeholder$="[[_computePlaceholder(placeholder, value)]]" show-loading-indicator$="[[_showLoadingIndicator]]"></items-view>
       </div>
 
       <at-core-dropdown id="coreDropdown" no-mask y-offset="0">
@@ -398,7 +398,7 @@
 
     observers: [
       '_internalValidStateUpdate(required, errorMessage)',
-      '_initializeLookup(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems, placeholder, _viewModel)'
+      '_initializeLookup(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems, _viewModel)'
     ],
 
     _hideLabelChanged: function(newValue, oldValue) {
@@ -412,6 +412,12 @@
         value = 0;
       }
       return value !== 1;
+    },
+
+    _computePlaceholder: function(placeholder, value) {
+      if (placeholder.length == 0) return '';
+      if (value.length > 0) return '';
+      return placeholder;
     },
 
     ready: function() {
@@ -569,7 +575,7 @@
     },
 
     // this function can not be called _initialize because in at-i18n-behavior there is a function called _initialize. if this function is called _initialize then at-i18n will call this function instead of at-i18n initialize
-    _initializeLookup: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems, placeholder) {
+    _initializeLookup: function(available, enumarr, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems) {
       // this is required when value is updated and value-changed event fired
       if (this._skipInitialization) return;
 
@@ -587,18 +593,18 @@
         // in this case we need to cancel the debounce
         this.cancelDebouncer('initialize-remote');
 
-        this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems, placeholder);
+        this._initializeLocalDataSource(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems);
         this._isInitialized = true;
 
       } else {
         this.debounce('initialize-remote', function() {
-          this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems, placeholder);
+          this._initializeRemoteDataSource(url, xurl, noCredentials, noPreload, params, value, initialSearchTerm, maxItems);
           this._isInitialized = true;
         }.bind(this), 150);
       }
     },
 
-    _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems, placeholder) {
+    _initializeLocalDataSource: function(available, enumarr, xvaluelist, value, initialSearchTerm, maxItems) {
 
       // 1. compute available options
       var availableOptions = [];
@@ -611,14 +617,16 @@
       }
 
       var vmOptions = [];
-
+      
+      // NOTE disabled placeholder as title for empty option because using placeholder as title is a conflict of responsibility and produces a nonsensical result 
+      /*
       if (this._isString(placeholder) && placeholder.length > 0) {
         vmOptions.push({
           title: placeholder,
           value: ''
         });
       }
-
+      */
       if (this._isArray(availableOptions)) {
         availableOptions.forEach(function(option) {
           if (this._isString(option)) {
@@ -982,13 +990,15 @@
 
       this._viewModel.originalOptions = availableOptions;
       
+      // NOTE disabled placeholder as title for empty option because using placeholder as title is a conflict of responsibility and produces a nonsensical result 
+/*
       if (this._isString(this.placeholder) && this.placeholder.length > 0) {
         this._viewModel.originalOptions.unshift({
           title: this.placeholder,
           value: ''
         });
       }
-
+*/
       // 2. put available options into options-view
       this._viewModel.availableOptions = this._computeAvailableOptionsFromOriginalOptions();
 
@@ -1156,13 +1166,16 @@
       var initialItems = this._viewModel.initialItems;
       if (!initialItems.length) {
         initialItems = JSON.parse(JSON.stringify(this.$.itemsView.items));
-
+        
+        // NOTE disabled placeholder as title for empty option because using placeholder as title is a conflict of responsibility and produces a nonsensical result 
+        /*
         if (initialItems.length == 0 && this.placeholder.length > 0 && this.value.length == 0 && this._viewModel.lastDeletedItem == undefined) {
           initialItems.push({
             title: this.placeholder,
             value: this.value
           });
         }
+        */
       }
 
       var selectedItems = [];
@@ -1418,17 +1431,21 @@
 
       if (isFull && isMulti) return;
       
+      // NOTE disabled placeholder as title for empty option because using placeholder as title is a conflict of responsibility and produces a nonsensical result 
+/*
       // if first item is placeholder option that means that user is selecting a new option after lookup has initially loaded
       // clear placeholder option from itemsView
       var placeholderOption = this.$.itemsView.items[0];
       if (placeholderOption && placeholderOption.value == '') {
         this.$.itemsView.set('items', []);
       }
-
+*/
       var option = this.$.optionsView.items[selectedIndex];
       // if "more ..." option is selected ignore it
       if (option.value === "more_records_found") return;
 
+// NOTE disabled placeholder as title for empty option because using placeholder as title is a conflict of responsibility and produces a nonsensical result 
+/*
       // when user selects the placeholder option all currently selected options are removed from itemsView
       if (option.value == "") {
         var currentlySelectedItems = this.$.itemsView.items;
@@ -1440,7 +1457,7 @@
           this.$.optionsView.items.push(item);
         }
       }
-
+*/
       // based on selected option value, find the original option in available options and push that option into itemsView.items
       var originalOption = this._findItemWithId(this._viewModel.availableOptions, option.value);
       var newOptionSelected = !originalOption;
@@ -1515,21 +1532,25 @@
           this.$.itemsView.push('items', originalOption);
         }
 
+// NOTE disabled placeholder as title for empty option because using placeholder as title is a conflict of responsibility and produces a nonsensical result 
+/*
         // since placeholder option is always looked at index of zero, it may not be an actual placeholder option, so we check the value.length to confirm
         // placeholder option is selected and we need to remove it from availableOptions
         if (placeholderOption && placeholderOption.value.length == 0) {
           this._viewModel.availableOptions.unshift(placeholderOption);
         }
-
+*/
         var optionsItems = JSON.parse(JSON.stringify(this.$.optionsView.items));
         optionsItems.splice(selectedIndex, 1);
 
+// NOTE disabled placeholder as title for empty option because using placeholder as title is a conflict of responsibility and produces a nonsensical result 
+/*
         // since placeholder option is always looked at index of zero, it may not be an actual placeholder option, so we check the value.length to confirm
         // placeholder option is selected and we need to remove it from optionsView items
         if (placeholderOption && placeholderOption.value.length == 0) {
           optionsItems.unshift(placeholderOption);
         }
-
+*/
         // sort the options view because we want nice ordering
         optionsItems.sort(function(i1, i2) {
           if (i1.value === i2.value) return 0;
