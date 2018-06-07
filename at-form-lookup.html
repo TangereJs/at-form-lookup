@@ -631,9 +631,10 @@
 
       var vmOptions = [];
       
-      if (maxItems == 1 && !required && this._isString(emptyLabel) && emptyLabel.length > 0) {
+      if (maxItems == 1 && !required) {
+        var titleText = this._isString(emptyLabel) ? emptyLabel : '';
         vmOptions.push({
-          title: emptyLabel,
+          title: titleText,
           value: ''
         });
       }
@@ -1001,9 +1002,10 @@
 
       this._viewModel.originalOptions = availableOptions;
       
-      if (this.maxItems == 1 && !this.required && this._isString(this.emptyLabel) && this.emptyLabel.length > 0) {
+      if (this.maxItems == 1 && !this.required) {
+        var titleText = this._isString(this.emptyLabel) ? this.emptyLabel : '';
         this._viewModel.originalOptions.unshift({
-          title: this.emptyLabel,
+          title: titleText,
           value: ''
         });
       }
@@ -1180,13 +1182,12 @@
           this.maxItems == 1 && 
           !this.required && 
           initialItems.length == 0 && 
-          this._isString(this.emptyLabel) && 
-          this.emptyLabel.length > 0 && 
           this.value.length == 0 && 
           this._viewModel.lastDeletedItem == undefined
         ) {
+          var titleText = this._isString(this.emptyLabel) ? this.emptyLabel : '';
           initialItems.push({
-            title: this.emptyLabel,
+            title: titleText,
             value: this.value
           });
         }
