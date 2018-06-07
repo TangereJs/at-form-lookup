@@ -6,7 +6,7 @@
 
 <dom-module id="options-view">
   <template>
-    <style include="at-form-lookup-styles">
+    <style>
       :host {
         display: block;
         box-sizing: border-box;
@@ -17,7 +17,8 @@
       }
 
       .option[selected] {
-        @apply --at-text-primary-selected;
+        background-color: var(--at-form-lookup-option-selected-background-color); 
+        color: var(--at-form-lookup-option-selected-color);
       }
 
       .more-option {

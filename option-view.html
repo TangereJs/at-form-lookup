@@ -7,7 +7,7 @@
       :host {
         display: block;
         box-sizing: border-box;
-        @apply(--at-form-border-radius1111);
+        @apply --at-form-border-radius1111;
         cursor: default;
         padding: 10px 12px;
       }
@@ -17,12 +17,13 @@
       }
 
       .title {
-        @apply(--at-form-input-font);
-        @apply(--unselectable);
+        @apply --at-form-input-font;
+        @apply --unselectable;
       }
 
       .highlight {
-        @apply(--at-text-selected);
+        background-color: var(--at-form-lookup-option-highlighted-background-color); 
+        color: var(--at-form-lookup-option-highlighted-color);
       }
     </style>
 
