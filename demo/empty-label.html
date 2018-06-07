@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>empty label demo page</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../at-theme/at-theme.html">
+  <link rel="import" href="../at-form-lookup.html">
+  <link rel="import" href="../../at-core-style-classes/at-core-style-classes.html">
+  
+  <style is="custom-style" include="at-core-style-classes">
+    .container {
+      max-width: 1200px;
+      margin: 16px auto 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h4 class="font-title m0">Local data source examples</h4>
+    <p class="font-body1 mb0">xvaluelist is set to <span class="font-code1">'[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'</span></p>
+
+    <div class="layout-horizontal">
+      <div class="layout-flex m">
+        <ul>
+          <li class="font-body1">max-items="1"</li>
+          <li class="font-body1">emptyLabel=""</li>
+        </ul>
+        <at-form-lookup 
+          xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'  
+          max-items="1" 
+          empty-label=""
+        ></at-form-lookup>
+      </div>
+      <div class="layout-flex m">
+        <ul>
+          <li class="font-body1">max-items="3"</li>
+          <li class="font-body1">emptyLabel=""</li>
+        </ul>
+        <at-form-lookup 
+          xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'  
+          max-items="3" 
+          empty-label=""
+        ></at-form-lookup>
+      </div>
+      <div class="layout-flex m">
+        <ul>
+          <li class="font-body1">max-items="1"</li>
+          <li class="font-body1">emptyLabel="None"</li>
+        </ul>
+        <at-form-lookup 
+          xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'  
+          max-items="1" 
+          empty-label="None"
+        ></at-form-lookup>
+      </div>
+      <div class="layout-flex m">
+        <ul>
+          <li class="font-body1">max-items="3"</li>
+          <li class="font-body1">emptyLabel="None"</li>
+        </ul>
+        <at-form-lookup 
+          xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'  
+          max-items="3" 
+          empty-label="None"
+        ></at-form-lookup>
+      </div>
+    </div>
+
+    <div class="layout-horizontal">
+      <div class="layout-flex m">
+        <ul>
+          <li class="font-body1">required="true"</li>
+          <li class="font-body1">max-items="1"</li>
+          <li class="font-body1">emptyLabel=""</li>
+        </ul>
+        <at-form-lookup 
+          xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'  
+          max-items="1" 
+          empty-label=""
+          required
+        ></at-form-lookup>
+      </div>
+      <div class="layout-flex m">
+        <ul>
+          <li class="font-body1">required="true"</li>
+          <li class="font-body1">max-items="3"</li>
+          <li class="font-body1">emptyLabel=""</li>
+        </ul>
+        <at-form-lookup 
+          xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'  
+          max-items="3" 
+          empty-label=""
+          required
+        ></at-form-lookup>
+      </div>
+      <div class="layout-flex m">
+        <ul>
+          <li class="font-body1">required="true"</li>
+          <li class="font-body1">max-items="1"</li>
+          <li class="font-body1">emptyLabel="None"</li>
+        </ul>
+        <at-form-lookup 
+          xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'  
+          max-items="1" 
+          empty-label="None"
+          required
+        ></at-form-lookup>
+      </div>
+      <div class="layout-flex m">
+        <ul>
+          <li class="font-body1">required="true"</li>
+          <li class="font-body1">max-items="3"</li>
+          <li class="font-body1">emptyLabel="None"</li>
+        </ul>
+        <at-form-lookup 
+          xvaluelist='[ { "title": "title 1", "value": "v1" }, { "title": "title 2", "value": "v2" }, { "title": "title 3", "value": "v3" }, { "title": "title 4", "value": "v4" } ]'  
+          max-items="3" 
+          empty-label="None"
+          required
+        ></at-form-lookup>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+      <h4 class="font-title m0">Remote data source examples</h4>
+      <p class="font-body1 mb0">url is set to <span class="font-code1">http://localhost:2014/api/adenin.GateKeeper.Content/role</span></p>
+  
+      <div class="layout-horizontal">
+        <div class="layout-flex m">
+          <ul>
+            <li class="font-body1">max-items="1"</li>
+            <li class="font-body1">emptyLabel=""</li>
+          </ul>
+          <at-form-lookup 
+            url="http://localhost:2014/api/adenin.GateKeeper.Content/role"
+            max-items="1" 
+            empty-label=""
+          ></at-form-lookup>
+        </div>
+        <div class="layout-flex m">
+          <ul>
+            <li class="font-body1">max-items="3"</li>
+            <li class="font-body1">emptyLabel=""</li>
+          </ul>
+          <at-form-lookup 
+            url="http://localhost:2014/api/adenin.GateKeeper.Content/role"
+            max-items="3" 
+            empty-label=""
+          ></at-form-lookup>
+        </div>
+        <div class="layout-flex m">
+          <ul>
+            <li class="font-body1">max-items="1"</li>
+            <li class="font-body1">emptyLabel="None"</li>
+          </ul>
+          <at-form-lookup 
+            url="http://localhost:2014/api/adenin.GateKeeper.Content/role"
+            max-items="1" 
+            empty-label="None"
+          ></at-form-lookup>
+        </div>
+        <div class="layout-flex m">
+          <ul>
+            <li class="font-body1">max-items="3"</li>
+            <li class="font-body1">emptyLabel="None"</li>
+          </ul>
+          <at-form-lookup 
+            url="http://localhost:2014/api/adenin.GateKeeper.Content/role"
+            max-items="3" 
+            empty-label="None"
+          ></at-form-lookup>
+        </div>
+      </div>
+  
+      <div class="layout-horizontal">
+        <div class="layout-flex m">
+          <ul>
+            <li class="font-body1">required="true"</li>
+            <li class="font-body1">max-items="1"</li>
+            <li class="font-body1">emptyLabel=""</li>
+          </ul>
+          <at-form-lookup 
+            url="http://localhost:2014/api/adenin.GateKeeper.Content/role"
+            max-items="1" 
+            empty-label=""
+            required
+          ></at-form-lookup>
+        </div>
+        <div class="layout-flex m">
+          <ul>
+            <li class="font-body1">required="true"</li>
+            <li class="font-body1">max-items="3"</li>
+            <li class="font-body1">emptyLabel=""</li>
+          </ul>
+          <at-form-lookup 
+            url="http://localhost:2014/api/adenin.GateKeeper.Content/role"
+            max-items="3" 
+            empty-label=""
+            required
+          ></at-form-lookup>
+        </div>
+        <div class="layout-flex m">
+          <ul>
+            <li class="font-body1">required="true"</li>
+            <li class="font-body1">max-items="1"</li>
+            <li class="font-body1">emptyLabel="None"</li>
+          </ul>
+          <at-form-lookup 
+            url="http://localhost:2014/api/adenin.GateKeeper.Content/role"
+            max-items="1" 
+            empty-label="None"
+            required
+          ></at-form-lookup>
+        </div>
+        <div class="layout-flex m">
+          <ul>
+            <li class="font-body1">required="true"</li>
+            <li class="font-body1">max-items="3"</li>
+            <li class="font-body1">emptyLabel="None"</li>
+          </ul>
+          <at-form-lookup 
+            url="http://localhost:2014/api/adenin.GateKeeper.Content/role"
+            max-items="3" 
+            empty-label="None"
+            required
+          ></at-form-lookup>
+        </div>
+      </div>
+    </div>
+</body>
+
+</html>
