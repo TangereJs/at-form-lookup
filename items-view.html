@@ -279,7 +279,8 @@
         this._moveInputFieldOnePlaceToTheRight(input);
       }
 
-      if (keyCode !== VK_TAB && !this.multiple && this.items.length === 1) {
+      // `this.items[0].title.length > 0` allows keystrokes when empty value option is selected from dropdown
+      if (keyCode !== VK_TAB && !this.multiple && this.items.length === 1 && this.items[0].title.length > 0) {
         event.preventDefault();
         return;
       }
