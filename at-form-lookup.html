@@ -1474,12 +1474,19 @@
 
       if (!isMulti) {
         if (isFull) {
-          // maxItems == 1 and itemsView already displays selected item
-          // replace that item with newly selected one
-          this.$.itemsView.splice('items', 0, 1, originalOption);
+          if (originalOption.title.length > 0) {
+            // maxItems == 1 and itemsView already displays selected item
+            // replace that item with newly selected one
+            this.$.itemsView.splice('items', 0, 1, originalOption);
+          
+          } else {
+            this.$.itemsView.set('items', []);
+          }
 
         } else {
-          this.$.itemsView.push('items', originalOption);
+          if (originalOption.title.length > 0) {
+            this.$.itemsView.push('items', originalOption);
+          }
 
           if (newOptionSelected) {
             // remove new option from dropdown options
