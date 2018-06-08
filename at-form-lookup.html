@@ -736,7 +736,7 @@
           found = String(vmOption.value) === valuePart;
         }
 
-        if (found) {
+        if (found && vmOption.title.length > 0) {
           selectedOptions.push(vmOption);
         }
       }
@@ -1186,10 +1186,12 @@
           this._viewModel.lastDeletedItem == undefined
         ) {
           var titleText = this._isString(this.emptyLabel) ? this.emptyLabel : '';
-          initialItems.push({
-            title: titleText,
-            value: this.value
-          });
+          if (titleText.length > 0) {
+            initialItems.push({
+              title: titleText,
+              value: this.value
+            });
+          }
         }
       }
 
