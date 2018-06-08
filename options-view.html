@@ -24,6 +24,10 @@
       .more-option {
         font-style: italic;
       }
+
+      .empty-option {
+        height: 42px;
+      }
     </style>
 
     <template is="dom-repeat" items="[[items]]">
@@ -62,7 +66,9 @@
     ready: function() { },
 
     _computeExtraClasses: function(item) {
-      return item.value === "more_records_found" ? "more-option" : "";
+      if (item.value === "more_records_found") return "more-option";
+      if (item.value.length == 0 && item.title.length == 0) return "empty-option";
+      return "";
     },
 
     _handleOptionOnTap: function(event) {
