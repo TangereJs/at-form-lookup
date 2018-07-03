@@ -496,10 +496,30 @@
 
     _internalValidStateUpdate: function(required, errorMessage) {
       if (!this._isReady) return;
+        
+      if (this._showErrorsWhenAttached) {
+        this._showErrorsWhenAttached = undefined;
+        this.validate(true);
+        return;
+      
+      } else if (this._clearErrorsWhenAttached) {
+        this._clearErrorsWhenAttached = undefined;
+        this.validate(false);
+        return;
+      }
+
       this.validate();
     },
 
     validate: function(showError) {
+      if (!this.$ && this.autoValidate == false && showError == true) {
+        // showError should be true when _internalValidStateUpdate is called from ready after element is attached
+        this._showErrorsWhenAttached = true;
+      
+      } else if (!this.$ && this.autoValidate == true && showError == false) {
+        this._clearErrorsWhenAttached = true;
+      }
+
       if (showError === undefined) { showError = this.autoValidate; }
 
       var validationResult = this._validateBaseData();
@@ -520,7 +540,7 @@
         * this.$.itemsView.$.filterTextInput.value contains value that user typed
         * this.value is empty if user didn't select an item
        */
-      var userTypedText = this._getInput().value;
+      var userTypedText = this.$ ? this._getInput().value : this.value;
       if (
         userTypedText.length && // if user typed text
         !this.value.length // but didn't select a value

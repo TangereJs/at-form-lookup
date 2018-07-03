@@ -11,6 +11,10 @@
 
     _validateData: function (schema, value, /* localizer */localizer) {
 
+      function isString(obj) {
+        return Object.prototype.toString.call(obj) === "[object String]";
+      }
+
       function isFunction(obj) {
         return Object.prototype.toString.call(obj) === "[object Function]";
       }
@@ -184,7 +188,7 @@
 
         var valueList = xvaluelist;
 
-        if (typeof valuelist == "undefined" || valueList.length < 1) {
+        if (typeof valueList == "undefined" || valueList.length < 1) {
           return validationResult;
         }
 
@@ -193,7 +197,8 @@
         if (isString(valueList)) {
           valueList = valueList.split(',');
         }
-
+        
+        var result = true;
         valuesToCheck.forEach(function(valueToCheck, index) {
           var localResult = false;
           valueList.forEach(function(item, index) {
@@ -207,7 +212,8 @@
         });
 
         if (!result) {
-          this._errorMessage = 'Value ' + value + ' is invalid.';
+          validationResult.isValid = result;
+          validationResult.errorMessage = localizer('Value {0} is invalid.', value);
         }
 
         return validationResult;
