@@ -8,17 +8,17 @@
       :host {
         display: block;
         box-sizing: border-box;
-        @apply(--layout-horizontal);
+        @apply --layout-horizontal;
       }
 
       :host([disabled]) {
-        @apply(--at-form-disabled);
+        @apply --at-form-disabled;
         pointer-events: none;
       }
 
       .item {
-        @apply(--layout-inline-flex);
-        @apply(--layout-horizontal);
+        @apply --layout-inline-flex;
+        @apply --layout-horizontal;
         padding: 4px 0;
       }
 
@@ -27,9 +27,9 @@
       }
 
       .item-title {
-        @apply(--unselectable);
-        @apply(--at-form-input-font);
-        @apply(--layout-self-center);
+        @apply --unselectable;
+        @apply --at-form-input-font;
+        @apply --layout-self-center;
         display: block;
         cursor: default;
         padding-right: 14px;
@@ -40,8 +40,8 @@
       }
 
       .filter-text-input {
-        @apply(--at-form-input-font);
-        @apply(--layout-inline);
+        @apply --at-form-input-font;
+        @apply --layout-inline;
         min-width: 4px;
         width: 4px;
         border: none;
@@ -54,11 +54,11 @@
 
       .toolbox-container {
         margin-left: auto;
-        @apply(--layout-horizontal)
+        @apply --layout-horizontal;
       }
 
       .dropdown-arrow {
-        @apply(--layout-self-center);
+        @apply --layout-self-center;
 
         display: block;
         box-sizing: border-box;
@@ -73,7 +73,7 @@
       }
 
       :host([multiple]) {
-        @apply(--layout-wrap);
+        @apply --layout-wrap;
         padding: 0 9px;
       }
 
@@ -84,13 +84,13 @@
       }
 
       :host([multiple]) .item-title {
-        @apply(--at-text-selected);
+        @apply --at-text-selected;
         padding: 2px;
         border-radius: 2px 0 0 2px;
       }
 
       :host([multiple]) .delete-button {
-        @apply(--at-text-selected);
+        @apply --at-text-selected;
 
         padding: 2px;
         line-height: 22px;
@@ -112,7 +112,7 @@
       }
 
       #filterTextInput.disabled {
-        @apply(--at-form-disabled);
+        @apply --at-form-disabled;
         pointer-events: none;
       }
     </style>
