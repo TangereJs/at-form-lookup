@@ -192,7 +192,13 @@
           return validationResult;
         }
 
-        var valuesToCheck = value.split(',');
+        var valuesToCheck = "";
+        if (isString(value)) {
+          valuesToCheck = value.split(',');
+        
+        } else {
+          valuesToCheck = ["" + value];
+        }
 
         if (isString(valueList)) {
           valueList = valueList.split(',');
@@ -202,10 +208,10 @@
         valuesToCheck.forEach(function(valueToCheck, index) {
           var localResult = false;
           valueList.forEach(function(item, index) {
-            if (item.value) {
-              localResult = localResult || item.value === valueToCheck;
+            if (item.value != undefined) {
+              localResult = localResult || item.value == valueToCheck;
             } else {
-              localResult = localResult || item === valueToCheck;
+              localResult = localResult || item == valueToCheck;
             }
           });
           result = result && localResult;
