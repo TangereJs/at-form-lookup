@@ -2108,7 +2108,9 @@
       this._udpateOptionsViewScrollTop();
 
       Polymer.dom.flush();
-      this.$.coreDropdown.updateContainerAndOutlineSize();
+      this.async(function() {
+        this.$.coreDropdown.updateContainerAndOutlineSize();
+      }, 10);
     },
 
     _closeDropdown: function() {
