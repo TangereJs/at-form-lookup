@@ -167,6 +167,10 @@
         var validationResult = {};
         var required_ = Boolean(required);
 
+        // we convert number 0 to string "0" as a workaround for a bug in javascript language specification 
+        // where "" == 0 is true
+        value = value === 0 ? "0" : value;
+
         // if required is true return true if value is not undefined, null or ""
         validationResult.isValid = !required_ || ([undefined, null, ""].indexOf(value) === -1);
         if (!validationResult.isValid) {
