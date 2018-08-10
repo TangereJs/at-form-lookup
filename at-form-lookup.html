@@ -1362,41 +1362,43 @@
     },
 
     _handleFilterTextInputBlurEvent: function(event) {
+      // we make the whole handler async to circumvent the issue in IE11 where blur even closes the dropdown before click is registered on the dropdown item
+      this.async(function() {
+        if (!event.relatedTarget) {
+          this.$.itemsView.removeAttribute('focused');
+          // if focus didn't transfer to any other element hide the dropdown
+          this._closeDropdown();
+          return;
+        }
 
-      if (!event.relatedTarget) {
+        // if element receiving focus is at-core-dropdown-impl return
+        if (event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
+        if (event.relatedTarget.nodeName === "OPTIONS-VIEW") return;
+
+        // if element receiving focus is an item in <items-view> return
+        var rt = event.relatedTarget;
+        if (this.$.itemsView.contains(rt) && rt.classList.contains('item')) {
+          this._getInput().focus();
+          return;
+        }
+
+        // clicking on these elements should not close the dropdown
+        var elts = [this.$.itemsView, this.$.label, this.$.itemsView.$.dropdownArrow];
+        if (elts.indexOf(rt) > -1) {
+          return;
+        }
+
         this.$.itemsView.removeAttribute('focused');
-        // if focus didn't transfer to any other element hide the dropdown
+        // if element receiving focus is outside at-form-lookup hide the dropdown
         this._closeDropdown();
-        return;
-      }
 
-      // if element receiving focus is at-core-dropdown-impl return
-      if (event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
-      if (event.relatedTarget.nodeName === "OPTIONS-VIEW") return;
-
-      // if element receiving focus is an item in <items-view> return
-      var rt = event.relatedTarget;
-      if (this.$.itemsView.contains(rt) && rt.classList.contains('item')) {
-        this._getInput().focus();
-        return;
-      }
-
-      // clicking on these elements should not close the dropdown
-      var elts = [this.$.itemsView, this.$.label, this.$.itemsView.$.dropdownArrow];
-      if (elts.indexOf(rt) > -1) {
-        return;
-      }
-
-      this.$.itemsView.removeAttribute('focused');
-      // if element receiving focus is outside at-form-lookup hide the dropdown
-      this._closeDropdown();
-
-      // un-filter dropdown options
-      if (this._isMultiSelect() && (this.xurl || this.url)) {
-        // NOTE this flag is true when remote data source returns an error
-        this._rdsOptionsError = false;
-        this._sendRequestToQueryOptions(this.xurl || this.url, "");
-      }
+        // un-filter dropdown options
+        if (this._isMultiSelect() && (this.xurl || this.url)) {
+          // NOTE this flag is true when remote data source returns an error
+          this._rdsOptionsError = false;
+          this._sendRequestToQueryOptions(this.xurl || this.url, "");
+        }
+      }, 100);
     },
 
     _handleFilterTextInputKeydownEvent: function(event) {
