@@ -865,6 +865,17 @@
           }
 
           var partUrl = baseAndQuery.baseUrl + '/' + part;
+
+          // 
+          // THE SPECIFIC AND PROBABLY SHORT-LIVED REQUIREMENT
+          // 
+          if (remoteUrl.indexOf("?") == remoteUrl.length - 1) {
+            partUrl = baseAndQuery.baseUrl + "?id=" + part;
+          }
+          // 
+          // end of THE SPECIFIC AND PROBABLY SHORT-LIVED REQUIREMENT
+          // 
+
           var partCoreActivity = document.createElement('at-core-activity');
           partCoreActivity.url = partUrl;
           partCoreActivity.setAttribute('item-id', part);

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>at-form-lookup demo page</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../at-theme/at-theme.html">
+    <link rel="import" href="../at-form-lookup.html">
+
+    <style is="custom-style">
+
+      .debug * {
+        border: 1px solid #e6e6fa;
+      }
+
+      .container {
+        padding: 8px;
+        margin: 32px 25% 0 25%;
+      }
+
+      .lookup-label {
+        @apply --at-form-label;
+        display: block;
+      }
+
+      .inline-lookup {
+        display: inline-block;
+      }
+
+      .triangle-down {
+        display: inline-block;
+        margin-right: 4px;
+        border-style: solid;
+        border-width: 5px 5px 0 5px;
+        border-color: #333333 transparent transparent transparent;
+      }
+
+      .input-container {
+        display: inline-block;
+        box-sizing: border-box;
+      }
+
+      .input-field {
+        width: 40px; 
+        display: inline-block;
+        box-sizing: border-box;
+      }
+
+      
+    </style>
+  </head>
+
+  <body class="debug">
+    <div class="container">
+      <at-form-lookup id="formLookup1" max-items="0" value="1,2,3" class="block-lookup" label="Id in path demo" placeholder="type here ..." url="http://localhost:2014/api/adenin.GateKeeper.Content/role"></at-form-lookup>
+    </div>
+
+    <div class="container">
+      <at-form-lookup id="formLookup2" max-items="0" value="1,2,3" class="block-lookup" label="Id in query demo" placeholder="type here ..." url="http://localhost:2014/api/adenin.GateKeeper.Content/role?"></at-form-lookup>
+    </div>
+
+    <script>
+      document.addEventListener('WebComponentsReady', function() {
+      });
+    </script>
+  </body>
+
+</html>
