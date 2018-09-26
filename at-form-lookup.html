@@ -869,8 +869,15 @@
           // 
           // THE SPECIFIC AND PROBABLY SHORT-LIVED REQUIREMENT
           // 
-          if (remoteUrl.indexOf("?") == remoteUrl.length - 1) {
-            partUrl = baseAndQuery.baseUrl + "?id=" + part;
+          // if url ends with ? or has any query parameters, partUrl should be the baseUrl and id should be added as query parameter
+          // 
+          if (remoteUrl.indexOf("?") > - 1) {
+            partUrl = baseAndQuery.baseUrl;
+            
+            baseAndQuery.queryParams.push({
+              name: "id",
+              value: part
+            });
           }
           // 
           // end of THE SPECIFIC AND PROBABLY SHORT-LIVED REQUIREMENT
