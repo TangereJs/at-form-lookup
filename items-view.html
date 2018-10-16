@@ -337,6 +337,17 @@
         var child = children[ci];
         indexOfInput = child.id === "filterTextInput" ? ci : indexOfInput;
       }
+
+      // 
+      // In Polymer 2.x style tag is included in this.root.children
+      // this inclusion makes previous implementation made for Polymer 1.x incorrect
+      // style tag is first element in children so if indexOfInput is greater than zero (style tag is zero)
+      // 
+      var hasStyle = children.length && children[0].tagName == "STYLE";
+      if (hasStyle && indexOfInput > 0) {
+        indexOfInput -= 1;
+      }
+
       return indexOfInput;
     },
 

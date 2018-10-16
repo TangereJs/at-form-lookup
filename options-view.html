@@ -30,14 +30,30 @@
       }
     </style>
 
-    <template is="dom-repeat" items="[[items]]">
-      <template is="dom-if" if="[[!itemView]]">
+    <!-- 
+      It was observed that under Polymer 1.x and 2.x dom-ifs nested in dom-repeat produce incorrect result in scenario where 
+        1. options-view.items is set to a non-empty array so that some items are already rendered
+        2. options-view is hidden (so need to re-render)
+        3. options-view.set('items', []) is used to clear the rendered items
+        4. options-view.set('items', newItems) is used to set new items
+        5. display the options-view element
+
+      Observed result is that step 3. doesn't remove already rendered items
+      
+      The solution is to reverse the order of dom-if and dom-repeat elements. Then bug above doesn't occur.
+     -->
+    <template is="dom-if" if="[[!itemView]]">
+      <template is="dom-repeat" items="[[items]]">
         <option-view class$="option [[_computeExtraClasses(item)]]" data="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></option-view>
       </template>
-      <template is="dom-if" if="[[itemView]]">
+    </template>
+
+    <template is="dom-if" if="[[itemView]]">
+      <template is="dom-repeat" items="[[items]]">
         <at-core-view class$="option [[_computeExtraClasses(item)]]" view="[[itemView]]" model="[[item]]" index$="[[index]]" selected$="[[item.selected]]" on-tap="_handleOptionOnTap"></at-core-view>
       </template>
     </template>
+    
   </template>
 </dom-module>
 <script>
