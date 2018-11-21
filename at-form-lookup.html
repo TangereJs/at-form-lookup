@@ -715,6 +715,9 @@
         if (this._updateLookupSelectedItems()) {
           this._fireSelectedItemsChangedEvent();
         }
+      } else {
+        // we are processing value because vmOptions or maxItems changed
+        this._processValueForLocalDataSourceMode(value, vmOptions, maxItems);
       }
 
       // 4. put initalSearchTerm into filterTextInput
