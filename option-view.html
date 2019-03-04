@@ -23,7 +23,16 @@
 
       .highlight {
         background-color: var(--at-form-lookup-option-highlighted-background-color); 
-        color: var(--at-form-lookup-option-highlighted-color);
+        color: var(--at-form-lookup-option-highlighted-color);        
+      }
+      
+      .highlight, .regular {
+         @apply --at-form-input-font;
+        display: inline-block;
+      }
+      
+      .titlematch {
+        font-size: 0; /* avoid space between highlight and regular entries */
       }
     </style>
 
@@ -32,13 +41,13 @@
       highlighted item is an object with text property
     -->
     <template is="dom-if" if="[[_hasHighlight(data)]]">
-      <div class="title">
+      <div class="titlematch">
         <template is="dom-repeat" items="[[data.titleArr]]" strip-whitespace>
           <template is="dom-if" if="[[_isHighlighted(item)]]">
-            <span class="highlight">[[item.text]]</span>
+            <div class="highlight">[[item.text]]</div>
           </template>
           <template is="dom-if" if="[[!_isHighlighted(item)]]">
-            <span>[[item]]</span>
+            <div class="regular">[[item]]</div>
           </template>
         </template>
       </div>
