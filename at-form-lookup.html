@@ -1932,7 +1932,9 @@
     },
 
     _getInput: function() {
-      return this.$.itemsView.$.filterTextInput;
+      var inp = this.$.itemsView.$.filterTextInput;
+      inp.autocomplete="off";
+      return inp;
     },
 
     _computeAvailableOptionsFromOriginalOptions: function() {
