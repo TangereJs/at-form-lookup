@@ -667,10 +667,10 @@
               title: option,
               value: option
             });
-          } else if (this._isObject(option)) {
+          } else if (this._isObject(option)) {           
             vmOptions.push({
-              title: option.title ? option.title : option.value,
-              value: option.value,
+              title: "" + (option.title ? option.title : option.value),
+              value: "" + option.value,
               itemRef: option
             });
           }
@@ -1260,7 +1260,7 @@
         if (indexInOriginal < 0) {
           originalOptions.push(item);
         }
-
+        
         // construct object selectedItem to be given to itemsView { title, titleArr, value }
         var si = {
           title: item.title,
@@ -1724,7 +1724,7 @@
       }
     },
 
-    _handleOptionsViewOptionSelectedEvent: function(event) {
+    _handleOptionsViewOptionSelectedEvent: function (event) {      
       var selectedIndex = this._findSelectedIndex(this.$.optionsView.items);
       if (selectedIndex > -1) {
         this.$.optionsView.set('items.' + selectedIndex + '.selected', false);
@@ -1941,11 +1941,12 @@
       var isMulti = this._isMultiSelect();
       var result = [];
       var os = this._viewModel.originalOptions;
+      
       os.forEach(function(o, i) {
         var value = o.itemRef ? (o.itemRef.id || o.itemRef.value) : o.value;
         var a = {
-          title: o.title,
-          value: value,
+          title: "" + o.title,
+          value: "" + value,
           selected: false, // we use selected to mark item as selected in dropdown
           titleArr: [] // we use titleArr to fix a bug with dom-if / dom-repeat combo, where dom-repeat is evaluated when dom-if evaluates to false
         };
@@ -1955,8 +1956,8 @@
         if (indexInSelected < 0 || (indexInSelected > -1 && !this._isMultiSelect())) {
           result.push(a);
         }
-
       }, this);
+
       return result;
     },
 
