@@ -1309,7 +1309,7 @@
 
       for (var i = 0; i < array.length && !result; i++) {
         var item = array[i];
-        result = item.value === id ? item : result;
+        result = ("" + item.value) === id ? item : result;
       }
 
       return result;
