@@ -34,6 +34,10 @@
       .titlematch {
         font-size: 0; /* avoid space between highlight and regular entries */
       }
+
+      .preserveWhitespace {
+        white-space: pre;
+      }
     </style>
 
     <!--
@@ -44,10 +48,10 @@
       <div class="titlematch">
         <template is="dom-repeat" items="[[data.titleArr]]" strip-whitespace>
           <template is="dom-if" if="[[_isHighlighted(item)]]">
-            <div class="highlight">[[item.text]]</div>
+            <div class="highlight preserveWhitespace">[[item.text]]</div>
           </template>
           <template is="dom-if" if="[[!_isHighlighted(item)]]">
-            <div class="regular">[[item]]</div>
+            <div class="regular preserveWhitespace">[[item]]</div>
           </template>
         </template>
       </div>
