@@ -1376,16 +1376,16 @@
 
       if (this.$.coreDropdown.open) {
         this._closeDropdown();
-
       } else {
         this._openDropdown();
       }
     },
 
-    _handleFilterTextInputBlurEvent: function(event) {
+    _handleFilterTextInputBlurEvent: function (event) {
+      var relatedTarget = event.relatedTarget;
       // we make the whole handler async to circumvent the issue in IE11 where blur even closes the dropdown before click is registered on the dropdown item
-      this.async(function() {
-        if (!event.relatedTarget) {
+      this.async(function () {
+        if (!relatedTarget) {
           this.$.itemsView.removeAttribute('focused');
           // if focus didn't transfer to any other element hide the dropdown
           this._closeDropdown();
@@ -1393,11 +1393,11 @@
         }
 
         // if element receiving focus is at-core-dropdown-impl return
-        if (event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
-        if (event.relatedTarget.nodeName === "OPTIONS-VIEW") return;
+        if (relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
+        if (relatedTarget.nodeName === "OPTIONS-VIEW") return;
 
         // if element receiving focus is an item in <items-view> return
-        var rt = event.relatedTarget;
+        var rt = relatedTarget;
         if (this.$.itemsView.contains(rt) && rt.classList.contains('item')) {
           this._getInput().focus();
           return;
