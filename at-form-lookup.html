@@ -413,8 +413,17 @@
       '_initializeLookup(available, enum, xvaluelist, value, url, xurl, noCredentials, noPreload, params, initialSearchTerm, maxItems, required, emptyLabel, _viewModel)'
     ],
 
+    listeners: {
+      'touchend': '_handleTouchend',
+    },
+
     _hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hidden", newValue, this.$.label);
+    },
+
+    _handleTouchend: function (event) {
+      event.preventDefault();
+      this._getFocusableElement().focus();
     },
 
     // computes multiple attribute for items-view
@@ -445,12 +454,13 @@
       var self = this;
       var focusable = this._getFocusableElement();
       if (focusable) {
-        focusable.addEventListener('blur', function(event) {
+        focusable.addEventListener('blur', function (event) {
           if (event.relatedTarget && event.relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
           self.validate();
         });
       }
 
+      
       // call into at-form-behaviors.formUIGeneric._attachFocusBlurEvents
       this._attachFocusBlurEvents();
 
@@ -1384,7 +1394,7 @@
     _handleFilterTextInputBlurEvent: function (event) {
       var relatedTarget = event.relatedTarget;
       // we make the whole handler async to circumvent the issue in IE11 where blur even closes the dropdown before click is registered on the dropdown item
-      this.async(function () {
+      this.async(function (event) {
         if (!relatedTarget) {
           this.$.itemsView.removeAttribute('focused');
           // if focus didn't transfer to any other element hide the dropdown
@@ -1395,6 +1405,7 @@
         // if element receiving focus is at-core-dropdown-impl return
         if (relatedTarget.nodeName === "AT-CORE-DROPDOWN-IMPL") return;
         if (relatedTarget.nodeName === "OPTIONS-VIEW") return;
+
 
         // if element receiving focus is an item in <items-view> return
         var rt = relatedTarget;

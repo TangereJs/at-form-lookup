@@ -172,7 +172,8 @@
     },
 
     listeners: {
-      'tap': '_handleHostOnTap'
+      'tap': '_handleHostOnTap',
+      'touchend': '_handleTouchend'
     },
 
     _disabledChanged: function(newValue, oldValue) {
@@ -186,7 +187,7 @@
       }
     },
 
-    _handleHostOnTap: function(event) {
+    _handleHostOnTap: function (event) {
       if (this.disabled) return;
 
       // we return if mouse click happened on items or input field
@@ -194,6 +195,10 @@
 
       // we focus input field otherwise
       this.$.filterTextInput.focus();
+    },
+
+    _handleTouchend: function (event) {
+      event.preventDefault();
     },
 
     _handleFilterTextInputKeydown: function(event) {
@@ -381,7 +386,7 @@
     },
 
     ready: function () {
-
+      
     },
 
     /**
