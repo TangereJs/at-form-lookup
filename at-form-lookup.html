@@ -414,16 +414,21 @@
     ],
 
     listeners: {
-      'touchend': '_handleTouchend',
+      'touchend': '_handleTouchend'
     },
 
     _hideLabelChanged: function(newValue, oldValue) {
       this.toggleClass("hidden", newValue, this.$.label);
     },
 
+    // we need this to prevent dropdown from closing on android when keyboard opens
     _handleTouchend: function (event) {
       event.preventDefault();
       this._getFocusableElement().focus();
+
+      setTimeout(function () {
+        this._openDropdown();
+      }.bind(this), 200);
     },
 
     // computes multiple attribute for items-view
@@ -459,7 +464,6 @@
           self.validate();
         });
       }
-
       
       // call into at-form-behaviors.formUIGeneric._attachFocusBlurEvents
       this._attachFocusBlurEvents();
@@ -2119,7 +2123,7 @@
       }
     },
 
-    _openDropdown: function() {
+     _openDropdown: function() {
       this._highlightDropdownOption();
 
       var ccWidth = 0;
@@ -2680,5 +2684,6 @@
    *
    * @event at-form-lookup-afterAjax
    */
+
 
 </script>
